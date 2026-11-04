@@ -7,3 +7,7 @@ coverage
 pnpm-lock.yaml
 expo-env.d.ts
 **/src/generated
+# Gerado por packages/tokens/scripts/build-preview.ts
+docs/design/tokens.html
+.taste-skill
+.impeccable

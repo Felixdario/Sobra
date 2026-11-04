@@ -42,3 +42,11 @@ Plano: 2a base (A, sequencial) → 2b rotas de domínio (transações/recorrênc
 🔧 → 🧭 (D) PARCIAL: integração, contrato (display fields, % 0–100, net, import no shared), testes determinísticos, seed demo (199 tx, 5 regras, 42 orçamentos), demo.test.ts, ADR-019. db:reset bloqueado pelo guarda do Prisma contra agentes (exige consentimento do usuário) — não contornado.
 🧭 Validação própria: typecheck/lint/format/test verdes (shared 267, api 125); db:seed 2× sem duplicar; dev + navegador: login demo 200, /summary/month 200, /transactions com category/account, /docs 27 paths.
 🧭 ✅ APROVADO fase 2 → commit. Pendente para o usuário: rodar db:reset ele mesmo se quiser. Nota p/ fase 4/5: taxa de poupança do mês parcial (-325%) precisa de tratamento visual.
+Commit ee9b997.
+
+## Fase 3
+🧭 → 🔧 (Executor E) Direção de design: impeccable (init/shape → PRODUCT.md, DESIGN.md), design-taste-frontend (fluxo app/dashboard), 3 nomes + escolha, packages/tokens (CSS vars + tema RN + testes de contraste e paleta), docs/design/tokens.html.
+🔧 → 🧭 (E) FEITO: PRODUCT.md, DESIGN.md (direção "Concreto e azulejo", régua do mês), Archivo, paleta de dados 5 cores validada p/ daltonismo, nome Sobra (vs Folga, Fôlego), @financas/tokens (222 testes: WCAG, ΔE OKLab, snapshots), docs/design/tokens.html, ADR-020..022.
+🧭 Validação própria: verde (tokens 222, shared 267, api 125); tokens.html aberto no navegador a 1440px, claro e escuro lado a lado, sem overflow; KPI + régua, transações, orçamento folgado/perto/estourado (hachurado).
+🧭 Decisões aceitas: paleta de 5 cores + "Outras"; cor da categoria só como marcador de identidade, gráfico por categoria em barras de um matiz.
+🧭 ✅ APROVADO fase 3 (1 rodada) → commit

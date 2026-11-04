@@ -177,3 +177,43 @@ Formato curto: contexto, decisão e porquê. Decisões novas entram no fim do ar
   - Seis meses até o mês de referência (hoje em São Paulo, ou `SEED_TODAY=AAAA-MM-DD`), com o mês atual só até hoje. Os valores vêm de um PRNG `mulberry32` com semente fixa, escrito no projeto (cerca de 10 linhas, sem dependência). Os sorteios acontecem sempre na mesma ordem, inclusive para datas futuras que depois são descartadas, então a mesma data de referência gera exatamente os mesmos dados.
   - Assinaturas e aluguel são `RecurringRule` reais, materializadas por `syncDueRecurring`. A fatura do cartão é paga no dia 15 por transferência da corrente, no valor das despesas do cartão no mês anterior. O rendimento da poupança entra no dia 1º, o que garante receita em todos os meses, inclusive no mês atual antes do salário. Para cada mês completo é sorteada uma taxa de poupança-alvo entre 5% e 25% (espalhadas entre os meses); depois de gerar os lançamentos, o seed ajusta com uma compra ou um freelance para chegar ao alvo.
 - **Porquê:** os campos embutidos evitam N+1 no cliente com custo de um join. Uma escala única de percentual evita a classe de bug "mostrou 0,3%" e o nome `net` deixa claro que não é saldo. Com a importação no shared, web e mobile validam o mesmo formato que a API aceita. O seed determinístico deixa demonstrações e capturas de tela reproduzíveis e permite testar o próprio seed pela API.
+
+## ADR-020 — Nome do produto: Sobra
+
+- **Data:** 2026-11-04
+- **Contexto:** o app se chamava provisoriamente "Finanças", que é a categoria, não uma marca. O projeto é de portfólio e precisa de um nome curto, pt-BR, que funcione na interface e não colida com bancos ou apps conhecidos.
+- **Opções:**
+  - **Sobra** — a pergunta que o produto responde todo mês: quanto sobra. Funciona como substantivo e verbo na própria interface ("Sobraram R$ 1.081,55").
+  - **Folga** — o estado desejado do orçamento ("orçamento folgado"); fora de contexto lê como "dia de folga".
+  - **Fôlego** — a sensação de ter margem; o circunflexo atrapalha domínio, bundle id e busca.
+  - Descartado na triagem: **Trocado** (colide com Meu Trocado, Trocados Carteira e o Trocadinho do Oinc).
+- **Decisão:** **Sobra**. `APP_NAME = 'Sobra'` em `packages/shared/src/config.ts`; título do web, nome do app Expo e título da pilha atualizados. `slug` e `scheme` do Expo continuam `financas` (identificadores técnicos; trocar exige decidir bundle id e deep links).
+- **Verificação:** busca web rápida (nov/2026) não achou banco ou app de finanças chamado Sobra, Folga ou Fôlego no Brasil; existe "Vai Sobrar" (Product Hunt, pequeno), nome próximo mas não idêntico. Não houve consulta ao INPI — fazer antes de qualquer uso comercial.
+- **Porquê:** o nome é o mecanismo do produto (receitas − despesas, taxa de poupança) e vira linguagem da interface, sem precisar de slogan.
+
+## ADR-021 — Direção visual "Concreto e azulejo" e tipografia Archivo
+
+- **Data:** 2026-11-04
+- **Contexto:** o dono quer qualidade de portfólio e um visual que não pareça gerado por IA (sem gradiente roxo, glassmorphism, cards idênticos com ícone em círculo, emoji, Inter em tudo). A direção foi definida com as skills `impeccable` (init/shape/new-work, modo Operate), `design-taste-frontend` (fluxo de telas de app) e `dataviz` (validação de paleta).
+- **Decisão:**
+  - **Mundo:** concretismo e identidade modernista brasileira + concreto aparente + azulejo cobalto de Athos Bulcão. Empresta só tipografia, paleta, densidade e um gesto assinatura; navegação e controles são os padrões de cada plataforma. Sorteio do impeccable `seed:ba8f5bcef7295068` (índice 5 da lista própria); estilo do taste `achromatic-ledger` (semente 486094911).
+  - **Desafiantes do sorteio** (todos recusados nos dois eixos; disciplina doada entre parênteses): espécime bitmap Emigre (uma família só, hierarquia por tamanho e peso), labanotação (comprimento = valor exato: toda barra é proporcional, sem largura mínima disfarçada), capa Factory/Saville (nada rotulado duas vezes: a cor da categoria aparece uma vez por linha), parede de streaming (o item em foco destaca, o resto recua — hover em gráfico esmaece as outras séries), sinalização amarela de aeroporto (uma cor reservada para um trabalho só: cobalto só para dado principal, link, foco e seleção), espécime de fonte variável (contraste de escala como hierarquia: o número é o maior texto da tela).
+  - **Cor:** chão de concreto (`#F1F1EE` / `#141413`), tinta, um único matiz (cobalto `#1C50B5`) no dado principal; verde só entrada, vermelho só dívida/estouro, ocre só "perto do limite". Despesa comum em tinta, com sinal.
+  - **Assinatura:** a régua do mês — a receita como uma barra, despesas em planos chapados de tinta, a sobra como plano cobalto nomeado.
+  - **Tipografia:** uma família, **Archivo** 400/500/600 (Omnibus-Type, OFL), Google Fonts no web e `@expo-google-fonts/archivo` no mobile; algarismos tabulares sempre. Substitui a Geist sorteada pelo taste: Geist/Inter são justamente o "kit" que o estudo da skill e o dono rejeitam; Archivo tem algarismos de largura igual por padrão (medido), cobre pt-BR e tem pesos estáticos no expo-google-fonts.
+  - **Paleta de dados:** cobalto, ocre, céu, rosa, oliva, nessa ordem, por busca exaustiva de ordenação e `validate_palette.js` (pior par vizinho com daltonismo ΔE 13,2 claro / 12,6 escuro; visão típica 24,2 / 24,5).
+- **Porquê:** a direção sai do mundo da usuária e do nome (o que sobra), não da categoria "fintech"; a disciplina de cor deixa o dinheiro como protagonista e a acessibilidade é testada, não declarada.
+- **Em aberto:** cores padrão das categorias (`DEFAULT_CATEGORIES` na API) são da paleta Tailwind; como a cor da categoria só aparece como quadradinho de identidade, não bloqueia, mas vale trocar por um conjunto curado (decisão do Planejador).
+
+## ADR-022 — Tokens compartilhados em `@financas/tokens` (TS puro)
+
+- **Data:** 2026-11-04
+- **Contexto:** web (React + Vite) e mobile (Expo/RN) precisam dos mesmos valores de cor, tipo, espaço e movimento, cada um no seu formato (CSS custom properties × objetos de `StyleSheet`), sem um depender do runtime do outro.
+- **Decisão:**
+  - Pacote `packages/tokens`, consumido como fonte TypeScript (como o shared, ADR-005), **sem dependência de DOM nem de React Native** (`lib: ES2023`, `types: []` no tsconfig de `src`). Testes e scripts têm um tsconfig separado com tipos de Node.
+  - Camadas: primitivas (`concreto`, `cobalto`, `verde`, `vermelho`, `ocre`, `dataHues`) → tema semântico (`lightTheme`, `darkTheme`: `bg`, `text`, `border`, `action`, `money`, `status`, `budget`, `chart`) → escalas independentes de tema (tipografia, espaço, raios, elevação, movimento, breakpoints, alvos de toque). Componentes leem só o semântico.
+  - Formatos neutros que os dois lados convertem: sombra como `{offsetX, offsetY, blur, spread, color, opacity, androidElevation}`; tracking em `em`; curvas como tuplas `cubic-bezier`; molas no formato do `withSpring` do Reanimated.
+  - Web: `toCssVariables(theme, selector?)` gera um bloco de variáveis; `toCssStylesheet()` gera claro + escuro por `prefers-color-scheme` + `data-theme` forçado. Mobile: `createNativeTheme(mode)` devolve cores, espaços em número, estilos de texto com `fontFamily` por peso (`Archivo_600SemiBold`), `letterSpacing` em px e `fontVariant` tabular, sombras iOS/Android e molas.
+  - Testes Vitest: fórmula WCAG implementada e checada contra valores conhecidos; todos os pares texto/fundo permitidos com mínimo explícito (AA, AAA nos números principais, 3:1 para gráficos e bordas de campo) nos dois temas; paleta de dados com ΔE OKLab (Machado 2009) entre vizinhas; snapshot do CSS; `docs/design/tokens.html` precisa bater com o gerador.
+  - Referência visual estática gerada por `corepack pnpm --filter @financas/tokens build:preview` (tsx, já presente no lockfile pela API). O HTML gerado está no `.prettierignore`.
+- **Porquê:** uma fonte de verdade testável; os temas e a acessibilidade não regridem sem um teste vermelho, e nenhum cliente precisa conhecer o formato do outro.

@@ -1,0 +1,661 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sobra — tokens</title>
+<meta name="description" content="Referência visual dos tokens de design do Sobra, gerada de @financas/tokens.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --color-bg-canvas: #F1F1EE;
+  --color-bg-surface: #FFFFFF;
+  --color-bg-sunken: #E9E9E5;
+  --color-bg-raised: #FFFFFF;
+  --color-bg-inverse: #141413;
+  --color-bg-overlay: rgba(14, 14, 13, 0.48);
+  --color-bg-selection: #DCE5FA;
+  --color-text-primary: #141413;
+  --color-text-secondary: #474743;
+  --color-text-tertiary: #5E5E58;
+  --color-text-disabled: #9A9A93;
+  --color-text-inverse: #FFFFFF;
+  --color-text-link: #1C50B5;
+  --color-border-subtle: #E1E1DC;
+  --color-border-default: #D4D4CE;
+  --color-border-strong: #7B7B74;
+  --color-border-focus: #1C50B5;
+  --color-action-primary: #141413;
+  --color-action-primary-hover: #31312E;
+  --color-action-primary-pressed: #474743;
+  --color-action-on-primary: #FFFFFF;
+  --color-action-secondary: #E9E9E5;
+  --color-action-secondary-hover: #E1E1DC;
+  --color-action-on-secondary: #141413;
+  --color-action-destructive: #8A1B14;
+  --color-action-on-destructive: #FFFFFF;
+  --color-money-income: #075027;
+  --color-money-expense: #141413;
+  --color-money-transfer: #5E5E58;
+  --color-money-debt: #8A1B14;
+  --color-money-zero: #5E5E58;
+  --color-status-success: #075027;
+  --color-status-success-surface: #E3F1E7;
+  --color-status-warning: #7A4A00;
+  --color-status-warning-surface: #FBF0DA;
+  --color-status-danger: #8A1B14;
+  --color-status-danger-surface: #FBE6E3;
+  --color-status-info: #1C50B5;
+  --color-status-info-surface: #EEF2FC;
+  --color-budget-track: #E1E1DC;
+  --color-budget-ok: #1C50B5;
+  --color-budget-near: #B17000;
+  --color-budget-over: #8A1B14;
+  --color-chart-grid: #E9E9E5;
+  --color-chart-axis: #5E5E58;
+  --color-chart-main: #1C50B5;
+  --color-chart-comparison: #5E5E58;
+  --color-chart-income: #075027;
+  --color-chart-expense: #31312E;
+  --color-chart-other: #31312E;
+  --color-chart-series-1: #1C50B5;
+  --color-chart-series-2: #B17000;
+  --color-chart-series-3: #32A0C5;
+  --color-chart-series-4: #A43068;
+  --color-chart-series-5: #79821D;
+  --shadow-flat: none;
+  --shadow-raised: 0px 4px 12px -2px rgb(14 14 13 / 0.12);
+  --shadow-overlay: 0px 16px 40px -8px rgb(14 14 13 / 0.2);
+  --font-sans: "Archivo", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-numeric: "tnum" 1, "lnum" 1;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --text-figure-xl-size: 48px;
+  --text-figure-xl-line: 52px;
+  --text-figure-xl-tracking: -0.03em;
+  --text-figure-xl-weight: 600;
+  --text-figure-lg-size: 36px;
+  --text-figure-lg-line: 40px;
+  --text-figure-lg-tracking: -0.025em;
+  --text-figure-lg-weight: 600;
+  --text-figure-md-size: 28px;
+  --text-figure-md-line: 34px;
+  --text-figure-md-tracking: -0.02em;
+  --text-figure-md-weight: 600;
+  --text-headline-size: 24px;
+  --text-headline-line: 32px;
+  --text-headline-tracking: -0.015em;
+  --text-headline-weight: 600;
+  --text-title-size: 20px;
+  --text-title-line: 28px;
+  --text-title-tracking: -0.01em;
+  --text-title-weight: 600;
+  --text-title-sm-size: 17px;
+  --text-title-sm-line: 24px;
+  --text-title-sm-tracking: -0.005em;
+  --text-title-sm-weight: 600;
+  --text-body-size: 16px;
+  --text-body-line: 24px;
+  --text-body-tracking: 0;
+  --text-body-weight: 400;
+  --text-body-sm-size: 14px;
+  --text-body-sm-line: 20px;
+  --text-body-sm-tracking: 0;
+  --text-body-sm-weight: 400;
+  --text-label-size: 13px;
+  --text-label-line: 18px;
+  --text-label-tracking: 0.005em;
+  --text-label-weight: 500;
+  --text-caption-size: 12px;
+  --text-caption-line: 16px;
+  --text-caption-tracking: 0.01em;
+  --text-caption-weight: 400;
+  --space-0: 0;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-0_5: 2px;
+  --radius-none: 0;
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-sheet: 16px;
+  --radius-full: 9999px;
+  --duration-instant: 0ms;
+  --duration-fast: 120ms;
+  --duration-base: 180ms;
+  --duration-moderate: 240ms;
+  --duration-slow: 320ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-enter: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --bp-medium: 768px;
+  --bp-expanded: 1024px;
+  --bp-wide: 1440px;
+  --layout-sidebar: 240px;
+  --layout-gutter: 16px;
+  --layout-phone-margin: 16px;
+  --layout-content: 1280px;
+  --layout-row-compact: 36px;
+  --layout-row: 44px;
+  --layout-row-tall: 56px;
+  --layout-control-height: 36px;
+  --layout-control-height-touch: 44px;
+  --touch-min: 44px;
+  --touch-min-android: 48px;
+}
+
+.theme-light {
+  color-scheme: light;
+  --color-bg-canvas: #F1F1EE;
+  --color-bg-surface: #FFFFFF;
+  --color-bg-sunken: #E9E9E5;
+  --color-bg-raised: #FFFFFF;
+  --color-bg-inverse: #141413;
+  --color-bg-overlay: rgba(14, 14, 13, 0.48);
+  --color-bg-selection: #DCE5FA;
+  --color-text-primary: #141413;
+  --color-text-secondary: #474743;
+  --color-text-tertiary: #5E5E58;
+  --color-text-disabled: #9A9A93;
+  --color-text-inverse: #FFFFFF;
+  --color-text-link: #1C50B5;
+  --color-border-subtle: #E1E1DC;
+  --color-border-default: #D4D4CE;
+  --color-border-strong: #7B7B74;
+  --color-border-focus: #1C50B5;
+  --color-action-primary: #141413;
+  --color-action-primary-hover: #31312E;
+  --color-action-primary-pressed: #474743;
+  --color-action-on-primary: #FFFFFF;
+  --color-action-secondary: #E9E9E5;
+  --color-action-secondary-hover: #E1E1DC;
+  --color-action-on-secondary: #141413;
+  --color-action-destructive: #8A1B14;
+  --color-action-on-destructive: #FFFFFF;
+  --color-money-income: #075027;
+  --color-money-expense: #141413;
+  --color-money-transfer: #5E5E58;
+  --color-money-debt: #8A1B14;
+  --color-money-zero: #5E5E58;
+  --color-status-success: #075027;
+  --color-status-success-surface: #E3F1E7;
+  --color-status-warning: #7A4A00;
+  --color-status-warning-surface: #FBF0DA;
+  --color-status-danger: #8A1B14;
+  --color-status-danger-surface: #FBE6E3;
+  --color-status-info: #1C50B5;
+  --color-status-info-surface: #EEF2FC;
+  --color-budget-track: #E1E1DC;
+  --color-budget-ok: #1C50B5;
+  --color-budget-near: #B17000;
+  --color-budget-over: #8A1B14;
+  --color-chart-grid: #E9E9E5;
+  --color-chart-axis: #5E5E58;
+  --color-chart-main: #1C50B5;
+  --color-chart-comparison: #5E5E58;
+  --color-chart-income: #075027;
+  --color-chart-expense: #31312E;
+  --color-chart-other: #31312E;
+  --color-chart-series-1: #1C50B5;
+  --color-chart-series-2: #B17000;
+  --color-chart-series-3: #32A0C5;
+  --color-chart-series-4: #A43068;
+  --color-chart-series-5: #79821D;
+  --shadow-flat: none;
+  --shadow-raised: 0px 4px 12px -2px rgb(14 14 13 / 0.12);
+  --shadow-overlay: 0px 16px 40px -8px rgb(14 14 13 / 0.2);
+  --font-sans: "Archivo", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-numeric: "tnum" 1, "lnum" 1;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --text-figure-xl-size: 48px;
+  --text-figure-xl-line: 52px;
+  --text-figure-xl-tracking: -0.03em;
+  --text-figure-xl-weight: 600;
+  --text-figure-lg-size: 36px;
+  --text-figure-lg-line: 40px;
+  --text-figure-lg-tracking: -0.025em;
+  --text-figure-lg-weight: 600;
+  --text-figure-md-size: 28px;
+  --text-figure-md-line: 34px;
+  --text-figure-md-tracking: -0.02em;
+  --text-figure-md-weight: 600;
+  --text-headline-size: 24px;
+  --text-headline-line: 32px;
+  --text-headline-tracking: -0.015em;
+  --text-headline-weight: 600;
+  --text-title-size: 20px;
+  --text-title-line: 28px;
+  --text-title-tracking: -0.01em;
+  --text-title-weight: 600;
+  --text-title-sm-size: 17px;
+  --text-title-sm-line: 24px;
+  --text-title-sm-tracking: -0.005em;
+  --text-title-sm-weight: 600;
+  --text-body-size: 16px;
+  --text-body-line: 24px;
+  --text-body-tracking: 0;
+  --text-body-weight: 400;
+  --text-body-sm-size: 14px;
+  --text-body-sm-line: 20px;
+  --text-body-sm-tracking: 0;
+  --text-body-sm-weight: 400;
+  --text-label-size: 13px;
+  --text-label-line: 18px;
+  --text-label-tracking: 0.005em;
+  --text-label-weight: 500;
+  --text-caption-size: 12px;
+  --text-caption-line: 16px;
+  --text-caption-tracking: 0.01em;
+  --text-caption-weight: 400;
+  --space-0: 0;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-0_5: 2px;
+  --radius-none: 0;
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-sheet: 16px;
+  --radius-full: 9999px;
+  --duration-instant: 0ms;
+  --duration-fast: 120ms;
+  --duration-base: 180ms;
+  --duration-moderate: 240ms;
+  --duration-slow: 320ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-enter: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --bp-medium: 768px;
+  --bp-expanded: 1024px;
+  --bp-wide: 1440px;
+  --layout-sidebar: 240px;
+  --layout-gutter: 16px;
+  --layout-phone-margin: 16px;
+  --layout-content: 1280px;
+  --layout-row-compact: 36px;
+  --layout-row: 44px;
+  --layout-row-tall: 56px;
+  --layout-control-height: 36px;
+  --layout-control-height-touch: 44px;
+  --touch-min: 44px;
+  --touch-min-android: 48px;
+}
+
+.theme-dark {
+  color-scheme: dark;
+  --color-bg-canvas: #141413;
+  --color-bg-surface: #1C1C1A;
+  --color-bg-sunken: #0E0E0D;
+  --color-bg-raised: #262624;
+  --color-bg-inverse: #F1F1EE;
+  --color-bg-overlay: rgba(14, 14, 13, 0.64);
+  --color-bg-selection: #14213F;
+  --color-text-primary: #F1F1EE;
+  --color-text-secondary: #B9B9B2;
+  --color-text-tertiary: #9A9A93;
+  --color-text-disabled: #5E5E58;
+  --color-text-inverse: #141413;
+  --color-text-link: #93B1FF;
+  --color-border-subtle: #262624;
+  --color-border-default: #31312E;
+  --color-border-strong: #7B7B74;
+  --color-border-focus: #93B1FF;
+  --color-action-primary: #F1F1EE;
+  --color-action-primary-hover: #D4D4CE;
+  --color-action-primary-pressed: #B9B9B2;
+  --color-action-on-primary: #141413;
+  --color-action-secondary: #31312E;
+  --color-action-secondary-hover: #474743;
+  --color-action-on-secondary: #F1F1EE;
+  --color-action-destructive: #FF9A8C;
+  --color-action-on-destructive: #141413;
+  --color-money-income: #7BD69A;
+  --color-money-expense: #F1F1EE;
+  --color-money-transfer: #9A9A93;
+  --color-money-debt: #FF9A8C;
+  --color-money-zero: #9A9A93;
+  --color-status-success: #7BD69A;
+  --color-status-success-surface: #13301E;
+  --color-status-warning: #E8C547;
+  --color-status-warning-surface: #3A2A0C;
+  --color-status-danger: #FF9A8C;
+  --color-status-danger-surface: #3D1714;
+  --color-status-info: #93B1FF;
+  --color-status-info-surface: #14213F;
+  --color-budget-track: #31312E;
+  --color-budget-ok: #6A92F0;
+  --color-budget-near: #E8C547;
+  --color-budget-over: #FF7A6B;
+  --color-chart-grid: #262624;
+  --color-chart-axis: #9A9A93;
+  --color-chart-main: #366BD3;
+  --color-chart-comparison: #7B7B74;
+  --color-chart-income: #7BD69A;
+  --color-chart-expense: #B9B9B2;
+  --color-chart-other: #B9B9B2;
+  --color-chart-series-1: #366BD3;
+  --color-chart-series-2: #C8800D;
+  --color-chart-series-3: #32A0C5;
+  --color-chart-series-4: #B54076;
+  --color-chart-series-5: #848E2D;
+  --shadow-flat: none;
+  --shadow-raised: 0px 4px 12px -2px rgb(0 0 0 / 0.4);
+  --shadow-overlay: 0px 16px 40px -8px rgb(0 0 0 / 0.56);
+  --font-sans: "Archivo", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-numeric: "tnum" 1, "lnum" 1;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --text-figure-xl-size: 48px;
+  --text-figure-xl-line: 52px;
+  --text-figure-xl-tracking: -0.03em;
+  --text-figure-xl-weight: 600;
+  --text-figure-lg-size: 36px;
+  --text-figure-lg-line: 40px;
+  --text-figure-lg-tracking: -0.025em;
+  --text-figure-lg-weight: 600;
+  --text-figure-md-size: 28px;
+  --text-figure-md-line: 34px;
+  --text-figure-md-tracking: -0.02em;
+  --text-figure-md-weight: 600;
+  --text-headline-size: 24px;
+  --text-headline-line: 32px;
+  --text-headline-tracking: -0.015em;
+  --text-headline-weight: 600;
+  --text-title-size: 20px;
+  --text-title-line: 28px;
+  --text-title-tracking: -0.01em;
+  --text-title-weight: 600;
+  --text-title-sm-size: 17px;
+  --text-title-sm-line: 24px;
+  --text-title-sm-tracking: -0.005em;
+  --text-title-sm-weight: 600;
+  --text-body-size: 16px;
+  --text-body-line: 24px;
+  --text-body-tracking: 0;
+  --text-body-weight: 400;
+  --text-body-sm-size: 14px;
+  --text-body-sm-line: 20px;
+  --text-body-sm-tracking: 0;
+  --text-body-sm-weight: 400;
+  --text-label-size: 13px;
+  --text-label-line: 18px;
+  --text-label-tracking: 0.005em;
+  --text-label-weight: 500;
+  --text-caption-size: 12px;
+  --text-caption-line: 16px;
+  --text-caption-tracking: 0.01em;
+  --text-caption-weight: 400;
+  --space-0: 0;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-0_5: 2px;
+  --radius-none: 0;
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-sheet: 16px;
+  --radius-full: 9999px;
+  --duration-instant: 0ms;
+  --duration-fast: 120ms;
+  --duration-base: 180ms;
+  --duration-moderate: 240ms;
+  --duration-slow: 320ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-enter: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --bp-medium: 768px;
+  --bp-expanded: 1024px;
+  --bp-wide: 1440px;
+  --layout-sidebar: 240px;
+  --layout-gutter: 16px;
+  --layout-phone-margin: 16px;
+  --layout-content: 1280px;
+  --layout-row-compact: 36px;
+  --layout-row: 44px;
+  --layout-row-tall: 56px;
+  --layout-control-height: 36px;
+  --layout-control-height-touch: 44px;
+  --touch-min: 44px;
+  --touch-min-android: 48px;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font-family:var(--font-sans);font-size:var(--text-body-size);line-height:var(--text-body-line);background:var(--color-bg-canvas);color:var(--color-text-primary);font-kerning:normal}
+::selection{background:var(--color-bg-selection);color:var(--color-text-primary)}
+:focus-visible{outline:2px solid var(--color-border-focus);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums lining-nums;font-feature-settings:var(--font-numeric)}
+.muted{color:var(--color-text-tertiary)}
+.page{max-width:1280px;margin:0 auto;padding:var(--space-10) var(--space-4) var(--space-20)}
+.page>header h1{font-size:var(--text-figure-md-size);line-height:var(--text-figure-md-line);letter-spacing:var(--text-figure-md-tracking);font-weight:600;margin:0 0 var(--space-2)}
+.page>header p{margin:0;max-width:68ch;color:var(--color-text-secondary)}
+.intro{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-10);align-items:start}
+@media (max-width:900px){.intro{grid-template-columns:1fr}}
+.decisions{margin:0;display:grid;gap:var(--space-2)}
+.decisions div{display:grid;grid-template-columns:120px 1fr;gap:var(--space-3);padding-top:var(--space-2);border-top:1px solid var(--color-border-subtle)}
+.decisions dt{font-weight:500}
+.decisions dd{margin:0;color:var(--color-text-secondary)}
+.page>section{margin-top:var(--space-16)}
+h2{font-size:var(--text-headline-size);line-height:var(--text-headline-line);letter-spacing:var(--text-headline-tracking);font-weight:600;margin:0 0 var(--space-2)}
+h2+p{margin:0 0 var(--space-6);max-width:68ch;color:var(--color-text-secondary)}
+h3{font-size:var(--text-title-sm-size);line-height:var(--text-title-sm-line);font-weight:600;margin:0}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);align-items:start}
+@media (max-width:900px){.pair{grid-template-columns:1fr}}
+.pane{background:var(--color-bg-canvas);color:var(--color-text-primary);border-radius:var(--radius-lg);padding:var(--space-6) var(--space-4);display:flex;flex-direction:column;gap:var(--space-4);min-width:0}
+.theme-light{outline:1px solid var(--color-border-subtle)}
+.pane-title{font-size:var(--text-label-size);font-weight:500;color:var(--color-text-tertiary)}
+.card{background:var(--color-bg-surface);border:1px solid var(--color-border-subtle);border-radius:var(--radius-lg);padding:var(--space-4)}
+.card-head{display:flex;justify-content:space-between;align-items:baseline;gap:var(--space-3);margin-bottom:var(--space-3)}
+.card-head.sub{margin-top:var(--space-6)}
+.card-head .muted{font-size:var(--text-body-sm-size)}
+.swatches{list-style:none;margin:0;padding:0;display:grid;gap:var(--space-1)}
+.swatch{display:grid;grid-template-columns:28px 1fr auto;grid-template-areas:"chip name hex" "chip ratio ratio";column-gap:var(--space-3);align-items:center;padding:var(--space-1) 0}
+.swatch .chip{grid-area:chip;width:28px;height:28px;border-radius:var(--radius-sm);outline:1px solid var(--color-border-subtle)}
+.swatch-name{grid-area:name;font-size:var(--text-body-sm-size)}
+.swatch-hex{grid-area:hex;font-size:var(--text-caption-size);color:var(--color-text-secondary)}
+.swatch-ratio{grid-area:ratio;font-size:var(--text-caption-size)}
+.chip.small{display:inline-block;width:10px;height:10px;border-radius:var(--radius-xs);margin-right:var(--space-2);vertical-align:baseline}
+.strips{display:grid;gap:var(--space-2)}
+.strip-row{display:grid;grid-template-columns:104px 1fr;align-items:center;gap:var(--space-3);font-size:var(--text-caption-size);color:var(--color-text-secondary)}
+.strip{display:flex;gap:2px;height:28px}
+.strip span{flex:1;border-radius:var(--radius-xs)}
+.series-legend{margin:var(--space-4) 0 0;padding:0;list-style:none;display:grid;gap:var(--space-1);font-size:var(--text-body-sm-size)}
+.series-legend .delta{display:block;margin-left:18px;font-size:var(--text-caption-size)}
+.chart{margin:var(--space-6) 0 0}
+.chart figcaption{font-size:var(--text-body-sm-size);font-weight:500;margin-bottom:var(--space-2)}
+.chart svg{width:100%;height:auto;display:block}
+.chart .axis{font-size:11px;fill:var(--color-chart-axis);font-variant-numeric:tabular-nums}
+.chart .direct{font-size:12px;fill:var(--color-text-secondary)}
+.kpi .figure-xl{font-size:var(--text-figure-xl-size);line-height:var(--text-figure-xl-line);letter-spacing:var(--text-figure-xl-tracking);font-weight:600;margin:0}
+.kpi-line{margin:var(--space-1) 0 0;color:var(--color-text-secondary)}
+.kpi-line strong{color:var(--color-text-primary);font-weight:600}
+.delta{display:flex;align-items:center;gap:var(--space-1);flex-wrap:wrap;margin:var(--space-2) 0 0;font-size:var(--text-body-sm-size)}
+.delta.small{margin:0;font-size:var(--text-caption-size)}
+.delta.good>.num{color:var(--color-money-income);font-weight:600}
+.delta.neutral>.num{color:var(--color-text-secondary)}
+.tri{width:10px;height:10px;fill:var(--color-money-income)}
+.tri.down{transform:rotate(180deg)}
+.regua{position:relative;height:32px;margin-top:var(--space-6);background:var(--color-bg-sunken);border-radius:var(--radius-xs);overflow:hidden}
+.plane{position:absolute;top:0;bottom:0;border-right:2px solid var(--color-bg-surface)}
+.plane-sobra{background:var(--color-chart-main);border-right:0}
+.theme-light .kpi{--plane-1:#141413;--plane-2:#31312E;--plane-3:#474743;--plane-4:#5E5E58;--plane-5:#7B7B74;--plane-6:#9A9A93}
+.theme-dark .kpi{--plane-1:#F1F1EE;--plane-2:#D4D4CE;--plane-3:#B9B9B2;--plane-4:#9A9A93;--plane-5:#7B7B74;--plane-6:#5E5E58}
+.regua-scale{display:flex;justify-content:space-between;font-size:var(--text-caption-size);color:var(--color-text-tertiary);margin-top:var(--space-1)}
+.sobra-label{color:var(--color-text-link);font-weight:600;margin-left:auto;margin-right:var(--space-3)}
+.planes-legend{list-style:none;margin:var(--space-3) 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:var(--space-1) var(--space-4);font-size:var(--text-body-sm-size)}
+.planes-legend li{display:flex;align-items:center}
+.planes-legend .num{margin-left:auto;color:var(--color-text-secondary)}
+.kpi-pair{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);margin:var(--space-6) 0 0;padding-top:var(--space-4);border-top:1px solid var(--color-border-subtle)}
+.kpi-pair dt{font-size:var(--text-label-size);font-weight:500;color:var(--color-text-secondary)}
+.kpi-pair dd{margin:0}
+.kpi-pair dd.num{font-size:var(--text-figure-md-size);line-height:var(--text-figure-md-line);letter-spacing:var(--text-figure-md-tracking);font-weight:600}
+.tx-list{list-style:none;margin:0;padding:0}
+.tx{display:flex;align-items:center;gap:var(--space-3);min-height:var(--layout-row-tall);padding:var(--space-2) 0;border-top:1px solid var(--color-border-subtle)}
+.tx:first-child{border-top:0}
+.tx-icon{position:relative;display:grid;place-items:center;width:40px;height:40px;color:var(--color-text-secondary);flex:none}
+.cat-square{position:absolute;left:2px;top:2px;width:8px;height:8px;border-radius:1px}
+.cat-square.neutral{background:var(--color-text-tertiary)}
+.tx-text{display:flex;flex-direction:column;min-width:0;flex:1}
+.tx-title{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tx-meta{font-size:var(--text-body-sm-size);color:var(--color-text-tertiary)}
+.amount{font-weight:600;text-align:right;white-space:nowrap}
+.amount.income{color:var(--color-money-income)}
+.amount.expense{color:var(--color-money-expense)}
+.amount.transfer{color:var(--color-money-transfer);font-weight:500}
+.amount.debt{color:var(--color-money-debt)}
+.budgets{list-style:none;margin:0;padding:0;display:grid;gap:var(--space-5)}
+.budget-head{display:flex;justify-content:space-between;gap:var(--space-3);margin-bottom:var(--space-2)}
+.budget-name{font-weight:500}
+.budget-values{color:var(--color-text-secondary);font-size:var(--text-body-sm-size)}
+.budget-values strong{color:var(--color-text-primary);font-weight:600}
+.budget-track{position:relative;height:10px;background:var(--color-budget-track);border-radius:var(--radius-sm);overflow:hidden}
+.budget-fill{position:absolute;left:0;top:0;bottom:0;border-radius:var(--radius-sm) 0 0 var(--radius-sm);background:var(--color-budget-ok)}
+.budget.near .budget-fill{background:var(--color-budget-near)}
+.budget.over .budget-fill{background:var(--color-budget-ok)}
+.budget-over{position:absolute;top:0;bottom:0;background-color:var(--color-budget-over);background-image:var(--hatch);border-left:2px solid var(--color-bg-surface)}
+.theme-light .budget-over{--hatch:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='6'%3E%3Cpath d='M-1 7 7-1M-1 1 1-1M5 7 7 5' stroke='%23FFFFFF' stroke-opacity='.55' stroke-width='1.5'/%3E%3C/svg%3E")}
+.theme-dark .budget-over{--hatch:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='6'%3E%3Cpath d='M-1 7 7-1M-1 1 1-1M5 7 7 5' stroke='%23141413' stroke-opacity='.55' stroke-width='1.5'/%3E%3C/svg%3E")}
+.budget-mark{position:absolute;top:-3px;bottom:-3px;width:2px;margin-left:-1px;background:var(--color-text-primary)}
+.status{display:flex;align-items:center;gap:var(--space-1);margin-top:var(--space-2);font-size:var(--text-body-sm-size)}
+.status .icon{width:16px;height:16px;flex:none}
+.status.ok{color:var(--color-text-secondary)}
+.status.warning{color:var(--color-status-warning);font-weight:500}
+.status.danger{color:var(--color-status-danger);font-weight:600}
+.spec{border-collapse:collapse;width:100%}
+.spec td{padding:var(--space-3) var(--space-4) var(--space-3) 0;border-top:1px solid var(--color-border-subtle);vertical-align:baseline}
+.spec.small td{padding:var(--space-2) var(--space-4) var(--space-2) 0;font-size:var(--text-body-sm-size)}
+.spec-name{width:200px;font-size:var(--text-body-sm-size);font-weight:500}
+.spec-name .muted{font-weight:400;font-size:var(--text-caption-size)}
+.tabular-demo{display:inline-grid;justify-items:end;gap:2px;margin:var(--space-6) 0 0;padding:var(--space-3) var(--space-4);background:var(--color-bg-surface);border:1px solid var(--color-border-subtle);border-radius:var(--radius-md);font-size:var(--text-title-size);font-weight:600}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-10)}
+@media (max-width:760px){.two{grid-template-columns:1fr}}
+.two h3{margin-bottom:var(--space-3)}
+.two+.two{margin-top:var(--space-12)}
+.spaces,.radii,.shadows{list-style:none;margin:0;padding:0;display:grid;gap:var(--space-2)}
+.spaces li{display:grid;grid-template-columns:40px 1fr 56px;align-items:center;gap:var(--space-3);font-size:var(--text-body-sm-size)}
+.space-bar{height:12px;background:var(--color-chart-main);border-radius:1px}
+.radii{grid-template-columns:repeat(3,1fr)}
+.radii li{display:flex;flex-direction:column;gap:var(--space-1);font-size:var(--text-body-sm-size)}
+.radius-box{width:56px;height:56px;background:var(--color-bg-surface);border:2px solid var(--color-text-primary)}
+.shadows{gap:var(--space-6);padding:var(--space-4) 0}
+.shadow-demo{display:flex;flex-direction:column;padding:var(--space-4);background:var(--color-bg-surface);border-radius:var(--radius-lg);font-weight:500}
+.shadow-demo .muted{font-weight:400;font-size:var(--text-body-sm-size)}
+.page>footer{margin-top:var(--space-16);padding-top:var(--space-4);border-top:1px solid var(--color-border-subtle);font-size:var(--text-caption-size);color:var(--color-text-tertiary)}
+@media (max-width:480px){.kpi .figure-xl{font-size:var(--text-figure-lg-size);line-height:var(--text-figure-lg-line)}.kpi-pair dd.num{font-size:var(--text-title-size);line-height:var(--text-title-line)}}
+</style>
+</head>
+<body>
+<!-- Gerado por packages/tokens/scripts/build-preview.ts. Não edite à mão: rode `corepack pnpm --filter @financas/tokens build:preview`. -->
+<main class="page">
+<header class="intro">
+<div>
+<h1>Sobra — tokens de design</h1>
+<p>Referência gerada a partir de <code>@financas/tokens</code>. Os valores são do usuário de demonstração (sintéticos). Claro e escuro lado a lado; cada razão de contraste é calculada pela fórmula WCAG 2.</p>
+</div>
+<dl class="decisions">
+<div><dt>Nome</dt><dd>Sobra: quanto sobra no fim do mês</dd></div>
+<div><dt>Chão</dt><dd>Concreto: neutro quase sem croma, nunca creme</dd></div>
+<div><dt>Matiz único</dt><dd>Cobalto, do azulejo de Athos Bulcão: dado principal, link, foco</dd></div>
+<div><dt>Fonte</dt><dd>Archivo 400/500/600, algarismos tabulares</dd></div>
+<div><dt>Assinatura</dt><dd>A régua do mês: a receita dividida em planos chapados de despesa, e a sobra</dd></div>
+</dl>
+</header>
+<section id="tipografia"><h2>Tipografia</h2><p>Uma família, Archivo, em 400, 500 e 600. Escala fixa; três passos só para valores, sempre com algarismos tabulares.</p><table class="spec"><tr><td class="spec-name">figureXl<br><span class="muted num">48/52 · semibold · -0.03em</span></td><td><span class="num" style="font-size:48px;line-height:52px;letter-spacing:-0.03em;font-weight:var(--font-weight-semibold)">R$ 1.081,55</span></td></tr><tr><td class="spec-name">figureLg<br><span class="muted num">36/40 · semibold · -0.025em</span></td><td><span class="num" style="font-size:36px;line-height:40px;letter-spacing:-0.025em;font-weight:var(--font-weight-semibold)">R$ 10.067,00</span></td></tr><tr><td class="spec-name">figureMd<br><span class="muted num">28/34 · semibold · -0.02em</span></td><td><span class="num" style="font-size:28px;line-height:34px;letter-spacing:-0.02em;font-weight:var(--font-weight-semibold)">−R$ 1.284,90</span></td></tr><tr><td class="spec-name">headline<br><span class="muted num">24/32 · semibold · -0.015em</span></td><td><span class="" style="font-size:24px;line-height:32px;letter-spacing:-0.015em;font-weight:var(--font-weight-semibold)">Para onde foi o dinheiro</span></td></tr><tr><td class="spec-name">title<br><span class="muted num">20/28 · semibold · -0.01em</span></td><td><span class="" style="font-size:20px;line-height:28px;letter-spacing:-0.01em;font-weight:var(--font-weight-semibold)">Orçamentos de novembro</span></td></tr><tr><td class="spec-name">titleSm<br><span class="muted num">17/24 · semibold · -0.005em</span></td><td><span class="" style="font-size:17px;line-height:24px;letter-spacing:-0.005em;font-weight:var(--font-weight-semibold)">Cartão Inter</span></td></tr><tr><td class="spec-name">body<br><span class="muted num">16/24 · regular · 0em</span></td><td><span class="" style="font-size:16px;line-height:24px;letter-spacing:0em;font-weight:var(--font-weight-regular)">Lance um gasto em três toques: valor, categoria, salvar.</span></td></tr><tr><td class="spec-name">bodySm<br><span class="muted num">14/20 · regular · 0em</span></td><td><span class="" style="font-size:14px;line-height:20px;letter-spacing:0em;font-weight:var(--font-weight-regular)">Transferências não entram em receitas nem em despesas.</span></td></tr><tr><td class="spec-name">label<br><span class="muted num">13/18 · medium · 0.005em</span></td><td><span class="" style="font-size:13px;line-height:18px;letter-spacing:0.005em;font-weight:var(--font-weight-medium)">Categoria</span></td></tr><tr><td class="spec-name">caption<br><span class="muted num">12/16 · regular · 0.01em</span></td><td><span class="" style="font-size:12px;line-height:16px;letter-spacing:0.01em;font-weight:var(--font-weight-regular)">Atualizado às 14:32 · dados de demonstração</span></td></tr></table>
+<p class="tabular-demo num" aria-label="Algarismos tabulares alinhados">
+  <span>R$ 1.111,11</span><span>R$ 8.888,88</span><span>−R$ 10,10</span>
+</p></section>
+<section id="cores"><h2>Cores semânticas</h2><p>Chão de concreto, tinta quase preta, um só matiz (cobalto) para o dado principal, links e foco. Verde só para entrada, vermelho só para dívida e estouro.</p><div class="pair"><div class="pane theme-light"><h3 class="pane-title">Claro</h3><ul class="swatches"><li class="swatch"><span class="chip" style="background:#F1F1EE"></span><span class="swatch-name">bg.canvas</span><span class="swatch-hex num">#F1F1EE</span><span class="swatch-ratio num">16,29:1 <span class="muted">texto sobre ela</span></span></li><li class="swatch"><span class="chip" style="background:#FFFFFF"></span><span class="swatch-name">bg.surface</span><span class="swatch-hex num">#FFFFFF</span><span class="swatch-ratio num">18,43:1 <span class="muted">texto sobre ela</span></span></li><li class="swatch"><span class="chip" style="background:#E9E9E5"></span><span class="swatch-name">bg.sunken</span><span class="swatch-hex num">#E9E9E5</span><span class="swatch-ratio num">15,14:1 <span class="muted">texto sobre ela</span></span></li><li class="swatch"><span class="chip" style="background:#FFFFFF"></span><span class="swatch-name">bg.raised</span><span class="swatch-hex num">#FFFFFF</span><span class="swatch-ratio num">18,43:1 <span class="muted">texto sobre ela</span></span></li><li class="swatch"><span class="chip" style="background:#141413"></span><span class="swatch-name">text.primary</span><span class="swatch-hex num">#141413</span><span class="swatch-ratio num">18,43:1 <span class="muted">sobre surface</span></span></li><li class="swatch"><span class="chip" style="background:#474743"></span><span class="swatch-name">text.secondary</span><span class="swatch-hex num">#474743</span><span class="swatch-ratio num">9,33:1 <span class="muted">sobre surface</span></span></li><li class="swatch"><span class="chip" style="background:#5E5E58"></span><span class="swatch-name">text.tertiary</span><span class="swatch-hex num">#5E5E58</span><span class="swatch-ratio num">6,53:1 <span class="muted">sobre surface</span></span></li><li class="swatch"><span class="chip" style="background:#1C50B5"></span><span class="swatch-name">text.link</span><span class="swatch-hex num">#1C50B5</span><span class="swatch-ratio num">7,33:1 <span class="muted">sobre surface</span></span></li><li class="swatch"><span class="chip" style="background:#075027"></span><span class="swatch-name">money.income</span><span class="swatch-hex num">#075027</span><span class="swatch-ratio num">9,61:1 <span class="muted">sobre surface</span></span></li><li class="swatch"><span class="chip" style="background:#8A1B14"></span><span class="swatch-name">money.debt</span><span class="swatch-hex num">#8A1B14</span><span class="swatch-ratio num">9,34:1 <span class="muted">sobre surface</span></span></li><li class="swatch"><span class="chip" style="background:#7A4A00"></span><span class="swatch-name">status.warning</span><span class="swatch-hex num">#7A4A00</span><span class="swatch-ratio num">7,48:1 <span class="muted">sobre surface</span></span></li><li class="swatch"><span class="chip" style="background:#7B7B74"></span><span class="swatch-name">border.strong</span><span class="swatch-hex num">#7B7B74</span><span class="swatch-ratio num">4,26:1 <span class="muted">sobre surface</span></span></li><li class="swatch"><span class="chip" style="background:#141413"></span><span class="swatch-name">action.primary</span><span class="swatch-hex num">#141413</span><span class="swatch-ratio num">18,43:1 <span class="muted">texto sobre ela</span></span></li><li class="swatch"><span class="chip" style="background:#B17000"></span><span class="swatch-name">budget.near</span><span class="swatch-hex num">#B17000</span><span class="swatch-ratio num">4,05:1 <span class="muted">sobre surface</span></span></li></ul></div><div class="pane theme-dark"><h3 class="pane-title">Escuro</h3><ul class="swatches"><li class="swatch"><span class="chip" style="background:#141413"></span><span class="swatch-name">bg.canvas</span><span class="swatch-hex num">#141413</span><span class="swatch-ratio num">16,29:1 <span class="muted">texto sobre ela</span></span></li><li class="swatch"><span class="chip" style="background:#1C1C1A"></span><span class="swatch-name">bg.surface</span><span class="swatch-hex num">#1C1C1A</span><span class="swatch-ratio num">15,08:1 <span class="muted">texto sobre ela</span></span></li><li class="swatch"><span class="chip" style="background:#0E0E0D"></span><span class="swatch-name">bg.sunken</span><span class="swatch-hex num">#0E0E0D</span><span class="swatch-ratio num">17,07:1 <span class="muted">texto sobre ela</span></span></li><li class="swatch"><span class="chip" style="background:#262624"></span><span class="swatch-name">bg.raised</span><span class="swatch-hex num">#262624</span><span class="swatch-ratio num">13,40:1 <span class="muted">texto sobre ela</span></span></li><li class="swatch"><span class="chip" style="background:#F1F1EE"></span><span class="swatch-name">text.primary</span><span class="swatch-hex num">#F1F1EE</span><span class="swatch-ratio num">15,08:1 <span class="muted">sobre surface</span></span></li><li class="swatch"><span class="chip" style="background:#B9B9B2"></span><span class="swatch-name">text.secondary</span><span class="swatch-hex num">#B9B9B2</span><span class="swatch-ratio num">8,65:1 <span class="muted">sobre surface</span></span></li><li class="swatch"><span class="chip" style="background:#9A9A93"></span><span class="swatch-name">text.tertiary</span><span class="swatch-hex num">#9A9A93</span><span class="swatch-ratio num">6,03:1 <span class="muted">sobre surface</span></span></li><li class="swatch"><span class="chip" style="background:#93B1FF"></span><span class="swatch-name">text.link</span><span class="swatch-hex num">#93B1FF</span><span class="swatch-ratio num">8,11:1 <span class="muted">sobre surface</span></span></li><li class="swatch"><span class="chip" style="background:#7BD69A"></span><span class="swatch-name">money.income</span><span class="swatch-hex num">#7BD69A</span><span class="swatch-ratio num">9,69:1 <span class="muted">sobre surface</span></span></li><li class="swatch"><span class="chip" style="background:#FF9A8C"></span><span class="swatch-name">money.debt</span><span class="swatch-hex num">#FF9A8C</span><span class="swatch-ratio num">8,33:1 <span class="muted">sobre surface</span></span></li><li class="swatch"><span class="chip" style="background:#E8C547"></span><span class="swatch-name">status.warning</span><span class="swatch-hex num">#E8C547</span><span class="swatch-ratio num">10,17:1 <span class="muted">sobre surface</span></span></li><li class="swatch"><span class="chip" style="background:#7B7B74"></span><span class="swatch-name">border.strong</span><span class="swatch-hex num">#7B7B74</span><span class="swatch-ratio num">4,00:1 <span class="muted">sobre surface</span></span></li><li class="swatch"><span class="chip" style="background:#F1F1EE"></span><span class="swatch-name">action.primary</span><span class="swatch-hex num">#F1F1EE</span><span class="swatch-ratio num">16,29:1 <span class="muted">texto sobre ela</span></span></li><li class="swatch"><span class="chip" style="background:#E8C547"></span><span class="swatch-name">budget.near</span><span class="swatch-hex num">#E8C547</span><span class="swatch-ratio num">10,17:1 <span class="muted">sobre surface</span></span></li></ul></div></div></section>
+<section id="dados"><h2>Paleta de dados</h2><p>Cinco matizes em ordem fixa, validados para daltonismo (ΔE OKLab ×100, Machado 2009). A sexta série vira “Outras”.</p><div class="pair"><div class="pane theme-light"><h3 class="pane-title">Claro</h3><div class="strips"><div class="strip-row"><span class="strip-label">Visão típica</span><div class="strip"><span style="background:#1C50B5"></span><span style="background:#B17000"></span><span style="background:#32A0C5"></span><span style="background:#A43068"></span><span style="background:#79821D"></span></div></div><div class="strip-row"><span class="strip-label">Deuteranopia</span><div class="strip"><span style="background:#004FB3"></span><span style="background:#958406"></span><span style="background:#788EC5"></span><span style="background:#656565"></span><span style="background:#8B7D26"></span></div></div><div class="strip-row"><span class="strip-label">Protanopia</span><div class="strip"><span style="background:#005DB8"></span><span style="background:#867500"></span><span style="background:#8C9DC7"></span><span style="background:#45506A"></span><span style="background:#8C7B05"></span></div></div></div><ol class="series-legend"><li><span class="chip small" style="background:#1C50B5"></span>1. Cobalto <span class="num muted">#1C50B5</span><span class="muted delta">ΔE 28,2 com daltonismo · 32,9 típica</span></li><li><span class="chip small" style="background:#B17000"></span>2. Ocre <span class="num muted">#B17000</span><span class="muted delta">ΔE 21,4 com daltonismo · 24,2 típica</span></li><li><span class="chip small" style="background:#32A0C5"></span>3. Céu <span class="num muted">#32A0C5</span><span class="muted delta">ΔE 16,8 com daltonismo · 29,3 típica</span></li><li><span class="chip small" style="background:#A43068"></span>4. Rosa <span class="num muted">#A43068</span><span class="muted delta">ΔE 13,2 com daltonismo · 25,6 típica</span></li><li><span class="chip small" style="background:#79821D"></span>5. Oliva <span class="num muted">#79821D</span><span class="muted delta"></span></li></ol><figure class="chart"><figcaption>Saldo por conta, fim de cada mês</figcaption><svg viewBox="0 0 520 200" role="img" aria-label="Linhas do saldo de quatro contas de junho a novembro"><line x1="64" x2="400" y1="172" y2="172" stroke="#E9E9E5" stroke-width="1"/><text x="56" y="176" text-anchor="end" class="axis">−2 mil</text><line x1="64" x2="400" y1="122.76923076923077" y2="122.76923076923077" stroke="#E9E9E5" stroke-width="1"/><text x="56" y="126.76923076923077" text-anchor="end" class="axis">2 mil</text><line x1="64" x2="400" y1="73.53846153846155" y2="73.53846153846155" stroke="#E9E9E5" stroke-width="1"/><text x="56" y="77.53846153846155" text-anchor="end" class="axis">6 mil</text><line x1="64" x2="400" y1="24.307692307692307" y2="24.307692307692307" stroke="#E9E9E5" stroke-width="1"/><text x="56" y="28.307692307692307" text-anchor="end" class="axis">10 mil</text><line x1="64" x2="400" y1="147.3846153846154" y2="147.3846153846154" stroke="#5E5E58" stroke-width="1"/><text x="64" y="192" text-anchor="middle" class="axis">jun</text><text x="131.2" y="192" text-anchor="middle" class="axis">jul</text><text x="198.4" y="192" text-anchor="middle" class="axis">ago</text><text x="265.6" y="192" text-anchor="middle" class="axis">set</text><text x="332.8" y="192" text-anchor="middle" class="axis">out</text><text x="400" y="192" text-anchor="middle" class="axis">nov</text><polyline points="64,48.92307692307692 131.2,43.50769230769231 198.4,37.550769230769234 265.6,31.04 332.8,24.16 400,23.483076923076922" fill="none" stroke="#1C50B5" stroke-width="2" stroke-linejoin="round"/><circle cx="400" cy="23.483076923076922" r="4" fill="#1C50B5" stroke="#FFFFFF" stroke-width="2"/><text x="410" y="27.483076923076922" class="direct">Poupança Caixa</text><polyline points="64,116.61538461538461 131.2,118.81846153846153 198.4,114.28923076923077 265.6,117.63692307692308 332.8,112.13538461538461 400,113.62461538461538" fill="none" stroke="#B17000" stroke-width="2" stroke-linejoin="round"/><circle cx="400" cy="113.62461538461538" r="4" fill="#B17000" stroke="#FFFFFF" stroke-width="2"/><text x="410" y="117.62461538461538" class="direct">Nubank</text><polyline points="64,144.92307692307693 131.2,145.6 198.4,145.14461538461538 265.6,146.17846153846153 332.8,145.37846153846155 400,145.79692307692306" fill="none" stroke="#32A0C5" stroke-width="2" stroke-linejoin="round"/><circle cx="400" cy="145.79692307692306" r="4" fill="#32A0C5" stroke="#FFFFFF" stroke-width="2"/><text x="410" y="149.79692307692306" class="direct">Carteira</text><polyline points="64,147.3846153846154 131.2,159.4953846153846 198.4,162.31384615384616 265.6,158.16615384615383 332.8,163.19876923076924 400,155.2923076923077" fill="none" stroke="#A43068" stroke-width="2" stroke-linejoin="round"/><circle cx="400" cy="155.2923076923077" r="4" fill="#A43068" stroke="#FFFFFF" stroke-width="2"/><text x="410" y="162.79692307692306" class="direct">Cartão Inter</text></svg></figure></div><div class="pane theme-dark"><h3 class="pane-title">Escuro</h3><div class="strips"><div class="strip-row"><span class="strip-label">Visão típica</span><div class="strip"><span style="background:#366BD3"></span><span style="background:#C8800D"></span><span style="background:#32A0C5"></span><span style="background:#B54076"></span><span style="background:#848E2D"></span></div></div><div class="strip-row"><span class="strip-label">Deuteranopia</span><div class="strip"><span style="background:#0069D1"></span><span style="background:#A99613"></span><span style="background:#788EC5"></span><span style="background:#737373"></span><span style="background:#978834"></span></div></div><div class="strip-row"><span class="strip-label">Protanopia</span><div class="strip"><span style="background:#2E77D7"></span><span style="background:#988500"></span><span style="background:#8C9DC7"></span><span style="background:#535E78"></span><span style="background:#98871F"></span></div></div></div><ol class="series-legend"><li><span class="chip small" style="background:#366BD3"></span>1. Cobalto <span class="num muted">#366BD3</span><span class="muted delta">ΔE 28,9 com daltonismo · 32,8 típica</span></li><li><span class="chip small" style="background:#C8800D"></span>2. Ocre <span class="num muted">#C8800D</span><span class="muted delta">ΔE 20,8 com daltonismo · 24,5 típica</span></li><li><span class="chip small" style="background:#32A0C5"></span>3. Céu <span class="num muted">#32A0C5</span><span class="muted delta">ΔE 12,8 com daltonismo · 27,0 típica</span></li><li><span class="chip small" style="background:#B54076"></span>4. Rosa <span class="num muted">#B54076</span><span class="muted delta">ΔE 12,6 com daltonismo · 25,3 típica</span></li><li><span class="chip small" style="background:#848E2D"></span>5. Oliva <span class="num muted">#848E2D</span><span class="muted delta"></span></li></ol><figure class="chart"><figcaption>Saldo por conta, fim de cada mês</figcaption><svg viewBox="0 0 520 200" role="img" aria-label="Linhas do saldo de quatro contas de junho a novembro"><line x1="64" x2="400" y1="172" y2="172" stroke="#262624" stroke-width="1"/><text x="56" y="176" text-anchor="end" class="axis">−2 mil</text><line x1="64" x2="400" y1="122.76923076923077" y2="122.76923076923077" stroke="#262624" stroke-width="1"/><text x="56" y="126.76923076923077" text-anchor="end" class="axis">2 mil</text><line x1="64" x2="400" y1="73.53846153846155" y2="73.53846153846155" stroke="#262624" stroke-width="1"/><text x="56" y="77.53846153846155" text-anchor="end" class="axis">6 mil</text><line x1="64" x2="400" y1="24.307692307692307" y2="24.307692307692307" stroke="#262624" stroke-width="1"/><text x="56" y="28.307692307692307" text-anchor="end" class="axis">10 mil</text><line x1="64" x2="400" y1="147.3846153846154" y2="147.3846153846154" stroke="#9A9A93" stroke-width="1"/><text x="64" y="192" text-anchor="middle" class="axis">jun</text><text x="131.2" y="192" text-anchor="middle" class="axis">jul</text><text x="198.4" y="192" text-anchor="middle" class="axis">ago</text><text x="265.6" y="192" text-anchor="middle" class="axis">set</text><text x="332.8" y="192" text-anchor="middle" class="axis">out</text><text x="400" y="192" text-anchor="middle" class="axis">nov</text><polyline points="64,48.92307692307692 131.2,43.50769230769231 198.4,37.550769230769234 265.6,31.04 332.8,24.16 400,23.483076923076922" fill="none" stroke="#366BD3" stroke-width="2" stroke-linejoin="round"/><circle cx="400" cy="23.483076923076922" r="4" fill="#366BD3" stroke="#1C1C1A" stroke-width="2"/><text x="410" y="27.483076923076922" class="direct">Poupança Caixa</text><polyline points="64,116.61538461538461 131.2,118.81846153846153 198.4,114.28923076923077 265.6,117.63692307692308 332.8,112.13538461538461 400,113.62461538461538" fill="none" stroke="#C8800D" stroke-width="2" stroke-linejoin="round"/><circle cx="400" cy="113.62461538461538" r="4" fill="#C8800D" stroke="#1C1C1A" stroke-width="2"/><text x="410" y="117.62461538461538" class="direct">Nubank</text><polyline points="64,144.92307692307693 131.2,145.6 198.4,145.14461538461538 265.6,146.17846153846153 332.8,145.37846153846155 400,145.79692307692306" fill="none" stroke="#32A0C5" stroke-width="2" stroke-linejoin="round"/><circle cx="400" cy="145.79692307692306" r="4" fill="#32A0C5" stroke="#1C1C1A" stroke-width="2"/><text x="410" y="149.79692307692306" class="direct">Carteira</text><polyline points="64,147.3846153846154 131.2,159.4953846153846 198.4,162.31384615384616 265.6,158.16615384615383 332.8,163.19876923076924 400,155.2923076923077" fill="none" stroke="#B54076" stroke-width="2" stroke-linejoin="round"/><circle cx="400" cy="155.2923076923077" r="4" fill="#B54076" stroke="#1C1C1A" stroke-width="2"/><text x="410" y="162.79692307692306" class="direct">Cartão Inter</text></svg></figure></div></div></section>
+<section id="componentes"><h2>Esboços</h2><p>Resumo do mês com a régua (assinatura), linhas de transação e orçamentos nos três estados.</p><div class="pair"><div class="pane theme-light"><h3 class="pane-title">Claro</h3>
+<section class="card kpi" aria-label="Resumo de outubro">
+  <header class="card-head"><h3>Outubro de 2026</h3><span class="muted">mês fechado</span></header>
+  <p class="figure-xl num">R$ 1.081,55</p>
+  <p class="kpi-line">sobraram de R$ 7.212,40 recebidos · taxa de poupança <strong class="num">15,0%</strong></p>
+  <p class="delta good"><svg class="tri" viewBox="0 0 10 10" aria-hidden="true"><path d="M5 1 9 9H1z"/></svg><span class="num">+R$ 519,45</span> a mais que em setembro <span class="muted num">(R$ 562,10 · 8,2%, +6,8 p.p.)</span></p>
+  <div class="regua" role="img" aria-label="Receitas de outubro divididas em despesas por categoria e a sobra"><span class="plane" style="left:0.000%;width:37.436%;background:var(--plane-1)" title="Moradia: R$ 2.700,00"></span><span class="plane" style="left:37.436%;width:15.063%;background:var(--plane-2)" title="Mercado: R$ 1.086,40"></span><span class="plane" style="left:52.498%;width:7.103%;background:var(--plane-3)" title="Transporte: R$ 512,30"></span><span class="plane" style="left:59.602%;width:6.499%;background:var(--plane-4)" title="Restaurantes: R$ 468,75"></span><span class="plane" style="left:66.101%;width:2.837%;background:var(--plane-5)" title="Assinaturas: R$ 204,60"></span><span class="plane" style="left:68.938%;width:16.067%;background:var(--plane-6)" title="Outras: R$ 1.158,80"></span><span class="plane plane-sobra" style="left:85.004%;width:14.996%"></span></div>
+  <div class="regua-scale"><span>R$ 0,00</span><span class="sobra-label">Sobra R$ 1.081,55</span><span class="num">R$ 7.212,40</span></div>
+  <ul class="planes-legend"><li><span class="chip small" style="background:var(--plane-1)"></span>Moradia<span class="num">R$ 2.700,00</span></li><li><span class="chip small" style="background:var(--plane-2)"></span>Mercado<span class="num">R$ 1.086,40</span></li><li><span class="chip small" style="background:var(--plane-3)"></span>Transporte<span class="num">R$ 512,30</span></li><li><span class="chip small" style="background:var(--plane-4)"></span>Restaurantes<span class="num">R$ 468,75</span></li><li><span class="chip small" style="background:var(--plane-5)"></span>Assinaturas<span class="num">R$ 204,60</span></li><li><span class="chip small" style="background:var(--plane-6)"></span>Outras<span class="num">R$ 1.158,80</span></li></ul>
+  <dl class="kpi-pair">
+    <div><dt>Despesas</dt><dd class="num">R$ 6.130,85</dd><dd class="delta good small"><svg class="tri down" viewBox="0 0 10 10" aria-hidden="true"><path d="M5 1 9 9H1z"/></svg><span class="num">−R$ 143,25</span> vs setembro</dd></div>
+    <div><dt>Receitas</dt><dd class="num">R$ 7.212,40</dd><dd class="delta neutral small"><span class="num">+R$ 376,20</span> vs setembro</dd></div>
+  </dl>
+</section><section class="card" aria-label="Transações"><header class="card-head"><h3>Outubro</h3><span class="muted">3 de 41 lançamentos</span></header><ul class="tx-list"><li class="tx"><span class="tx-icon"><span class="cat-square" style="background:#16A34A"></span><svg class="icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/></svg></span><span class="tx-text"><span class="tx-title">Salário</span><span class="tx-meta">Salário · Nubank · 07 out</span></span><span class="amount income num">+R$ 6.800,00</span></li><li class="tx"><span class="tx-icon"><span class="cat-square" style="background:#F97316"></span><svg class="icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg></span><span class="tx-text"><span class="tx-title">Pão de Açúcar</span><span class="tx-meta">Mercado · Cartão Inter · 18 out</span></span><span class="amount expense num">−R$ 412,37</span></li><li class="tx"><span class="tx-icon"><span class="cat-square neutral"></span><svg class="icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/></svg></span><span class="tx-text"><span class="tx-title">Nubank → Poupança Caixa</span><span class="tx-meta">Transferência · 08 out</span></span><span class="amount transfer num">R$ 500,00</span></li></ul><header class="card-head sub"><h3>Contas</h3></header><ul class="tx-list"><li class="tx"><span class="tx-icon"><span class="cat-square" style="background:#FF7A00"></span><svg class="icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg></span><span class="tx-text"><span class="tx-title">Cartão Inter</span><span class="tx-meta">Fatura aberta · fecha em 12 nov</span></span><span class="amount debt num">−R$ 1.284,90</span></li></ul></section><section class="card" aria-label="Orçamentos"><header class="card-head"><h3>Orçamentos de novembro</h3><span class="muted">dia 4 de 30</span></header><ul class="budgets"><li class="budget ok">
+  <div class="budget-head"><span class="budget-name">Mercado</span><span class="num budget-values"><strong>R$ 744,10</strong> de R$ 1.200,00</span></div>
+  <div class="budget-track" role="progressbar" aria-label="Mercado" aria-valuemin="0" aria-valuemax="1200" aria-valuenow="744.1" aria-valuetext="R$ 744,10 de R$ 1.200,00 (62%)"><span class="budget-fill" style="width:62.008%"></span></div>
+  <span class="status ok"><svg class="icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Restam <span class="num">R$ 455,90</span></span>
+</li><li class="budget near">
+  <div class="budget-head"><span class="budget-name">Restaurantes</span><span class="num budget-values"><strong>R$ 461,30</strong> de R$ 500,00</span></div>
+  <div class="budget-track" role="progressbar" aria-label="Restaurantes" aria-valuemin="0" aria-valuemax="500" aria-valuenow="461.3" aria-valuetext="R$ 461,30 de R$ 500,00 (92%)"><span class="budget-fill" style="width:92.260%"></span></div>
+  <span class="status warning"><svg class="icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>Perto do limite · restam <span class="num">R$ 38,70</span></span>
+</li><li class="budget over">
+  <div class="budget-head"><span class="budget-name">Lazer</span><span class="num budget-values"><strong>R$ 336,90</strong> de R$ 300,00</span></div>
+  <div class="budget-track" role="progressbar" aria-label="Lazer" aria-valuemin="0" aria-valuemax="300" aria-valuenow="336.9" aria-valuetext="R$ 336,90 de R$ 300,00 (112%)"><span class="budget-fill" style="width:89.047%"></span><span class="budget-over" style="left:89.047%;width:10.953%"></span><span class="budget-mark" style="left:89.047%"></span></div>
+  <span class="status danger"><svg class="icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg><span class="num">R$ 36,90</span> acima</span>
+</li></ul></section></div><div class="pane theme-dark"><h3 class="pane-title">Escuro</h3>
+<section class="card kpi" aria-label="Resumo de outubro">
+  <header class="card-head"><h3>Outubro de 2026</h3><span class="muted">mês fechado</span></header>
+  <p class="figure-xl num">R$ 1.081,55</p>
+  <p class="kpi-line">sobraram de R$ 7.212,40 recebidos · taxa de poupança <strong class="num">15,0%</strong></p>
+  <p class="delta good"><svg class="tri" viewBox="0 0 10 10" aria-hidden="true"><path d="M5 1 9 9H1z"/></svg><span class="num">+R$ 519,45</span> a mais que em setembro <span class="muted num">(R$ 562,10 · 8,2%, +6,8 p.p.)</span></p>
+  <div class="regua" role="img" aria-label="Receitas de outubro divididas em despesas por categoria e a sobra"><span class="plane" style="left:0.000%;width:37.436%;background:var(--plane-1)" title="Moradia: R$ 2.700,00"></span><span class="plane" style="left:37.436%;width:15.063%;background:var(--plane-2)" title="Mercado: R$ 1.086,40"></span><span class="plane" style="left:52.498%;width:7.103%;background:var(--plane-3)" title="Transporte: R$ 512,30"></span><span class="plane" style="left:59.602%;width:6.499%;background:var(--plane-4)" title="Restaurantes: R$ 468,75"></span><span class="plane" style="left:66.101%;width:2.837%;background:var(--plane-5)" title="Assinaturas: R$ 204,60"></span><span class="plane" style="left:68.938%;width:16.067%;background:var(--plane-6)" title="Outras: R$ 1.158,80"></span><span class="plane plane-sobra" style="left:85.004%;width:14.996%"></span></div>
+  <div class="regua-scale"><span>R$ 0,00</span><span class="sobra-label">Sobra R$ 1.081,55</span><span class="num">R$ 7.212,40</span></div>
+  <ul class="planes-legend"><li><span class="chip small" style="background:var(--plane-1)"></span>Moradia<span class="num">R$ 2.700,00</span></li><li><span class="chip small" style="background:var(--plane-2)"></span>Mercado<span class="num">R$ 1.086,40</span></li><li><span class="chip small" style="background:var(--plane-3)"></span>Transporte<span class="num">R$ 512,30</span></li><li><span class="chip small" style="background:var(--plane-4)"></span>Restaurantes<span class="num">R$ 468,75</span></li><li><span class="chip small" style="background:var(--plane-5)"></span>Assinaturas<span class="num">R$ 204,60</span></li><li><span class="chip small" style="background:var(--plane-6)"></span>Outras<span class="num">R$ 1.158,80</span></li></ul>
+  <dl class="kpi-pair">
+    <div><dt>Despesas</dt><dd class="num">R$ 6.130,85</dd><dd class="delta good small"><svg class="tri down" viewBox="0 0 10 10" aria-hidden="true"><path d="M5 1 9 9H1z"/></svg><span class="num">−R$ 143,25</span> vs setembro</dd></div>
+    <div><dt>Receitas</dt><dd class="num">R$ 7.212,40</dd><dd class="delta neutral small"><span class="num">+R$ 376,20</span> vs setembro</dd></div>
+  </dl>
+</section><section class="card" aria-label="Transações"><header class="card-head"><h3>Outubro</h3><span class="muted">3 de 41 lançamentos</span></header><ul class="tx-list"><li class="tx"><span class="tx-icon"><span class="cat-square" style="background:#16A34A"></span><svg class="icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/></svg></span><span class="tx-text"><span class="tx-title">Salário</span><span class="tx-meta">Salário · Nubank · 07 out</span></span><span class="amount income num">+R$ 6.800,00</span></li><li class="tx"><span class="tx-icon"><span class="cat-square" style="background:#F97316"></span><svg class="icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg></span><span class="tx-text"><span class="tx-title">Pão de Açúcar</span><span class="tx-meta">Mercado · Cartão Inter · 18 out</span></span><span class="amount expense num">−R$ 412,37</span></li><li class="tx"><span class="tx-icon"><span class="cat-square neutral"></span><svg class="icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/></svg></span><span class="tx-text"><span class="tx-title">Nubank → Poupança Caixa</span><span class="tx-meta">Transferência · 08 out</span></span><span class="amount transfer num">R$ 500,00</span></li></ul><header class="card-head sub"><h3>Contas</h3></header><ul class="tx-list"><li class="tx"><span class="tx-icon"><span class="cat-square" style="background:#FF7A00"></span><svg class="icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg></span><span class="tx-text"><span class="tx-title">Cartão Inter</span><span class="tx-meta">Fatura aberta · fecha em 12 nov</span></span><span class="amount debt num">−R$ 1.284,90</span></li></ul></section><section class="card" aria-label="Orçamentos"><header class="card-head"><h3>Orçamentos de novembro</h3><span class="muted">dia 4 de 30</span></header><ul class="budgets"><li class="budget ok">
+  <div class="budget-head"><span class="budget-name">Mercado</span><span class="num budget-values"><strong>R$ 744,10</strong> de R$ 1.200,00</span></div>
+  <div class="budget-track" role="progressbar" aria-label="Mercado" aria-valuemin="0" aria-valuemax="1200" aria-valuenow="744.1" aria-valuetext="R$ 744,10 de R$ 1.200,00 (62%)"><span class="budget-fill" style="width:62.008%"></span></div>
+  <span class="status ok"><svg class="icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Restam <span class="num">R$ 455,90</span></span>
+</li><li class="budget near">
+  <div class="budget-head"><span class="budget-name">Restaurantes</span><span class="num budget-values"><strong>R$ 461,30</strong> de R$ 500,00</span></div>
+  <div class="budget-track" role="progressbar" aria-label="Restaurantes" aria-valuemin="0" aria-valuemax="500" aria-valuenow="461.3" aria-valuetext="R$ 461,30 de R$ 500,00 (92%)"><span class="budget-fill" style="width:92.260%"></span></div>
+  <span class="status warning"><svg class="icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>Perto do limite · restam <span class="num">R$ 38,70</span></span>
+</li><li class="budget over">
+  <div class="budget-head"><span class="budget-name">Lazer</span><span class="num budget-values"><strong>R$ 336,90</strong> de R$ 300,00</span></div>
+  <div class="budget-track" role="progressbar" aria-label="Lazer" aria-valuemin="0" aria-valuemax="300" aria-valuenow="336.9" aria-valuetext="R$ 336,90 de R$ 300,00 (112%)"><span class="budget-fill" style="width:89.047%"></span><span class="budget-over" style="left:89.047%;width:10.953%"></span><span class="budget-mark" style="left:89.047%"></span></div>
+  <span class="status danger"><svg class="icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg><span class="num">R$ 36,90</span> acima</span>
+</li></ul></section></div></div></section>
+<section id="escala"><h2>Espaço, forma e movimento</h2><p>Escala de 4px, raios curtos e movimento que só comunica estado.</p><div class="two"><div><h3>Espaçamento (grade de 4px)</h3><ul class="spaces"><li><span class="num space-key">0.5</span><span class="space-bar" style="width:2px"></span><span class="num muted">2px</span></li><li><span class="num space-key">1</span><span class="space-bar" style="width:4px"></span><span class="num muted">4px</span></li><li><span class="num space-key">2</span><span class="space-bar" style="width:8px"></span><span class="num muted">8px</span></li><li><span class="num space-key">3</span><span class="space-bar" style="width:12px"></span><span class="num muted">12px</span></li><li><span class="num space-key">4</span><span class="space-bar" style="width:16px"></span><span class="num muted">16px</span></li><li><span class="num space-key">5</span><span class="space-bar" style="width:20px"></span><span class="num muted">20px</span></li><li><span class="num space-key">6</span><span class="space-bar" style="width:24px"></span><span class="num muted">24px</span></li><li><span class="num space-key">8</span><span class="space-bar" style="width:32px"></span><span class="num muted">32px</span></li><li><span class="num space-key">10</span><span class="space-bar" style="width:40px"></span><span class="num muted">40px</span></li><li><span class="num space-key">12</span><span class="space-bar" style="width:48px"></span><span class="num muted">48px</span></li><li><span class="num space-key">16</span><span class="space-bar" style="width:64px"></span><span class="num muted">64px</span></li><li><span class="num space-key">20</span><span class="space-bar" style="width:80px"></span><span class="num muted">80px</span></li></ul></div><div><h3>Raios</h3><ul class="radii"><li><span class="radius-box" style="border-radius:2px"></span>xs<span class="num muted">2px</span></li><li><span class="radius-box" style="border-radius:4px"></span>sm<span class="num muted">4px</span></li><li><span class="radius-box" style="border-radius:6px"></span>md<span class="num muted">6px</span></li><li><span class="radius-box" style="border-radius:8px"></span>lg<span class="num muted">8px</span></li><li><span class="radius-box" style="border-radius:16px"></span>sheet<span class="num muted">16px</span></li><li><span class="radius-box" style="border-radius:28px"></span>full<span class="num muted">pílula</span></li></ul></div></div><div class="two"><div><h3>Movimento</h3><table class="spec small"><tr><td>instant</td><td class="num">0 ms</td></tr><tr><td>fast</td><td class="num">120 ms</td></tr><tr><td>base</td><td class="num">180 ms</td></tr><tr><td>moderate</td><td class="num">240 ms</td></tr><tr><td>slow</td><td class="num">320 ms</td></tr><tr><td>standard</td><td class="num">cubic-bezier(0.2, 0, 0, 1)</td></tr><tr><td>enter</td><td class="num">cubic-bezier(0.16, 1, 0.3, 1)</td></tr><tr><td>exit</td><td class="num">cubic-bezier(0.4, 0, 1, 1)</td></tr><tr><td>snappy</td><td class="num">damping 30 · stiffness 420 · mass 1</td></tr><tr><td>swipe</td><td class="num">damping 26 · stiffness 300 · mass 1</td></tr><tr><td>sheet</td><td class="num">damping 22 · stiffness 220 · mass 1</td></tr></table></div><div><h3>Elevação</h3><p class="muted">Superfícies em repouso são planas. Só o que flutua tem sombra.</p><ul class="shadows" data-ui><li class="shadow-demo" data-ui style="box-shadow:0px 4px 12px -2px rgb(14 14 13 / 0.12)">raised<span class="muted">menus, popovers, linha arrastada</span></li><li class="shadow-demo" data-ui style="box-shadow:0px 16px 40px -8px rgb(14 14 13 / 0.2)">overlay<span class="muted">diálogos e folhas</span></li></ul></div></div></section>
+<footer>Ícones: Lucide (ISC). Fonte: Archivo, Omnibus-Type (SIL Open Font License), via Google Fonts.</footer>
+</main>
+</body>
+</html>

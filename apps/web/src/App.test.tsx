@@ -6,6 +6,6 @@ describe('App', () => {
   it('mostra o nome do app', () => {
     render(<App />);
 
-    expect(screen.getByRole('heading', { name: 'Finanças' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Sobra' })).toBeInTheDocument();
   });
 });

@@ -17,7 +17,7 @@ import {
 
 describe('@financas/shared', () => {
   it('expõe o nome do app e a localização', () => {
-    expect(APP_NAME).toBe('Finanças');
+    expect(APP_NAME).toBe('Sobra');
     expect([LOCALE, CURRENCY, TIME_ZONE]).toEqual(['pt-BR', 'BRL', 'America/Sao_Paulo']);
   });
 

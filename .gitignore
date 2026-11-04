@@ -24,3 +24,7 @@ Thumbs.db
 
 # Prisma Client (gerado no postinstall)
 apps/api/src/generated/
+
+# Arquivos de trabalho das skills de design
+.taste-skill/
+.impeccable/

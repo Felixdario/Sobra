@@ -5,6 +5,6 @@ describe('HomeScreen', () => {
   it('mostra o nome do app', async () => {
     await render(<HomeScreen />);
 
-    expect(screen.getByRole('header', { name: 'Finanças' })).toBeTruthy();
+    expect(screen.getByRole('header', { name: 'Sobra' })).toBeTruthy();
   });
 });
