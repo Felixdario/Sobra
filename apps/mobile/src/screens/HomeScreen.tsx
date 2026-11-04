@@ -1,4 +1,4 @@
-import { APP_NAME, formatBRL } from '@financas/shared';
+import { APP_NAME, cents, formatBRL } from '@financas/shared';
 import { StyleSheet, Text, View } from 'react-native';
 
 export function HomeScreen() {
@@ -7,7 +7,7 @@ export function HomeScreen() {
       <Text accessibilityRole="header" style={styles.title}>
         {APP_NAME}
       </Text>
-      <Text>Saldo: {formatBRL(0)}</Text>
+      <Text>Saldo: {formatBRL(cents(0))}</Text>
     </View>
   );
 }
