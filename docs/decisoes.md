@@ -16,12 +16,12 @@ Formato curto: contexto, decisão e porquê. Decisões novas entram no fim do ar
 - **Decisão:** desenvolvimento e testes da API usam SQLite (arquivo local, ignorado pelo git via `*.db`). Um `docker-compose.yml` com PostgreSQL será adicionado na fase 2 para quem tiver Docker e para o ambiente de produção.
 - **Porquê:** SQLite não exige serviço nenhum, então `pnpm install && pnpm test` funciona em qualquer máquina. O ORM (Prisma, fase 2) mantém a troca de provider barata.
 
-## ADR-003 — Linker do pnpm: `nodeLinker: hoisted`
+## ADR-003 — Linker do pnpm: layout isolado (padrão)
 
-- **Data:** 2026-11-04
-- **Contexto:** a documentação do Expo (guia "Work with monorepos") diz que, a partir do SDK 54, o Expo suporta o layout isolado padrão do pnpm, mas recomenda `nodeLinker: hoisted` em `pnpm-workspace.yaml` quando aparecem erros de resolução ou build em bibliotecas React Native. Ao testar o layout isolado aqui, o Vitest falhou com `ERR_PACKAGE_IMPORT_NOT_DEFINED` (`#module-evaluator`). A causa é o Node 22.14 no Windows: ele não lê o campo `imports` de um `package.json` cujo caminho passa de cerca de 260 caracteres (reproduzido isoladamente). Com a pasta do repositório (cerca de 180 caracteres) mais `node_modules/.pnpm/<hash>/node_modules/<pkg>`, o limite estoura. `virtualStoreDirMaxLength` não reduz o suficiente.
-- **Decisão:** `nodeLinker: hoisted` em `pnpm-workspace.yaml` (no pnpm 10 as configurações ficam lá, não no `.npmrc`; por isso não existe `.npmrc`).
-- **Porquê:** é a alternativa que o próprio Expo documenta, evita os caminhos longos no Windows e funcionou nos quatro workspaces (`expo export -p android` também gerou o bundle). O custo é perder a rigidez do layout isolado (dá para importar sem querer um pacote que não está declarado). Revisar quando o repositório estiver num caminho curto ou o Node local for atualizado.
+- **Data:** 2026-11-04 (revisada no mesmo dia)
+- **Contexto:** na primeira versão o repositório estava num caminho de cerca de 180 caracteres. Com o layout isolado, `node_modules/.pnpm/<hash>/node_modules/<pkg>` passava do limite de cerca de 260 caracteres do Node 22.14 no Windows e o Vitest falhava com `ERR_PACKAGE_IMPORT_NOT_DEFINED`. Por isso a primeira decisão foi `nodeLinker: hoisted`. O repositório depois foi movido para `C:Userseduarinancas`.
+- **Decisão:** voltar ao layout isolado padrão do pnpm, sem `nodeLinker`. No pnpm 10 essas configurações ficam em `pnpm-workspace.yaml`, por isso não existe `.npmrc`.
+- **Porquê:** o layout isolado impede importar um pacote que não está declarado no `package.json` do workspace. Desde o SDK 54 o Expo suporta esse layout. Na pasta nova passaram install, typecheck, lint, os testes dos 4 workspaces e `expo export -p android`. Se uma biblioteca React Native der erro de resolução, `nodeLinker: hoisted` é a saída documentada pelo Expo. Clonar o repositório num caminho muito longo no Windows traz o problema de volta, o que fica avisado no README.
 
 ## ADR-004 — TypeScript estrito e versão 6.0
 
