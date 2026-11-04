@@ -10,13 +10,23 @@ import {
   positiveCentsSchema,
 } from './common';
 
-const percentSchema = z.number().finite();
+/**
+ * Percentages across the whole contract are on a 0–100 scale (12.5 means 12.5%), as returned by
+ * `percentOf`; they may pass 100 or go negative (an overspent budget, a variation). Never a
+ * 0–1 fraction.
+ */
+export const percentSchema = z.number().finite();
 
+/** Change from the previous month. `percent` (0–100 scale) is null when the previous value is 0. */
 export const deltaSchema = z.object({
   absolute: centsSchema,
   percent: percentSchema.nullable(),
 });
 
+/**
+ * `balance` is the real total balance at the end of the month. `savingsRate` is
+ * (income − expense) / income on the 0–100 scale, null without income.
+ */
 export const monthSummarySchema = z.object({
   month: monthKeySchema,
   income: centsSchema,
@@ -36,17 +46,19 @@ export const monthSummarySchema = z.object({
   }),
 });
 
+/** `net` is the month's result (income − expense), not an account balance. */
 export const incomeVsExpensePointSchema = z.object({
   month: monthKeySchema,
   income: centsSchema,
   expense: centsSchema,
-  balance: centsSchema,
+  net: centsSchema,
 });
 
 export const incomeVsExpenseSeriesSchema = z.object({
   points: z.array(incomeVsExpensePointSchema),
 });
 
+/** `percent` is the category's share of the month's expenses (0–100 scale). */
 export const spendingByCategoryItemSchema = z.object({
   categoryId: idSchema,
   name: z.string(),
@@ -73,6 +85,7 @@ export const balanceHistorySchema = z.discriminatedUnion('granularity', [
   }),
 ]);
 
+/** `percentUsed` = actual / budgeted on the 0–100 scale; above 100 means over budget. */
 export const budgetVsActualItemSchema = z.object({
   categoryId: idSchema,
   name: z.string(),

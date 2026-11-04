@@ -1,6 +1,6 @@
 import { describe, expect, expectTypeOf, it } from 'vitest';
 import type { MonthKey } from '../date/month';
-import { budgetQuerySchema, budgetSchema, budgetUpsertSchema } from './budget';
+import { budgetCopySchema, budgetQuerySchema, budgetSchema, budgetUpsertSchema } from './budget';
 
 const categoryId = '3f2504e0-4f89-41d3-9a0c-0305e82c3301';
 
@@ -45,5 +45,15 @@ describe('budgetSchema', () => {
 describe('budgetQuerySchema', () => {
   it('requires a month', () => {
     expect(budgetQuerySchema.safeParse({}).success).toBe(false);
+  });
+});
+
+describe('budgetCopySchema', () => {
+  it('requires two valid months', () => {
+    expect(budgetCopySchema.parse({ from: '2026-10', to: '2026-11' })).toEqual({
+      from: '2026-10',
+      to: '2026-11',
+    });
+    expect(budgetCopySchema.safeParse({ from: '2026-10' }).success).toBe(false);
   });
 });

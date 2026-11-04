@@ -79,3 +79,101 @@ Formato curto: contexto, decisão e porquê. Decisões novas entram no fim do ar
   - **Mês:** `monthKeySchema` valida com `isMonthKey` de `src/date/month` e entrega o tipo marcado `MonthKey` (ADR-007). A regra do formato fica num lugar só.
   - **Mensagens:** toda regra de domínio tem mensagem própria em pt-BR no schema (valor em centavos, data inexistente, mesma conta etc.), então o texto não depende de configuração global. Para os erros genéricos do Zod (tipo errado, campo ausente) o pacote exporta `installZodPtBR()`, que chama `z.config(z.locales.ptBR())`; cada app chama uma vez no boot. Usamos `ptBR` e não `pt`, que segue o português europeu ("ficheiro", "registo").
 - **Porquê:** `z.config` é global. Chamá-lo no import do pacote seria um efeito colateral escondido em quem só importa um tipo, por isso a ativação fica explícita em cada app. Dinheiro é sempre inteiro em centavos (`z.int()`, que também barra inteiros fora da faixa segura) e vira o tipo `Cents` na saída, assim como o mês vira `MonthKey`. Por isso os tipos exportados distinguem `z.infer` (saída) de `z.input` (entrada) quando os dois diferem.
+
+## ADR-010 — Prisma 7 com SQLite via driver adapter; PostgreSQL é troca de provider
+
+- **Data:** 2026-11-04
+- **Contexto:** a API precisa de um ORM com migrations e troca barata para PostgreSQL (ADR-002). No npm, `prisma@latest` aponta para `8.0.0-rc.30` (um release candidate), enquanto `@prisma/client@latest` é `7.10.1`.
+- **Decisão:**
+  - **Prisma 7.10.1** fixo (CLI e client na mesma versão; nada de RC). Gerador `prisma-client` (ESM, TypeScript gerado em `apps/api/src/generated/prisma`, ignorado pelo git e gerado no `postinstall` da API). Configuração em `apps/api/prisma.config.ts`, que lê `apps/api/.env` com `process.loadEnvFile`.
+  - **SQLite pelo driver adapter `@prisma/adapter-better-sqlite3`**, o caminho padrão do Prisma 7 (sem engine Rust de query). O `better-sqlite3` baixa binário pré-compilado no install; por isso ele, `prisma` e `@prisma/engines` estão em `onlyBuiltDependencies` do `pnpm-workspace.yaml`.
+  - **Enums do Prisma** (`AccountType`, `CategoryKind`, `TransactionType`, `RecurrenceFrequency`): suportados no SQLite desde o Prisma 6.2 (viram `TEXT`) e nativos no PostgreSQL. `icon` e `color` ficam `String`, porque a lista `ICON_NAMES` do shared pode crescer sem migration.
+  - **IDs `@default(uuid(7))`**, como decidido na ADR-009.
+  - **Todos os modelos do domínio já existem** (User, RefreshToken, Account, Category, Transaction, Budget, RecurringRule com o template embutido, ImportBatch), cada tabela de domínio com `userId` e índices por `userId` e `(userId, date)`. As relações com conta e categoria usam FK composta `(id, userId)` → `Account(id, userId)`, então o próprio banco recusa uma transação, orçamento ou recorrência que aponte para dado de outro usuário. Essas FKs são `onDelete: NoAction`; quem decide apagar ou arquivar é o service. `Transaction` tem `@@unique([recurringRuleId, date])` para a geração de recorrências ser idempotente.
+  - **Dinheiro em `BigInt`** (centavos): `Account.initialBalance`, `Transaction.amount`, `Budget.amount` e `RecurringRule.amount` são `BIGINT` no SQLite e no PostgreSQL. O produto precisa aceitar R$ 1.000.000.000,00 (100.000.000.000 centavos) e somas maiores; `int4` no PostgreSQL pararia em R$ 21.474.836,47. O limite real é o do contrato: `z.int()` só aceita inteiros seguros (até 2^53 − 1), sem `.max()` extra no shared. O Prisma devolve `bigint`, então a conversão fica num lugar só, `apps/api/src/lib/money.ts`: `toDbCents(Cents) → bigint` na escrita, `fromDbCents(bigint) → Cents` na leitura (lança `RangeError` se passar do inteiro seguro, em vez de perder precisão) e `sumOrZero` para o `_sum` de `aggregate`/`groupBy` (`bigint | null`). As somas acontecem em `bigint` e só o resultado final vira `Cents`. Nenhum service usa `Number(...)` direto. O erro P2020 (valor fora da faixa) continua mapeado para 400 como defesa.
+  - **PostgreSQL:** o `provider` do datasource não aceita variável de ambiente no Prisma, e migrations são específicas do banco (`migration_lock.toml`). Trocar é: `provider = "postgresql"`, `@prisma/adapter-pg` no lugar do adapter SQLite em `src/lib/db.ts`, `DATABASE_URL` do `docker-compose.yml` e uma pasta de migrations gerada do zero com `prisma migrate dev`. O schema não usa nada exclusivo do SQLite.
+- **Porquê:** SQLite mantém `pnpm install && pnpm test` funcionando sem serviço externo. Fixar a 7.10.1 evita um RC marcado como `latest`. As FKs compostas transformam o isolamento entre usuários em regra do banco, não só disciplina do código.
+
+## ADR-011 — Data da transação como texto `YYYY-MM-DD`
+
+- **Data:** 2026-11-04
+- **Contexto:** a transação acontece num dia do calendário de São Paulo (ADR-007), não num instante. `DateTime` do Prisma vira `DATETIME` no SQLite e `timestamp(3)` no PostgreSQL, sempre lido como instante UTC em JS; uma compra de 30/11 gravada como meia-noite UTC aparece como 29/11 em São Paulo.
+- **Decisão:** `Transaction.date`, `RecurringRule.startDate/endDate/nextOccurrence` são `String` com `"YYYY-MM-DD"` (o mesmo formato de `localDateSchema`), e `Budget.month` é `"YYYY-MM"` (`MonthKey`). Filtro de mês: `date >= 'AAAA-MM-01' AND date < '<mês seguinte>-01'`; ordenação e índice `(userId, date)` funcionam por ordem lexicográfica. `createdAt`/`updatedAt` continuam `DateTime` (são instantes).
+- **Porquê:** o valor no banco é exatamente o do contrato, sem conversão de fuso em lugar nenhum, e se comporta igual em SQLite e PostgreSQL. O tipo `DATE` do PostgreSQL seria mais rígido, mas o Prisma o devolve como `Date` à meia-noite UTC e traria de volta o risco de deslocamento; a validação de data existente já acontece no `localDateSchema` antes de gravar.
+
+## ADR-012 — Sessão: JWT de acesso curto + refresh token opaco com rotação e detecção de reuso
+
+- **Data:** 2026-11-04
+- **Decisão:**
+  - **Access token:** JWT HS256 (`@fastify/jwt`) com `sub = userId`, validade de 15 min (`ACCESS_TOKEN_TTL_SECONDS`). Não fica no banco.
+  - **Refresh token:** 32 bytes aleatórios em base64url, opaco. O banco guarda só o **SHA-256** (`tokenHash` único), `expiresAt` (30 dias), `revokedAt`, `familyId` e `replacedById`. Hash rápido é suficiente porque o token tem 256 bits de entropia (argon2 só faz sentido para senhas).
+  - **Rotação:** cada `/auth/refresh` revoga o token apresentado (update condicional `revokedAt IS NULL`, o que também resolve duas trocas simultâneas) e emite outro na mesma família.
+  - **Reuso:** apresentar um token já revogado revoga **toda a família** (todas as renovações daquele login) e responde 401. Outros logins do mesmo usuário (outras famílias) seguem válidos.
+  - **Logout** recebe o refresh token, revoga a família e responde 204 sempre (idempotente, não revela se o token existia).
+  - Login com e-mail inexistente roda uma verificação argon2 contra um hash fictício, para o tempo de resposta não denunciar quais e-mails existem. A mensagem é a mesma nos dois casos.
+- **Porquê:** é o desenho recomendado pela OAuth 2.0 Security BCP para clientes públicos (web e mobile): um refresh token vazado só pode ser usado uma vez antes de derrubar a sessão. Token opaco permite revogar no servidor; o JWT curto evita ir ao banco em toda requisição.
+
+## ADR-013 — `@node-rs/argon2` para hash de senha
+
+- **Data:** 2026-11-04
+- **Decisão:** `@node-rs/argon2` (argon2id com os padrões da lib: 19 MiB, 2 iterações, paralelismo 1, que são os mínimos recomendados pela OWASP).
+- **Porquê:** é distribuído como binários N-API pré-compilados em `optionalDependencies` por plataforma (inclusive `win32-x64-msvc`), sem script de instalação, sem node-gyp e sem toolchain C++. O pacote `argon2` depende de `node-gyp-build` no install, que no pnpm 10 exigiria liberar o script e, sem binário compatível, compilar localmente.
+
+## ADR-014 — OpenAPI com `@fastify/swagger` + Swagger UI em `/docs`, gerado dos schemas Zod
+
+- **Data:** 2026-11-04
+- **Decisão:**
+  - `fastify-type-provider-zod` 7 valida a entrada com os schemas do shared e gera o OpenAPI 3.1 (`/docs/json`) pelo `jsonSchemaTransform`. Schemas registrados no `z.globalRegistry` com `id` viram componentes (`Account`, `Category`, `ApiError`); exemplos entram com `.meta({ examples })` na API, sem tocar no shared.
+  - **Serializer próprio** (`src/plugins/zod.ts`): a versão 7 serializa com `z.encode`, que lança erro em `.transform()` de mão única, e os schemas do shared usam transform (centavos, cor, mês). O nosso faz `safeParse` com o schema de resposta: valida o contrato, remove campos extras e aplica as transformações (que são idempotentes). Resposta fora do contrato vira 500 e é logada.
+  - UI: **Swagger UI** (`@fastify/swagger-ui`) em `/docs`, com esquema `bearerAuth` e `persistAuthorization`.
+- **Porquê:** Swagger UI é servido localmente pelo plugin oficial, sem CDN, e o botão "Authorize" resolve o fluxo de testar rotas protegidas. O Scalar tem visual melhor, mas carrega o bundle de um CDN por padrão; para uma API de portfólio rodando offline, o oficial é o mais previsível.
+
+## ADR-015 — Transferências fora de receitas e despesas nos resumos
+
+- **Data:** 2026-11-04
+- **Decisão:** receitas são as transações `income` e despesas as `expense`; `transfer` nunca entra nelas (resumo do mês, série receitas × despesas, gastos por categoria, orçamentos). Transferências só afetam saldo: no saldo total, uma transferência entre duas contas do escopo se anula (sai de uma, entra na outra); para uma conta fora do escopo (arquivada, ou outra conta quando há `accountId`) ela conta como saída/entrada. Receitas e despesas consideram todas as contas do usuário (inclusive arquivadas, porque o fato aconteceu), enquanto o saldo total soma só as contas não arquivadas. Taxa de poupança e variações percentuais usam `percentOf` (escala 0–100) e são `null` quando a base é zero; a base da variação é o valor absoluto do mês anterior, para o sinal indicar a direção mesmo com saldo negativo.
+- **Porquê:** transferir para a poupança não é gastar nem ganhar; contar a transferência inflaria as duas pontas e distorceria a taxa de poupança.
+
+## ADR-016 — Cálculo do histórico de saldo
+
+- **Data:** 2026-11-04
+- **Decisão:** `GET /summary/balance-history` parte do saldo de abertura (saldos iniciais das contas do escopo + movimento líquido de todas as datas anteriores a `from`, via `accountMovements(..., { before })`) e soma o movimento líquido de cada dia (`groupBy` por `date`+`type` nas saídas e por `date` nas transferências recebidas). Dias ou meses sem movimento repetem o valor anterior; no modo mensal, o ponto é o saldo no fim do mês. O escopo é o conjunto **atual** de contas não arquivadas (ou a conta de `accountId`), aplicado a todo o histórico. Limite: 120 meses no modo mensal, 12 no diário (400 acima disso). A série receitas × despesas também agrupa por dia e acumula por mês em memória, porque o `groupBy` do Prisma não agrupa por `substr(date)`.
+- **Porquê:** são no máximo 3 consultas agregadas, com linhas limitadas pelo número de dias do período, não pelo de transações, e sem SQL cru (portável para PostgreSQL). Usar o conjunto atual de contas mantém o último ponto igual ao saldo total exibido no painel.
+
+## ADR-017 — Recorrências materializadas sob demanda, de forma idempotente
+
+- **Data:** 2026-11-04
+- **Decisão:**
+  - Uma `RecurringRule` guarda a regra e o modelo da transação. As ocorrências viram transações reais (`recurringRuleId` + `date`) quando ficam devidas: `syncDueRecurring(db, userId, today)` gera tudo de `nextOccurrence` até hoje (fuso de São Paulo) e avança `nextOccurrence`. Roda em `POST /recurring/sync` e no início de `GET /transactions`; não há job agendado.
+  - Idempotência pelo `@@unique([recurringRuleId, date])`: datas já existentes são puladas e um insert concorrente que perde a corrida (P2002) é ignorado. Rodar duas vezes, ou com `nextOccurrence` atrasado, não duplica.
+  - As datas vêm de uma função pura (`nextOccurrences(rule, from, until)` em `recurring/schedule.ts`) que calcula a n-ésima ocorrência sempre a partir da data inicial: mensal no dia 31 cai no último dia dos meses curtos sem "encolher" os seguintes (31/01 → 28/02 → 31/03); anual em 29/02 cai em 28/02 nos anos não bissextos; semanal soma `7 × interval` dias. Sem `dayOfMonth`, vale o dia da data inicial.
+  - Editar a regra vale para as próximas ocorrências (recomeça depois da última gerada); as já geradas ficam como estão. Pausar e reativar não gera o período pausado. Excluir a regra mantém as transações (FK com `SetNull`). Regras de conta arquivada esperam a conta ser restaurada.
+- **Porquê:** transações reais entram em saldos, resumos, orçamentos e filtros sem nenhum caso especial, e o usuário pode editar ou excluir uma ocorrência isolada. Gerar sob demanda dispensa infraestrutura de agendamento (a API pode ficar parada dias) e o custo é uma consulta indexada (`userId, active, nextOccurrence`) por listagem.
+
+## ADR-018 — Importação de CSV: texto em JSON, papaparse e prévia antes de gravar
+
+- **Data:** 2026-11-04
+- **Decisão:**
+  - Fluxo em dois passos: `POST /imports/csv/preview` não grava nada e devolve cada linha validada, com categoria sugerida e marca de duplicata; o cliente revisa (escolhe categorias, remove linhas) e manda `POST /imports/csv/commit` com as linhas mapeadas. O commit cria o `ImportBatch` e as transações numa única `$transaction` (tudo ou nada) e pula duplicatas, a menos que `force: true`. `DELETE /imports/:id` desfaz a importação.
+  - **Formato do envio: JSON `{ accountId, csv, fileName? }`**, não multipart. O arquivo de extrato é pequeno (limite de 2000 linhas, corpo até 4 MiB na rota), o navegador e o app leem o texto com `File.text()`, e assim a rota usa a mesma validação Zod, o mesmo error handler e aparece completa no `/docs`, sem `@fastify/multipart` e sem lidar com streams/arquivos temporários. Também aceita `{ accountId, rows }` (o contrato do shared), para quem já separa as colunas no cliente.
+  - **Biblioteca: `papaparse`.** Sem dependências, madura, trata aspas, quebras de linha em campo e BOM, e roda também no navegador (o front pode reutilizar). O separador é decidido por nós (`;` se a primeira linha tiver, depois tabulação, depois vírgula), porque a adivinhação genérica confunde a vírgula decimal do real com separador.
+  - Cabeçalho: a primeira linha é cabeçalho se nenhuma célula for data ou valor; colunas pelos nomes (data, descrição/histórico/lançamento, valor; "saldo" é ignorado) ou, sem cabeçalho, pelo conteúdo. Datas `DD/MM/AAAA` ou `AAAA-MM-DD`; valores por `parseBRL` (negativo = despesa), aceitando também ponto decimal com 1–2 casas ("-12.34"), que não pode ser milhar.
+  - Duplicata: mesma conta, data, tipo, valor e descrição normalizada (maiúsculas, sem acentos, espaços colapsados). Cada transação existente "absorve" uma linha só, então duas compras iguais no arquivo contra uma já lançada deixam uma como nova.
+  - Categoria sugerida por palavras-chave na descrição normalizada (MERCADO/SUPERMERC → Mercado, UBER/99 → Transporte, NETFLIX/SPOTIFY → Assinaturas…), procurando uma categoria do usuário com aquele nome e o tipo da linha; sem correspondência, `null`.
+- **Porquê:** a prévia evita lixo no banco e permite revisar categoria e duplicatas; regras simples e explicáveis bastam para um extrato pessoal e são fáceis de estender.
+
+## ADR-019 — Ajustes de contrato para os clientes e seed determinístico do usuário demo
+
+- **Data:** 2026-11-04
+- **Contexto:** antes de web e mobile consumirem a API, revisamos o contrato do ponto de vista de quem desenha as telas. Também faltavam dados para o painel e os gráficos fazerem sentido numa demonstração.
+- **Decisão (contrato, em `@financas/shared`):**
+  - **Transação com campos de exibição:** a resposta traz `account: { id, name }`, `category: { id, name, color, icon } | null` (nulo em transferências) e `toAccount: { id, name } | null` (nulo em receitas e despesas), além dos ids. A API carrega tudo com um `include` na mesma consulta da transação, sem uma consulta por item. Assim a lista de transações não precisa buscar contas e categorias à parte nem montar mapas no cliente.
+  - **Percentuais na escala 0–100** em todo o contrato (`savingsRate`, `delta.*.percent`, `percent` de gastos por categoria, `percentUsed` de orçado × realizado), como já devolvia `percentOf`. Fica documentado no JSDoc de `percentSchema`; os exemplos do shared que usavam fração foram corrigidos.
+  - **`balance` só para saldo de verdade:** na série receitas × despesas o resultado do mês passou a se chamar `net` (receitas − despesas). `balance` continua no resumo do mês e no histórico de saldo, onde é saldo de contas.
+  - **Importação inteira no shared:** prévia aceita `{ accountId, csv, fileName? }` ou `{ accountId, rows }`; as células brutas podem vir vazias (a prévia marca "Coluna … vazia" na linha em vez de recusar a requisição, e o marcador interno "(vazio)" deixou de existir); o commit tem `force` (padrão `false`) e `fileName`; o resultado traz `batchId`; `importBatchSchema` descreve o lote. `recurringSyncResultSchema` (`{ created }`) e `budgetCopySchema` também saíram da API. A API usa os schemas do shared direto, sem `.extend`/`.merge` locais.
+- **Decisão (seed):**
+  - `prisma db seed` roda `prisma/seed.ts`, que chama `seedDemo` (`src/seed/demo.ts`). No Prisma 7 o `migrate reset` não semeia sozinho, por isso `db:reset` encadeia `prisma db seed`.
+  - O demo (`demo@financas.dev` / `demo1234`) é criado por `createUserWithDefaults`, a mesma função do cadastro (categorias padrão e "Carteira"), com senha em argon2. Rodar de novo apaga só os dados desse usuário e recria tudo numa única transação.
+  - Seis meses até o mês de referência (hoje em São Paulo, ou `SEED_TODAY=AAAA-MM-DD`), com o mês atual só até hoje. Os valores vêm de um PRNG `mulberry32` com semente fixa, escrito no projeto (cerca de 10 linhas, sem dependência). Os sorteios acontecem sempre na mesma ordem, inclusive para datas futuras que depois são descartadas, então a mesma data de referência gera exatamente os mesmos dados.
+  - Assinaturas e aluguel são `RecurringRule` reais, materializadas por `syncDueRecurring`. A fatura do cartão é paga no dia 15 por transferência da corrente, no valor das despesas do cartão no mês anterior. O rendimento da poupança entra no dia 1º, o que garante receita em todos os meses, inclusive no mês atual antes do salário. Para cada mês completo é sorteada uma taxa de poupança-alvo entre 5% e 25% (espalhadas entre os meses); depois de gerar os lançamentos, o seed ajusta com uma compra ou um freelance para chegar ao alvo.
+- **Porquê:** os campos embutidos evitam N+1 no cliente com custo de um join. Uma escala única de percentual evita a classe de bug "mostrou 0,3%" e o nome `net` deixa claro que não é saldo. Com a importação no shared, web e mobile validam o mesmo formato que a API aceita. O seed determinístico deixa demonstrações e capturas de tela reproduzíveis e permite testar o próprio seed pela API.

@@ -6,3 +6,4 @@ coverage
 .dupla
 pnpm-lock.yaml
 expo-env.d.ts
+**/src/generated

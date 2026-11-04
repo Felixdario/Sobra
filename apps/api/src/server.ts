@@ -1,12 +1,18 @@
 import { buildApp } from './app';
+import { loadDotEnv, loadEnv } from './config/env';
 
-const port = Number(process.env.PORT ?? 3333);
-const host = process.env.HOST ?? '0.0.0.0';
+loadDotEnv();
+const env = loadEnv();
+const app = await buildApp({ env, logger: { level: env.LOG_LEVEL } });
 
-const app = buildApp({ logger: true });
+for (const signal of ['SIGINT', 'SIGTERM'] as const) {
+  process.once(signal, () => {
+    void app.close().then(() => process.exit(0));
+  });
+}
 
 try {
-  await app.listen({ port, host });
+  await app.listen({ port: env.PORT, host: env.HOST });
 } catch (error) {
   app.log.error(error);
   process.exit(1);

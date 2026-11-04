@@ -181,15 +181,32 @@ describe('mergeTransactionUpdate', () => {
 });
 
 describe('transactionSchema', () => {
-  it('parses a response with nullable notes', () => {
-    const meta = {
-      id: '9b2f9c56-5c3a-4b6e-9d4f-1a2b3c4d5e6f',
-      notes: null,
-      createdAt: '2026-11-04T12:00:00.000Z',
-      updatedAt: '2026-11-04T12:00:00.000Z',
-    };
-    expect(transactionSchema.safeParse({ ...expense, ...meta }).success).toBe(true);
-    expect(transactionSchema.safeParse({ ...transfer, ...meta }).success).toBe(true);
+  const meta = {
+    id: '9b2f9c56-5c3a-4b6e-9d4f-1a2b3c4d5e6f',
+    notes: null,
+    createdAt: '2026-11-04T12:00:00.000Z',
+    updatedAt: '2026-11-04T12:00:00.000Z',
+    account: { id: accountId, name: 'Nubank' },
+  };
+  const category = { id: categoryId, name: 'Mercado', color: '#f97316', icon: 'cart' };
+  const toAccount = { id: otherAccountId, name: 'Poupança' };
+
+  it('parses responses with display fields and nullable notes', () => {
+    const parsed = transactionSchema.parse({ ...expense, ...meta, category, toAccount: null });
+    expect(parsed.category?.color).toBe('#F97316');
+    expect(
+      transactionSchema.safeParse({ ...transfer, ...meta, category: null, toAccount }).success,
+    ).toBe(true);
+  });
+
+  it('requires toAccount on transfers and leaves it null on income and expense', () => {
+    expect(
+      transactionSchema.safeParse({ ...transfer, ...meta, category: null, toAccount: null })
+        .success,
+    ).toBe(false);
+    expect(transactionSchema.safeParse({ ...expense, ...meta, category, toAccount }).success).toBe(
+      false,
+    );
   });
 });
 

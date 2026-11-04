@@ -1,0 +1,213 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum AccountType {
+  checking
+  savings
+  credit_card
+  cash
+}
+
+enum CategoryKind {
+  income
+  expense
+}
+
+enum TransactionType {
+  income
+  expense
+  transfer
+}
+
+enum RecurrenceFrequency {
+  weekly
+  monthly
+  yearly
+}
+
+model User {
+  id           String   @id @default(uuid(7))
+  name         String
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  refreshTokens  RefreshToken[]
+  accounts       Account[]
+  categories     Category[]
+  transactions   Transaction[]
+  budgets        Budget[]
+  recurringRules RecurringRule[]
+  importBatches  ImportBatch[]
+}
+
+/// Opaque refresh token, stored only as a SHA-256 hash. Every rotation stays in the same family;
+/// presenting a revoked token revokes the whole family (reuse detection).
+model RefreshToken {
+  id           String    @id @default(uuid(7))
+  userId       String
+  familyId     String
+  tokenHash    String    @unique
+  expiresAt    DateTime
+  revokedAt    DateTime?
+  replacedById String?
+  createdAt    DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([familyId])
+}
+
+model Account {
+  id             String      @id @default(uuid(7))
+  userId         String
+  name           String
+  type           AccountType
+  initialBalance BigInt      @default(0)
+  color          String
+  icon           String
+  archived       Boolean     @default(false)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  user                   User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions           Transaction[]   @relation("TransactionAccount")
+  incomingTransfers      Transaction[]   @relation("TransactionToAccount")
+  recurringRules         RecurringRule[] @relation("RecurringAccount")
+  incomingRecurringRules RecurringRule[] @relation("RecurringToAccount")
+  importBatches          ImportBatch[]
+
+  @@unique([id, userId])
+  @@index([userId])
+}
+
+model Category {
+  id        String       @id @default(uuid(7))
+  userId    String
+  name      String
+  kind      CategoryKind
+  color     String
+  icon      String
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions   Transaction[]
+  budgets        Budget[]
+  recurringRules RecurringRule[]
+
+  @@unique([id, userId])
+  @@unique([userId, kind, name])
+  @@index([userId])
+}
+
+/// `date` is the calendar day in America/Sao_Paulo as "YYYY-MM-DD" (ADR-011).
+/// Account and category relations use (id, userId), so the database rejects references to
+/// another user's rows.
+model Transaction {
+  id              String          @id @default(uuid(7))
+  userId          String
+  type            TransactionType
+  accountId       String
+  toAccountId     String?
+  categoryId      String?
+  amount          BigInt
+  date            String
+  description     String
+  notes           String?
+  recurringRuleId String?
+  importBatchId   String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account       Account        @relation("TransactionAccount", fields: [accountId, userId], references: [id, userId], onDelete: NoAction)
+  toAccount     Account?       @relation("TransactionToAccount", fields: [toAccountId, userId], references: [id, userId], onDelete: NoAction)
+  category      Category?      @relation(fields: [categoryId, userId], references: [id, userId], onDelete: NoAction)
+  recurringRule RecurringRule? @relation(fields: [recurringRuleId], references: [id], onDelete: SetNull)
+  importBatch   ImportBatch?   @relation(fields: [importBatchId], references: [id], onDelete: SetNull)
+
+  @@unique([recurringRuleId, date])
+  @@index([userId, date])
+  @@index([userId, accountId])
+  @@index([userId, toAccountId])
+  @@index([userId, categoryId])
+  @@index([importBatchId])
+}
+
+/// `month` is "YYYY-MM" (MonthKey).
+model Budget {
+  id         String   @id @default(uuid(7))
+  userId     String
+  categoryId String
+  month      String
+  amount     BigInt
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId, userId], references: [id, userId], onDelete: NoAction)
+
+  @@unique([userId, categoryId, month])
+  @@index([userId, month])
+}
+
+/// Rule (frequency…dayOfMonth) plus the transaction template it generates. Dates are
+/// "YYYY-MM-DD"; `nextOccurrence` is null once the rule has ended.
+model RecurringRule {
+  id             String              @id @default(uuid(7))
+  userId         String
+  frequency      RecurrenceFrequency
+  interval       Int                 @default(1)
+  startDate      String
+  endDate        String?
+  dayOfMonth     Int?
+  active         Boolean             @default(true)
+  nextOccurrence String?
+  type           TransactionType
+  accountId      String
+  toAccountId    String?
+  categoryId     String?
+  amount         BigInt
+  description    String
+  notes          String?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account      Account       @relation("RecurringAccount", fields: [accountId, userId], references: [id, userId], onDelete: NoAction)
+  toAccount    Account?      @relation("RecurringToAccount", fields: [toAccountId, userId], references: [id, userId], onDelete: NoAction)
+  category     Category?     @relation(fields: [categoryId, userId], references: [id, userId], onDelete: NoAction)
+  transactions Transaction[]
+
+  @@index([userId])
+  @@index([userId, active, nextOccurrence])
+  @@index([userId, accountId])
+  @@index([userId, categoryId])
+}
+
+model ImportBatch {
+  id            String   @id @default(uuid(7))
+  userId        String
+  accountId     String
+  fileName      String?
+  rowCount      Int
+  importedCount Int
+  skippedCount  Int
+  createdAt     DateTime @default(now())
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account      Account       @relation(fields: [accountId, userId], references: [id, userId], onDelete: NoAction)
+  transactions Transaction[]
+
+  @@index([userId])
+}

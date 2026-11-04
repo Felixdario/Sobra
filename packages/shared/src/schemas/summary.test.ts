@@ -16,12 +16,12 @@ const monthSummary = {
   income: 800_000,
   expense: 560_000,
   balance: 240_000,
-  savingsRate: 0.3,
+  savingsRate: 30,
   previous: { month: '2026-10', income: 0, expense: 100_000, balance: -100_000 },
   delta: {
     income: { absolute: 800_000, percent: null },
-    expense: { absolute: 460_000, percent: 4.6 },
-    balance: { absolute: 340_000, percent: -3.4 },
+    expense: { absolute: 460_000, percent: 460 },
+    balance: { absolute: 340_000, percent: 340 },
   },
 };
 
@@ -45,12 +45,12 @@ describe('monthSummarySchema', () => {
 describe('incomeVsExpenseSeriesSchema', () => {
   it('parses monthly points', () => {
     const series = {
-      points: [{ month: '2026-10', income: 1, expense: 2, balance: -1 }],
+      points: [{ month: '2026-10', income: 1, expense: 2, net: -1 }],
     };
     expect(incomeVsExpenseSeriesSchema.parse(series)).toEqual(series);
     expect(
       incomeVsExpenseSeriesSchema.safeParse({
-        points: [{ month: '2026-13', income: 1, expense: 2, balance: -1 }],
+        points: [{ month: '2026-13', income: 1, expense: 2, net: -1 }],
       }).success,
     ).toBe(false);
   });
@@ -69,7 +69,7 @@ describe('spendingByCategorySchema', () => {
             color: '#F97316',
             icon: 'cart',
             amount: 10_000,
-            percent: 1,
+            percent: 100,
           },
         ],
       }).success,
@@ -113,7 +113,7 @@ describe('budgetVsActualSchema', () => {
             budgeted: 20_000,
             actual: 25_000,
             remaining: -5_000,
-            percentUsed: 1.25,
+            percentUsed: 125,
           },
         ],
         totals: { budgeted: 20_000, actual: 25_000, remaining: -5_000 },

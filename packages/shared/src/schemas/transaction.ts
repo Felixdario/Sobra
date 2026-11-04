@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import {
   fromQuery,
+  hexColorSchema,
+  iconSchema,
   idSchema,
   isoDateTimeSchema,
   localDateSchema,
@@ -130,9 +132,36 @@ const responseMeta = {
   updatedAt: isoDateTimeSchema,
 };
 
+/** Display fields embedded in a transaction response, so lists render without extra lookups. */
+export const transactionAccountRefSchema = z.object({ id: idSchema, name: z.string() });
+
+export const transactionCategoryRefSchema = z.object({
+  id: idSchema,
+  name: z.string(),
+  color: hexColorSchema,
+  icon: iconSchema,
+});
+
+/**
+ * A transaction as the API returns it. Besides the ids, it carries `account`, `category` and
+ * `toAccount` for display: `category` is null on transfers and `toAccount` is null on income
+ * and expense.
+ */
 export const transactionSchema = z.discriminatedUnion('type', [
-  z.object({ ...incomeExpenseShape, ...responseMeta }),
-  z.object({ ...transferShape, ...responseMeta }),
+  z.object({
+    ...incomeExpenseShape,
+    ...responseMeta,
+    account: transactionAccountRefSchema,
+    category: transactionCategoryRefSchema.nullable(),
+    toAccount: z.null(),
+  }),
+  z.object({
+    ...transferShape,
+    ...responseMeta,
+    account: transactionAccountRefSchema,
+    category: z.null(),
+    toAccount: transactionAccountRefSchema,
+  }),
 ]);
 
 export const TRANSACTION_SORT_FIELDS = ['date', 'amount', 'description'] as const;
@@ -156,5 +185,7 @@ export type TransactionUpdate = z.infer<typeof transactionUpdateSchema>;
 export type TransactionUpdateInput = z.input<typeof transactionUpdateSchema>;
 export type Transaction = z.infer<typeof transactionSchema>;
 export type TransactionInput = z.input<typeof transactionSchema>;
+export type TransactionAccountRef = z.infer<typeof transactionAccountRefSchema>;
+export type TransactionCategoryRef = z.infer<typeof transactionCategoryRefSchema>;
 export type TransactionFilters = z.infer<typeof transactionFiltersSchema>;
 export type TransactionFiltersInput = z.input<typeof transactionFiltersSchema>;

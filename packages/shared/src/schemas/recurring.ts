@@ -62,6 +62,10 @@ export const recurringSchema = z.object({
   updatedAt: isoDateTimeSchema,
 });
 
+export const recurringSyncResultSchema = z.object({
+  created: z.int().min(0).describe('Transações geradas nesta sincronização'),
+});
+
 export type RecurrenceFrequency = z.infer<typeof recurrenceFrequencySchema>;
 export type RecurrenceRule = z.infer<typeof recurrenceRuleSchema>;
 export type RecurrenceRuleInput = z.input<typeof recurrenceRuleSchema>;
@@ -71,3 +75,4 @@ export type RecurringUpdate = z.infer<typeof recurringUpdateSchema>;
 export type RecurringUpdateInput = z.input<typeof recurringUpdateSchema>;
 export type Recurring = z.infer<typeof recurringSchema>;
 export type RecurringInput = z.input<typeof recurringSchema>;
+export type RecurringSyncResult = z.infer<typeof recurringSyncResultSchema>;

@@ -23,3 +23,22 @@
 🔧 → 🧭 (B) FEITO revisão: MonthKey unificado, senha 128 (argon2), index.ts só reexports, healthResponseSchema em schemas/common.
 🧭 Validação final própria: 263 testes shared + api/web/mobile, 100% money/date, typecheck/lint/format ok, ADR-001..009.
 🧭 ✅ APROVADO (A e B, 2 rodadas cada) → commit fase 1
+
+## Fase 2
+Plano: 2a base (A, sequencial) → 2b rotas de domínio (transações/recorrências/CSV ‖ orçamentos/resumos) → 2c seed demo → validação + commit.
+🧭 → 🔧 (Executor A) 2a: Prisma (todos os modelos), auth argon2+JWT+refresh rotativo, contas, categorias, erros pt-BR, /docs, testes de isolamento, README do padrão de módulo.
+🔧 → 🧭 (A) FEITO 2a: Prisma 7.10.1 + better-sqlite3, todos os modelos, FK composta (id,userId), auth argon2id + refresh rotativo com família, contas/categorias, erros pt-BR, /docs OpenAPI 3.1, 46 testes, ADR-010..014.
+🧭 Validação própria: tudo verde; sonda R$ 1 bi → 201 no SQLite. Risco: colunas Int = int4 no Postgres (máx R$ 21,4 mi).
+🧭 🔁 REVISAR (A): colunas monetárias BigInt + conversão centralizada em lib/money + testes > 2^31.
+🔧 → 🧭 (A) FEITO revisão: BigInt em 4 colunas, lib/money (toDbCents/fromDbCents/sumOrZero), 51 testes incl. somas > 2^31 e > MAX_SAFE → 400.
+🧭 Validação própria: verde; migration com BIGINT. ✅ APROVADO 2a (2 rodadas).
+🧭 → 🔧 (Executor B) 2b: transactions, recurring (+sync idempotente, nextOccurrences pura), imports CSV (preview/commit, fixture). Dono de app.ts e swagger.ts.
+🧭 → 🔧 (Executor C) 2b: budgets (+copy), summary (month, income-vs-expense, spending-by-category, balance-history, budget-vs-actual). Não edita app.ts; reporta linhas de registro.
+🔧 → 🧭 (C) FEITO: budgets (+copy), summary (5 endpoints, accountId opcional), lib/period, factories, with-routes, 23 testes, ADR-015/016. Discordou: escala de percentual 0–100 vs exemplo do shared em fração. Riscos: "balance" com dois significados; copy concorrente.
+🧭 Pendente p/ integração: registrar budgets/summary em app.ts + tags (após B terminar); alinhar exemplo de percentual no shared.
+🔧 → 🧭 (B) FEITO: transactions (filtros/busca acentuada/ordenação/paginação), recurring (schedule puro + sync idempotente), imports CSV (papaparse, JSON, preview/commit/undo, fixture), 121 testes api, ADR-017/018. Sugestões de contrato: campos de exibição, extensões de import.
+🧭 Validação própria: typecheck/lint/format/test verdes (api 121, shared 263). ✅ APROVADOS B e C (1 rodada cada).
+🧭 → 🔧 (Executor D) 2c: integrar budgets/summary, contrato (display fields, % 0–100, net, import no shared), testes determinísticos, seed demo 6 meses (mulberry32), teste do seed.
+🔧 → 🧭 (D) PARCIAL: integração, contrato (display fields, % 0–100, net, import no shared), testes determinísticos, seed demo (199 tx, 5 regras, 42 orçamentos), demo.test.ts, ADR-019. db:reset bloqueado pelo guarda do Prisma contra agentes (exige consentimento do usuário) — não contornado.
+🧭 Validação própria: typecheck/lint/format/test verdes (shared 267, api 125); db:seed 2× sem duplicar; dev + navegador: login demo 200, /summary/month 200, /transactions com category/account, /docs 27 paths.
+🧭 ✅ APROVADO fase 2 → commit. Pendente para o usuário: rodar db:reset ele mesmo se quiser. Nota p/ fase 4/5: taxa de poupança do mês parcial (-325%) precisa de tratamento visual.
