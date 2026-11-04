@@ -1,0 +1,9 @@
+packages:
+  - apps/*
+  - packages/*
+
+nodeLinker: hoisted
+
+ignoredBuiltDependencies:
+  - '@parcel/watcher'
+  - esbuild

@@ -1,0 +1,14 @@
+{
+  "expo": {
+    "name": "Finanças",
+    "slug": "financas",
+    "version": "0.0.0",
+    "scheme": "financas",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "plugins": ["expo-router"],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
