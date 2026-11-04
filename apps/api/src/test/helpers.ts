@@ -28,6 +28,7 @@ export async function createTestApp(env: Record<string, string> = {}): Promise<A
       DATABASE_URL: `file:${file}`,
       JWT_SECRET: 'test-secret-with-at-least-thirty-two-chars',
       AUTH_RATE_LIMIT_MAX: '10000',
+      ARGON2_PROFILE: 'test',
       ...env,
     }),
   });

@@ -9,6 +9,7 @@ import {
   userSchema,
 } from '@financas/shared';
 import { bearerAuth, errorResponses } from '../../lib/http';
+import { createPasswordHasher } from './password';
 import * as auth from './service';
 
 const tags = ['Autenticação'];
@@ -27,6 +28,7 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
     signAccessToken: (userId) => app.jwt.sign({ sub: userId }),
     accessTokenTtlSeconds: config.ACCESS_TOKEN_TTL_SECONDS,
     refreshTokenTtlDays: config.REFRESH_TOKEN_TTL_DAYS,
+    passwords: createPasswordHasher(config.ARGON2_PROFILE),
   };
   const rateLimit = { max: config.AUTH_RATE_LIMIT_MAX, timeWindow: config.AUTH_RATE_LIMIT_WINDOW };
 

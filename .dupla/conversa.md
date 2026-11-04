@@ -50,3 +50,12 @@ Commit ee9b997.
 🧭 Validação própria: verde (tokens 222, shared 267, api 125); tokens.html aberto no navegador a 1440px, claro e escuro lado a lado, sem overflow; KPI + régua, transações, orçamento folgado/perto/estourado (hachurado).
 🧭 Decisões aceitas: paleta de 5 cores + "Outras"; cor da categoria só como marcador de identidade, gráfico por categoria em barras de um matiz.
 🧭 ✅ APROVADO fase 3 (1 rodada) → commit
+Commit 65a73b3.
+
+## Pré-fases 4/5
+🧭 → 🔧 (Executor F) @financas/client: createApiClient com TokenStore, refresh single-flight, validação Zod, ApiError pt-BR; queryKeys/queryOptions/mutations com invalidação e otimista; testes.
+🔧 → 🧭 (F) FEITO: @financas/client (+/query), 42 testes, integração real na API, ADR-023. Discordou: não desloga em falha de rede/5xx no refresh (aceito).
+🧭 Validação própria: client ok, mas `pnpm test` raiz falhou: 32 testes da api skipped por hookTimeout (beforeAll com argon2) sob carga paralela; api sozinha 129/129.
+🧭 🔁 REVISAR (F): argon2 barato em teste via env, hookTimeout 30s, 3 rodadas verdes na raiz.
+🔧 → 🧭 (F) FEITO revisão: perfis argon2 (production padrão, test barato só via createTestApp, recusado em produção), hookTimeout 30s, 3 rodadas verdes; api 28s → 11s; ADR-024.
+🧭 Validação própria: raiz verde, 0 skipped. ✅ APROVADO (2 rodadas) → commit

@@ -1,6 +1,7 @@
 import { formatBRL, toLocalDateKey } from '@financas/shared';
 import { loadDotEnv, loadEnv, sqlitePath } from '../src/config/env';
 import { createPrismaClient } from '../src/lib/db';
+import { createPasswordHasher } from '../src/modules/auth/password';
 import { DEMO_USER, seedDemo } from '../src/seed/demo';
 
 loadDotEnv();
@@ -9,7 +10,10 @@ const today = process.env.SEED_TODAY || toLocalDateKey(new Date());
 const prisma = createPrismaClient(sqlitePath(env.DATABASE_URL));
 
 try {
-  const summary = await seedDemo(prisma, { today });
+  const summary = await seedDemo(prisma, {
+    today,
+    passwords: createPasswordHasher(env.ARGON2_PROFILE),
+  });
   console.log(`Usuário demo: ${DEMO_USER.email} / ${DEMO_USER.password} (referência ${today})`);
   console.table(
     summary.months.map((month) => ({

@@ -7,11 +7,13 @@ import {
   monthSummarySchema,
 } from '@financas/shared';
 import type { App } from '../app';
+import { createPasswordHasher } from '../modules/auth/password';
 import { authHeader, createTestApp, registerUser } from '../test/helpers';
 import { DEMO_USER, seedDemo } from './demo';
 
 const TODAY = '2026-11-04';
 const SEED_TIMEOUT = 60_000;
+const passwords = createPasswordHasher('test');
 const MONTHS = ['2026-06', '2026-07', '2026-08', '2026-09', '2026-10', '2026-11'];
 
 describe('seed do usuário demo', () => {
@@ -51,7 +53,7 @@ describe('seed do usuário demo', () => {
   it(
     'gera 6 meses com receitas e despesas que a API soma igual ao banco',
     async () => {
-      const summary = await seedDemo(app.prisma, { today: TODAY });
+      const summary = await seedDemo(app.prisma, { today: TODAY, passwords });
       const { userId, get } = await loginDemo();
 
       const series = incomeVsExpenseSeriesSchema.parse(
@@ -149,7 +151,7 @@ describe('seed do usuário demo', () => {
       const other = await registerUser(app);
       const before = await snapshot();
 
-      await seedDemo(app.prisma, { today: TODAY });
+      await seedDemo(app.prisma, { today: TODAY, passwords });
 
       expect(await app.prisma.user.count({ where: { email: DEMO_USER.email } })).toBe(1);
       expect(await snapshot()).toEqual(before);
@@ -164,7 +166,7 @@ describe('seed do usuário demo', () => {
   it(
     'no dia 1º e na virada do ano também há receita em todos os meses',
     async () => {
-      await seedDemo(app.prisma, { today: '2027-01-01' });
+      await seedDemo(app.prisma, { today: '2027-01-01', passwords });
       const { get } = await loginDemo();
       const series = incomeVsExpenseSeriesSchema.parse(
         await get('/summary/income-vs-expense?from=2026-08&to=2027-01'),

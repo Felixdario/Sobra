@@ -3,7 +3,7 @@ import type { AuthResponse, LoginInput, RegisterInput, TokenPair, User } from '@
 import { type Db, isUniqueViolation, type PrismaClient } from '../../lib/db';
 import { conflict, unauthorized } from '../../lib/errors';
 import { DEFAULT_ACCOUNT, DEFAULT_CATEGORIES } from './defaults';
-import { burnPasswordCheck, hashPassword, verifyPassword } from './password';
+import type { PasswordHasher } from './password';
 import { generateRefreshToken, hashRefreshToken } from './tokens';
 
 export type AuthContext = {
@@ -11,6 +11,7 @@ export type AuthContext = {
   signAccessToken: (userId: string) => string;
   accessTokenTtlSeconds: number;
   refreshTokenTtlDays: number;
+  passwords: PasswordHasher;
 };
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -71,7 +72,7 @@ export async function createUserWithDefaults(
 }
 
 export async function register(ctx: AuthContext, input: RegisterInput): Promise<AuthResponse> {
-  const passwordHash = await hashPassword(input.password);
+  const passwordHash = await ctx.passwords.hash(input.password);
   try {
     return await ctx.prisma.$transaction(async (tx) => {
       const user = await createUserWithDefaults(tx, {
@@ -91,10 +92,10 @@ export async function register(ctx: AuthContext, input: RegisterInput): Promise<
 export async function login(ctx: AuthContext, input: LoginInput): Promise<AuthResponse> {
   const user = await ctx.prisma.user.findUnique({ where: { email: input.email } });
   if (!user) {
-    await burnPasswordCheck(input.password);
+    await ctx.passwords.burnCheck(input.password);
     throw unauthorized(INVALID_CREDENTIALS);
   }
-  if (!(await verifyPassword(user.passwordHash, input.password))) {
+  if (!(await ctx.passwords.verify(user.passwordHash, input.password))) {
     throw unauthorized(INVALID_CREDENTIALS);
   }
   const { tokens } = await issueTokens(ctx, ctx.prisma, user.id);

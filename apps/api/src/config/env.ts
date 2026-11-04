@@ -37,6 +37,8 @@ const envSchema = z
       ),
     AUTH_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(10),
     AUTH_RATE_LIMIT_WINDOW: z.string().min(1).default('1 minute'),
+    /** Argon2 cost (see ARGON2_PROFILES); `test` only for the test suite. */
+    ARGON2_PROFILE: z.enum(['production', 'test']).default('production'),
   })
   .transform(({ JWT_SECRET, ...env }, ctx) => {
     if (JWT_SECRET === undefined && env.NODE_ENV === 'production') {
@@ -44,6 +46,14 @@ const envSchema = z
         code: 'custom',
         path: ['JWT_SECRET'],
         message: 'JWT_SECRET é obrigatório em produção',
+      });
+      return z.NEVER;
+    }
+    if (env.ARGON2_PROFILE === 'test' && env.NODE_ENV === 'production') {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['ARGON2_PROFILE'],
+        message: 'ARGON2_PROFILE=test é proibido em produção',
       });
       return z.NEVER;
     }

@@ -15,7 +15,7 @@ import type { Db, PrismaClient } from '../lib/db';
 import { fromDbCents, sumOrZero, toDbCents } from '../lib/money';
 import { daysOfMonth, monthDateRange } from '../lib/period';
 import { createAccount, listAccounts } from '../modules/accounts/service';
-import { hashPassword } from '../modules/auth/password';
+import type { PasswordHasher } from '../modules/auth/password';
 import { createUserWithDefaults } from '../modules/auth/service';
 import { createRecurring, syncDueRecurring } from '../modules/recurring/service';
 import { incomeVsExpense, monthSummary } from '../modules/summary/service';
@@ -586,12 +586,12 @@ async function summarize(
  */
 export async function seedDemo(
   prisma: PrismaClient,
-  { today }: { today: string },
+  { today, passwords }: { today: string; passwords: PasswordHasher },
 ): Promise<DemoSummary> {
   const months = lastNMonths(DEMO_MONTHS, monthKey(today.slice(0, 7)));
   const firstMonth = months[0];
   if (!firstMonth) throw new Error('Sem meses para gerar');
-  const passwordHash = await hashPassword(DEMO_USER.password);
+  const passwordHash = await passwords.hash(DEMO_USER.password);
   const random = createRandom(DEMO_SEED);
 
   return prisma.$transaction(
