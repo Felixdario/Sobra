@@ -20,7 +20,7 @@
     "transformIgnorePatterns": [
       "node_modules/(?!(.pnpm|((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|react-native-svg|lucide-react-native|react-native-reanimated|react-native-worklets|react-native-gesture-handler))"
     ],
-    "resolver": "react-native-reanimated/jest/resolver",
+    "resolver": "<rootDir>/jest.resolver.js",
     "moduleNameMapper": {
       "^lucide-react-native$": "<rootDir>/node_modules/lucide-react-native/dist/cjs/lucide-react-native.js",
       "^./installUIRuntimeBindings$": "<rootDir>/node_modules/react-native-gesture-handler/src/handlers/gestures/installUIRuntimeBindings.web.ts"
