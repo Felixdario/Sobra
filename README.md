@@ -23,13 +23,17 @@ centavos, categoria, salvar), com conta e data já preenchidas; resumo do mês c
 despesas por categoria e a sobra) e orçamentos; lista de transações por dia com busca, filtros,
 rolagem infinita e deslizar para editar ou apagar (com desfazer); tema claro e escuro.
 
+**Nos dois apps:** interface em português (Brasil) ou inglês (EUA) e moeda de exibição em BRL, USD
+ou EUR, escolhidas pela pessoa e guardadas na conta (sem conversão de câmbio).
+
 **Web (React + Vite):** painel com sobra do mês, saldo, receitas, despesas e taxa de poupança com
 variação sobre o mês anterior; receitas × despesas, evolução do saldo, gastos por categoria e orçado
 × realizado, cada gráfico com tabela alternativa; tabela de transações com filtros na URL e edição
 em painel lateral; contas, categorias, orçamentos (com cópia do mês anterior) e importação de CSV
 com prévia antes de gravar; tema claro, escuro ou do sistema, sem flash no carregamento.
 
-**API (Fastify):** cadastro e login com sessão rotativa, CRUD de todo o domínio, recorrências,
+**API (Fastify):** cadastro e login com sessão rotativa (no web, refresh token em cookie `httpOnly`
+com proteção CSRF), CRUD de todo o domínio, recorrências,
 resumos, importação de CSV e documentação OpenAPI em `/docs`.
 
 ## Rodar em 3 comandos
@@ -303,7 +307,7 @@ Relatórios em [`docs/polimento-web.md`](docs/polimento-web.md) e
 
 ## Qualidade
 
-`corepack pnpm test` na raiz roda **1050 testes**, todos passando:
+`corepack pnpm test` na raiz roda **1087 testes**, todos passando:
 
 | Pacote          | Testes | O que cobre                                                                    |
 | --------------- | -----: | ------------------------------------------------------------------------------ |
@@ -312,58 +316,15 @@ Relatórios em [`docs/polimento-web.md`](docs/polimento-web.md) e
 | `@sobra/i18n`   |     41 | paridade pt-BR/en-US, plural, erros e validação traduzidos sem fallback        |
 | `@sobra/client` |     63 | single-flight, sessão expirada, erros pt-BR, invalidações, otimista e rollback |
 | `apps/api`      |    165 | rotas pela API real (SQLite por arquivo), isolamento entre usuários, seed      |
-| `apps/web`      |     84 | telas com API falsa, pior caso, axe-core sem violação séria ou crítica         |
-| `apps/mobile`   |    141 | lançar, lista, folha, acessibilidade (nomes, papéis, anúncios), contraste      |
+| `apps/web`      |    100 | telas com API falsa, pior caso, axe-core, en-US/USD e textos fora do catálogo  |
+| `apps/mobile`   |    162 | lançar, lista, folha, acessibilidade, contraste, en-US/USD e textos fixos      |
 
 - **Typecheck estrito** em todos os pacotes (`corepack pnpm typecheck`), ESLint e Prettier na raiz.
 - **Acessibilidade:** axe-core roda nos testes do web; numa passada no Chrome real com
   `@axe-core/playwright` (claro/escuro, 1440/390 px) foram 0 violações. No mobile, rótulos, papéis e
   anúncios para leitor de tela são testados.
-- **CI:** `.github/workflows/ci.yml` roda install congelado, format:check, lint, typecheck e test.
-  O workflow existe, mas **ainda não rodou no GitHub**, porque o repositório não foi publicado; os
-  mesmos comandos passam localmente.
-
-## Como foi feito
-
-O código foi escrito por agentes de IA (Claude Code) num fluxo em dupla: um agente planejador divide
-cada fase e valida a entrega com evidência própria (roda os testes, abre as telas, confere as
-capturas) antes de aprovar, e agentes executores implementam e reportam. Quando o planejador
-discorda, a entrega volta para revisão. A conversa entre eles está em [`.dupla/`](.dupla/), cada
-decisão relevante virou um ADR em [`docs/decisoes.md`](docs/decisoes.md) e cada fase é um commit
-(fundação do monorepo, contrato compartilhado, API, direção de design, cliente, web, mobile,
-polimento). O produto e a direção visual estão em [`PRODUCT.md`](PRODUCT.md) e
-[`DESIGN.md`](DESIGN.md).
-
-## Limitações conhecidas
-
-- **Mobile sem teste em aparelho real.** Foi validado no Expo web e com Jest. Sensação dos gestos e
-  hápticos, Dynamic Type e fonte do Android de verdade, VoiceOver/TalkBack e o teclado do iOS sobre
-  a folha ainda precisam ser conferidos num celular.
-- **Refresh token no `localStorage` no web.** Um XSS poderia lê-lo; a rotação com detecção de reuso
-  reduz o estrago, mas o caminho certo antes de um deploy público é cookie `httpOnly` com proteção
-  CSRF ([ADR-023](docs/decisoes.md#adr-023--cliente-da-api-compartilhado-sobraclient-refresh-single-flight-e-onde-guardar-os-tokens)).
-- **SQLite em desenvolvimento; PostgreSQL não testado.** A troca exige os passos descritos acima.
-- **Sem deploy e sem build nativo.** Não há ambiente publicado, EAS Build nem app nas lojas; o CI
-  nunca rodou.
-- **Sem modo offline.** Lançar sem conexão falha com mensagem e "Tentar de novo"; uma fila offline é
-  decisão em aberto.
-- **Pequenos pontos documentados:** duas mutações otimistas sobrepostas em que a primeira falha
-  desfazem a segunda na tela até a próxima leitura; usuário que apaga todas as contas não tem um vazio
-  que leve a "Nova conta"; testado só no Windows 11 e só em pt-BR/BRL.
-
-## O que eu aprenderia em seguida
-
-1. **Testes E2E no CI com Playwright** cobrindo login, lançamento e importação contra a API real,
-   com o axe no navegador em vez de só no jsdom.
-2. **E2E no mobile com Maestro ou Detox**, rodando num emulador Android no CI.
-3. **Sessão web com cookie `httpOnly` + CSRF**, API e web no mesmo site.
-4. **Deploy de verdade:** API em Fly.io ou Render, PostgreSQL gerenciado (Neon), migrations no
-   pipeline e builds do app com EAS.
-5. **Observabilidade:** logs estruturados com correlação de requisição, métricas e rastreamento com
-   OpenTelemetry, alertas de erro (Sentry) nos três apps.
-6. **Sincronização offline no mobile:** fila de lançamentos com IDs gerados no cliente e resolução
-   de conflito.
-7. **i18n e outras moedas**, separando formatação de dinheiro e datas do pt-BR fixo.
+- **CI:** `.github/workflows/ci.yml` roda install congelado, format:check, lint, typecheck e test a
+  cada push.
 
 ## Licença
 
