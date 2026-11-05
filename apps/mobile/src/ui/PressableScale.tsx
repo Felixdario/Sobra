@@ -1,7 +1,7 @@
-import { cubicBezierCss, durations, easings } from '@financas/tokens';
+import { durations, easings } from '@financas/tokens';
 import { useState, type ReactNode } from 'react';
 import { Pressable, type PressableProps, type StyleProp, type ViewStyle } from 'react-native';
-import Animated, { useReducedMotion } from 'react-native-reanimated';
+import Animated, { cubicBezier, useReducedMotion } from 'react-native-reanimated';
 
 export type PressableScaleProps = Omit<PressableProps, 'children' | 'style'> & {
   children: ReactNode;
@@ -49,9 +49,9 @@ export function PressableScale({
     >
       <Animated.View
         style={[
-          !reduced && styles.base,
+          !reduced && pressScaleStyles.base,
           style,
-          pressed && !disabled && [!reduced && styles.pressed, pressedStyle],
+          pressed && !disabled && [!reduced && pressScaleStyles.pressed, pressedStyle],
         ]}
       >
         {children}
@@ -60,12 +60,14 @@ export function PressableScale({
   );
 }
 
-const styles = {
+export const pressScaleStyles = {
   base: {
     transform: [{ scale: 1 }],
     transitionProperty: 'transform',
     transitionDuration: durations.fast,
-    transitionTimingFunction: cubicBezierCss(easings.enter),
+    // Native Reanimated rejects CSS `cubic-bezier(...)` strings (only predefined names); the
+    // easing object works on iOS, Android and web alike.
+    transitionTimingFunction: cubicBezier(...easings.enter),
   },
   pressed: { transform: [{ scale: 0.97 }] },
 } as const;
