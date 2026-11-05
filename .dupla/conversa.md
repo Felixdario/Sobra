@@ -59,3 +59,19 @@ Commit 65a73b3.
 🧭 🔁 REVISAR (F): argon2 barato em teste via env, hookTimeout 30s, 3 rodadas verdes na raiz.
 🔧 → 🧭 (F) FEITO revisão: perfis argon2 (production padrão, test barato só via createTestApp, recusado em produção), hookTimeout 30s, 3 rodadas verdes; api 28s → 11s; ADR-024.
 🧭 Validação própria: raiz verde, 0 skipped. ✅ APROVADO (2 rodadas) → commit
+Commit 37f014f.
+
+## Fases 4 e 5 (paralelo)
+🧭 → 🔧 (Executor W) 4a web: base (router, auth, tema sem flash, tokens CSS), painel (KPIs + régua + 4 gráficos, mês parcial), testes, screenshots.
+🧭 → 🔧 (Executor M) 5a mobile: base (router tabs, secure-store, Archivo), auth, lançar gasto em 3 toques (teclado próprio, otimista, haptics), resumo do mês com orçamentos, testes, screenshots via Expo web.
+🔧 → 🧭 (W) FEITO 4a: React Router 7.18, visx, CSS Modules sobre tokens, tema sem flash, auth demo, painel (resumo + régua + KPIs + 4 gráficos acessíveis, mês parcial "Em aberto"), 28 testes, build 180 KB gzip, 7 screenshots, ADR-025/026.
+🧭 Validação própria: capturas claro desktop e escuro mobile conferidas — fiel ao DESIGN. Achados: cores padrão de categoria colidem (Moradia/Assinaturas roxas); vão abaixo de "Gastos por categoria" no desktop.
+🧭 ✅ APROVADO 4a → 🧭 → 🔧 (W) 4b: /transacoes (TanStack Table), contas, categorias, orçamentos, importar CSV + correções a/b.
+🔧 → 🧭 (W) FEITO 4b: /transacoes (TanStack Table, filtros na URL, painel <dialog>, otimista, desfazer), contas, categorias, orçamentos (BudgetMeter inline, copiar), importar (prévia editável, duplicatas, desfazer); 13 cores de identidade (ΔE ≥ 8); grid do painel; 60 testes web; ADR-027.
+🧭 Validação própria: capturas de edição e prévia de importação conferidas. ✅ APROVADO fase 4 (4a e 4b, 1 rodada cada). Commit aguardando M (lockfile compartilhado).
+🔧 → 🧭 (M) FEITO 5a: Expo Router (auth/app, TabBar com Lançar), secure-store, Archivo, auth demo, lançar em 3 toques (teclado em centavos, folha própria com mola dos tokens, otimista + háptico), resumo com régua e orçamentos, mês parcial; 30 testes; screenshots; ADR-028..030.
+🧭 Validação própria: capturas resumo-outubro e lançar-categoria conferidas. Achados: screenshots com cores antigas de categoria; número principal verde no mobile vs tinta no web.
+🧭 ✅ APROVADO 5a → 🧭 → 🔧 (M) 5b: lista por dia com infinite scroll, filtros, deslizar editar/apagar (+ ações acessíveis), edição, correções a/b, screenshots refeitas.
+🔧 → 🧭 (M) FEITO 5b: lista por dia (infinite, busca, filtros com chips), SwipeableRow (Editar/Apagar, limiar 60% com háptico, rubber-band, uma aberta por vez), ações acessíveis + toque longo, edição na folha, número principal alinhado ao web, screenshots refeitas, 44 testes, ADR-031.
+🧭 Validação própria: frozen install, typecheck, lint, format, test (tokens 222, shared 267, client 42, api 132, web 60, mobile 44), web build. Captura do deslize conferida.
+🧭 ✅ APROVADO fase 5 (5a e 5b, 1 rodada cada) → commits fase 4 e fase 5

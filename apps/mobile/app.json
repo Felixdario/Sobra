@@ -6,7 +6,31 @@
     "scheme": "financas",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
-    "plugins": ["expo-router"],
+    "backgroundColor": "#F1F1EE",
+    "ios": {
+      "supportsTablet": false,
+      "infoPlist": { "CADisableMinimumFrameDurationOnPhone": true }
+    },
+    "android": {
+      "edgeToEdgeEnabled": true
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "name": "Sobra"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "expo-secure-store",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#F1F1EE",
+          "dark": { "backgroundColor": "#141413" }
+        }
+      ]
+    ],
     "experiments": {
       "typedRoutes": true
     }
