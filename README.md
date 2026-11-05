@@ -80,7 +80,7 @@ corepack pnpm dev:mobile  # Metro na porta 8081; com a API rodando (corepack pnp
 - **No navegador (Expo web):** aperte `w` no terminal do Expo. O app usa `http://localhost:3333`
   por padrão, então funciona sem configurar nada.
 - **No celular com Expo Go:** o celular precisa estar na mesma rede e enxergar a API pelo IP da
-  máquina. Crie `apps/mobile/.env` com `EXPO_PUBLIC_API_URL=http://192.168.0.10:3333` (troque pelo
+  máquina. Copie `apps/mobile/.env.example` para `apps/mobile/.env` e troque o endereço por `EXPO_PUBLIC_API_URL=http://192.168.0.10:3333` (troque pelo
   seu IP), rode `corepack pnpm dev:mobile` e leia o QR code com o Expo Go (versão para o SDK 58). A
   API já escuta em `0.0.0.0`; no Windows, o firewall pode pedir para liberar o Node nas portas 3333 e 8081.
 
