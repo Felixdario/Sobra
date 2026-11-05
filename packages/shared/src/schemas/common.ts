@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { validationMessage } from './messages';
 import { isMonthKey, monthKey, type MonthKey } from '../date/month';
 import { cents, type Cents } from '../money/cents';
 
@@ -6,20 +7,20 @@ export function installZodPtBR(): void {
   z.config(z.locales.ptBR());
 }
 
-export const idSchema = z.uuid({ error: 'Identificador inválido' });
+export const idSchema = z.uuid({ error: validationMessage('common.idInvalid') });
 
 export const centsSchema = z
-  .int({ error: 'O valor deve ser um número inteiro de centavos' })
+  .int({ error: validationMessage('amount.notInteger') })
   .transform((value): Cents => cents(value));
 
 export const positiveCentsSchema = z
-  .int({ error: 'O valor deve ser um número inteiro de centavos' })
-  .positive({ error: 'O valor deve ser maior que zero' })
+  .int({ error: validationMessage('amount.notInteger') })
+  .positive({ error: validationMessage('amount.notPositive') })
   .transform((value): Cents => cents(value));
 
 export const hexColorSchema = z
-  .string()
-  .regex(/^#[0-9A-Fa-f]{6}$/, { error: 'Cor inválida: use o formato #RRGGBB' })
+  .string({ error: validationMessage('common.colorInvalid') })
+  .regex(/^#[0-9A-Fa-f]{6}$/, { error: validationMessage('common.colorInvalid') })
   .transform((value) => value.toUpperCase());
 
 export const ICON_NAMES = [
@@ -55,25 +56,28 @@ export const ICON_NAMES = [
   'circle-dollar',
 ] as const;
 
-export const iconSchema = z.enum(ICON_NAMES, { error: 'Ícone inválido' });
+export const iconSchema = z.enum(ICON_NAMES, { error: validationMessage('common.iconInvalid') });
 
 export const monthKeySchema = z
-  .string({ error: 'Mês inválido: use o formato AAAA-MM' })
-  .refine(isMonthKey, { error: 'Mês inválido: use o formato AAAA-MM' })
+  .string({ error: validationMessage('common.monthInvalid') })
+  .refine(isMonthKey, { error: validationMessage('common.monthInvalid') })
   .transform((value): MonthKey => monthKey(value));
 
 export const localDateSchema = z.iso.date({
-  error: 'Data inválida: use o formato AAAA-MM-DD com uma data existente',
+  error: validationMessage('common.dateInvalid'),
 });
 
-export const isoDateTimeSchema = z.iso.datetime({ offset: true, error: 'Data e hora inválidas' });
+export const isoDateTimeSchema = z.iso.datetime({
+  offset: true,
+  error: validationMessage('common.dateTimeInvalid'),
+});
 
 export const nameSchema = (max: number) =>
   z
-    .string({ error: 'Informe o nome' })
+    .string({ error: validationMessage('name.required') })
     .trim()
-    .min(1, { error: 'Informe o nome' })
-    .max(max, { error: `O nome deve ter no máximo ${max} caracteres` });
+    .min(1, { error: validationMessage('name.required') })
+    .max(max, { error: validationMessage('name.tooLong', { max }) });
 
 function blankToUndefined(value: unknown): unknown {
   if (Array.isArray(value)) return blankToUndefined(value[0]);
@@ -89,18 +93,20 @@ export const PAGE_SIZE_DEFAULT = 20;
 export const PAGE_SIZE_MAX = 100;
 
 export const pageSchema = z.coerce
-  .number({ error: 'Página inválida' })
-  .int({ error: 'Página inválida' })
-  .min(1, { error: 'A página deve ser no mínimo 1' });
+  .number({ error: validationMessage('pagination.pageInvalid') })
+  .int({ error: validationMessage('pagination.pageInvalid') })
+  .min(1, { error: validationMessage('pagination.pageTooSmall') });
 
 export const pageSizeSchema = z.coerce
-  .number({ error: 'Tamanho de página inválido' })
-  .int({ error: 'Tamanho de página inválido' })
-  .min(1, { error: 'O tamanho da página deve ser no mínimo 1' })
-  .max(PAGE_SIZE_MAX, { error: `O tamanho da página deve ser no máximo ${PAGE_SIZE_MAX}` });
+  .number({ error: validationMessage('pagination.pageSizeInvalid') })
+  .int({ error: validationMessage('pagination.pageSizeInvalid') })
+  .min(1, { error: validationMessage('pagination.pageSizeTooSmall') })
+  .max(PAGE_SIZE_MAX, {
+    error: validationMessage('pagination.pageSizeTooLarge', { max: PAGE_SIZE_MAX }),
+  });
 
 export const sortDirectionSchema = z.enum(['asc', 'desc'], {
-  error: 'Direção de ordenação inválida: use asc ou desc',
+  error: validationMessage('sort.directionInvalid'),
 });
 
 export function sortSchema<const F extends readonly [string, ...string[]]>(
@@ -108,7 +114,7 @@ export function sortSchema<const F extends readonly [string, ...string[]]>(
   fallback: { field: F[number]; direction: SortDirection },
 ) {
   const objectSchema = z.object({
-    field: z.enum(fields, { error: 'Campo de ordenação inválido' }),
+    field: z.enum(fields, { error: validationMessage('sort.fieldInvalid') }),
     direction: sortDirectionSchema,
   });
   const fromString = z.preprocess((raw) => {
@@ -138,6 +144,25 @@ export const healthResponseSchema = z.object({
   status: z.literal('ok'),
 });
 
+/**
+ * Stable `error.code` values the API sends. The `message` is pt-BR; clients show their own
+ * translation of the code and fall back to the message (ADR-035).
+ */
+export const API_ERROR_CODES = [
+  'VALIDATION_ERROR',
+  'BAD_REQUEST',
+  'UNAUTHORIZED',
+  'FORBIDDEN',
+  'NOT_FOUND',
+  'CONFLICT',
+  'PAYLOAD_TOO_LARGE',
+  'RATE_LIMITED',
+  'INTERNAL_ERROR',
+] as const;
+
+export type ApiErrorCodeName = (typeof API_ERROR_CODES)[number];
+
+/** `code` stays a free string so an older client keeps parsing errors a newer API adds. */
 export const apiErrorSchema = z.object({
   error: z.object({
     code: z.string().min(1),

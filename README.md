@@ -103,7 +103,7 @@ de URL ([ADR-010](docs/decisoes.md#adr-010--prisma-7-com-sqlite-via-driver-adapt
 
 ## Arquitetura
 
-Monorepo pnpm com três pacotes compartilhados e três apps. Os pacotes são consumidos como fonte
+Monorepo pnpm com quatro pacotes compartilhados e três apps. Os pacotes são consumidos como fonte
 TypeScript, sem etapa de build
 ([ADR-005](docs/decisoes.md#adr-005--sobrashared-consumido-como-fonte-typescript)).
 
@@ -113,6 +113,7 @@ flowchart LR
     shared["@sobra/shared<br/>schemas Zod, dinheiro, datas"]
     tokens["@sobra/tokens<br/>cores, tipo, espaço, movimento"]
     client["@sobra/client<br/>fetch tipado, sessão, TanStack Query"]
+    i18n["@sobra/i18n<br/>catálogos pt-BR/en-US, t() tipado"]
   end
   subgraph apps["apps/"]
     api["api<br/>Fastify 5 + Prisma 7"]
@@ -122,6 +123,10 @@ flowchart LR
   db[("SQLite em dev e testes<br/>PostgreSQL opcional")]
 
   client --> shared
+  i18n --> shared
+  api --> i18n
+  web --> i18n
+  mobile --> i18n
   api --> shared
   api --> tokens
   web --> client
@@ -191,7 +196,7 @@ três requisições concorrentes derrubam a sessão.
 | API           | Fastify 5, Prisma 7 (SQLite via driver adapter), Zod 4, argon2id, Swagger UI                   |
 | Web           | React 19, Vite 8, React Router 7, TanStack Query e Table, visx, CSS Modules, Sonner            |
 | Mobile        | Expo SDK 58, React Native 0.88, Expo Router, Reanimated 4, Gesture Handler 3, react-native-svg |
-| Compartilhado | `@sobra/shared` (Zod, date-fns), `@sobra/tokens`, `@sobra/client`                              |
+| Compartilhado | `@sobra/shared` (Zod, date-fns), `@sobra/tokens`, `@sobra/client`, `@sobra/i18n`               |
 | Testes        | Vitest, Testing Library, axe-core, Jest (jest-expo)                                            |
 | Ferramentas   | pnpm 10 via Corepack, ESLint 10, Prettier, GitHub Actions                                      |
 
@@ -298,16 +303,17 @@ Relatórios em [`docs/polimento-web.md`](docs/polimento-web.md) e
 
 ## Qualidade
 
-`corepack pnpm test` na raiz roda **895 testes**, todos passando:
+`corepack pnpm test` na raiz roda **1050 testes**, todos passando:
 
 | Pacote          | Testes | O que cobre                                                                    |
 | --------------- | -----: | ------------------------------------------------------------------------------ |
-| `@sobra/shared` |    267 | dinheiro (parse, half-even, rateio), datas no fuso, schemas do contrato        |
+| `@sobra/shared` |    331 | dinheiro (parse, half-even, rateio), datas no fuso, schemas do contrato        |
 | `@sobra/tokens` |    225 | contraste WCAG dos dois temas, ΔE da paleta para daltonismo, CSS gerado        |
-| `@sobra/client` |     50 | single-flight, sessão expirada, erros pt-BR, invalidações, otimista e rollback |
-| `apps/api`      |    132 | rotas pela API real (SQLite por arquivo), isolamento entre usuários, seed      |
-| `apps/web`      |     82 | telas com API falsa, pior caso, axe-core sem violação séria ou crítica         |
-| `apps/mobile`   |    139 | lançar, lista, folha, acessibilidade (nomes, papéis, anúncios), contraste      |
+| `@sobra/i18n`   |     41 | paridade pt-BR/en-US, plural, erros e validação traduzidos sem fallback        |
+| `@sobra/client` |     63 | single-flight, sessão expirada, erros pt-BR, invalidações, otimista e rollback |
+| `apps/api`      |    165 | rotas pela API real (SQLite por arquivo), isolamento entre usuários, seed      |
+| `apps/web`      |     84 | telas com API falsa, pior caso, axe-core sem violação séria ou crítica         |
+| `apps/mobile`   |    141 | lançar, lista, folha, acessibilidade (nomes, papéis, anúncios), contraste      |
 
 - **Typecheck estrito** em todos os pacotes (`corepack pnpm typecheck`), ESLint e Prettier na raiz.
 - **Acessibilidade:** axe-core roda nos testes do web; numa passada no Chrome real com

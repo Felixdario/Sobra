@@ -7,6 +7,7 @@ import type {
 } from '@sobra/shared';
 import { type Db, isUniqueViolation } from '../../lib/db';
 import { conflict, notFound } from '../../lib/errors';
+import { toSystemKey } from '../../lib/categories';
 import { compact } from '../../lib/objects';
 import type { Category as CategoryRow } from '../../generated/prisma/client';
 
@@ -19,6 +20,7 @@ const toCategory = (row: CategoryRow): Category => ({
   kind: row.kind,
   color: row.color,
   icon: row.icon as IconName,
+  systemKey: toSystemKey(row.systemKey),
   createdAt: row.createdAt.toISOString(),
   updatedAt: row.updatedAt.toISOString(),
 });
@@ -76,9 +78,14 @@ export async function updateCategory(
   input: CategoryUpdate,
 ): Promise<Category> {
   const current = await findOwnedCategory(db, userId, id);
+  // A new name is the user's own: the category stops showing the translated default name.
+  const renamed = input.name !== undefined && input.name !== current.name;
   const row = await rethrowDuplicate(
     current.kind,
-    db.category.update({ where: { id }, data: compact(input) }),
+    db.category.update({
+      where: { id },
+      data: { ...compact(input), ...(renamed && { systemKey: null }) },
+    }),
   );
   return toCategory(row);
 }

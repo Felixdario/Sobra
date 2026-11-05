@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { validationMessage } from './messages';
 import { cents } from '../money/cents';
 import {
   centsSchema,
@@ -11,7 +12,9 @@ import {
 
 export const ACCOUNT_TYPES = ['checking', 'savings', 'credit_card', 'cash'] as const;
 
-export const accountTypeSchema = z.enum(ACCOUNT_TYPES, { error: 'Tipo de conta inválido' });
+export const accountTypeSchema = z.enum(ACCOUNT_TYPES, {
+  error: validationMessage('account.typeInvalid'),
+});
 
 const accountNameSchema = nameSchema(60);
 
@@ -29,11 +32,11 @@ export const accountUpdateSchema = z
     initialBalance: centsSchema,
     color: hexColorSchema,
     icon: iconSchema,
-    archived: z.boolean({ error: 'O campo arquivada deve ser verdadeiro ou falso' }),
+    archived: z.boolean({ error: validationMessage('account.archivedInvalid') }),
   })
   .partial()
   .refine((value) => Object.values(value).some((field) => field !== undefined), {
-    error: 'Informe ao menos um campo para atualizar',
+    error: validationMessage('common.updateEmpty'),
   });
 
 export const accountSchema = z.object({

@@ -80,6 +80,18 @@ export function createMutations(api: ApiClient) {
           client.setQueryData(queryKeys.me(), user);
         },
       }),
+      /**
+       * Language and display currency live only on the user, so the response replaces `me` and
+       * nothing else goes stale: category names are translated on the client (systemKey) and
+       * amounts are the same cents, only formatted differently.
+       */
+      updatePreferences: mutation({
+        mutationKey: ['auth', 'updatePreferences'],
+        mutationFn: api.auth.updatePreferences,
+        onSuccess: (user, _variables, _result, { client }) => {
+          client.setQueryData(queryKeys.me(), user);
+        },
+      }),
       /** Always ends the local session; the cache of the previous user is dropped. */
       logout: mutation<void, void>({
         mutationKey: ['auth', 'logout'],

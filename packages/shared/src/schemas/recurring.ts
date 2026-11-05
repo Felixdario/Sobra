@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { validationMessage } from './messages';
 import { idSchema, isoDateTimeSchema, localDateSchema } from './common';
 import { transactionTemplateSchema } from './transaction';
 
@@ -6,33 +7,36 @@ export const RECURRENCE_FREQUENCIES = ['weekly', 'monthly', 'yearly'] as const;
 export const RECURRENCE_INTERVAL_MAX = 99;
 
 export const recurrenceFrequencySchema = z.enum(RECURRENCE_FREQUENCIES, {
-  error: 'Frequência inválida: use weekly, monthly ou yearly',
+  error: validationMessage('recurring.frequencyInvalid'),
 });
 
 export const recurrenceRuleSchema = z
-  .object({
-    frequency: recurrenceFrequencySchema,
-    interval: z
-      .int({ error: 'O intervalo deve ser um número inteiro' })
-      .min(1, { error: 'O intervalo deve ser no mínimo 1' })
-      .max(RECURRENCE_INTERVAL_MAX, {
-        error: `O intervalo deve ser no máximo ${RECURRENCE_INTERVAL_MAX}`,
-      })
-      .default(1),
-    startDate: localDateSchema,
-    endDate: localDateSchema.optional(),
-    dayOfMonth: z
-      .int({ error: 'O dia do mês deve ser um número inteiro' })
-      .min(1, { error: 'O dia do mês deve estar entre 1 e 31' })
-      .max(31, { error: 'O dia do mês deve estar entre 1 e 31' })
-      .optional(),
-  })
+  .object(
+    {
+      frequency: recurrenceFrequencySchema,
+      interval: z
+        .int({ error: validationMessage('recurring.intervalNotInteger') })
+        .min(1, { error: validationMessage('recurring.intervalTooSmall') })
+        .max(RECURRENCE_INTERVAL_MAX, {
+          error: validationMessage('recurring.intervalTooLarge', { max: RECURRENCE_INTERVAL_MAX }),
+        })
+        .default(1),
+      startDate: localDateSchema,
+      endDate: localDateSchema.optional(),
+      dayOfMonth: z
+        .int({ error: validationMessage('recurring.dayOfMonthNotInteger') })
+        .min(1, { error: validationMessage('recurring.dayOfMonthOutOfRange') })
+        .max(31, { error: validationMessage('recurring.dayOfMonthOutOfRange') })
+        .optional(),
+    },
+    { error: validationMessage('recurring.ruleRequired') },
+  )
   .refine((rule) => rule.endDate === undefined || rule.endDate >= rule.startDate, {
-    error: 'A data final deve ser igual ou posterior à data inicial',
+    error: validationMessage('recurring.endBeforeStart'),
     path: ['endDate'],
   })
   .refine((rule) => rule.dayOfMonth === undefined || rule.frequency !== 'weekly', {
-    error: 'O dia do mês não se aplica à recorrência semanal',
+    error: validationMessage('recurring.dayOfMonthWeekly'),
     path: ['dayOfMonth'],
   });
 
@@ -45,11 +49,11 @@ export const recurringUpdateSchema = z
   .object({
     rule: recurrenceRuleSchema,
     template: transactionTemplateSchema,
-    active: z.boolean({ error: 'O campo ativa deve ser verdadeiro ou falso' }),
+    active: z.boolean({ error: validationMessage('recurring.activeInvalid') }),
   })
   .partial()
   .refine((value) => Object.values(value).some((field) => field !== undefined), {
-    error: 'Informe ao menos um campo para atualizar',
+    error: validationMessage('common.updateEmpty'),
   });
 
 export const recurringSchema = z.object({

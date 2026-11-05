@@ -11,6 +11,7 @@ import {
   type TransactionUpdate,
 } from '@sobra/shared';
 import { type Db, isUniqueViolation, type Prisma } from '../../lib/db';
+import { toSystemKey } from '../../lib/categories';
 import { AppError, conflict, notFound } from '../../lib/errors';
 import { fromDbCents, toDbCents } from '../../lib/money';
 import type { Transaction as TransactionRow } from '../../generated/prisma/client';
@@ -25,7 +26,7 @@ const accountRef = { select: { id: true, name: true } } as const;
 export const transactionInclude = {
   account: accountRef,
   toAccount: accountRef,
-  category: { select: { id: true, name: true, color: true, icon: true } },
+  category: { select: { id: true, name: true, color: true, icon: true, systemKey: true } },
 } satisfies Prisma.TransactionInclude;
 
 type TransactionWithRefs = Prisma.TransactionGetPayload<{ include: typeof transactionInclude }>;
@@ -56,7 +57,11 @@ export function toTransaction(row: TransactionWithRefs): Transaction {
     ...meta,
     type: row.type,
     categoryId: row.categoryId ?? '',
-    category: category && { ...category, icon: category.icon as IconName },
+    category: category && {
+      ...category,
+      icon: category.icon as IconName,
+      systemKey: toSystemKey(category.systemKey),
+    },
     toAccount: null,
   };
 }

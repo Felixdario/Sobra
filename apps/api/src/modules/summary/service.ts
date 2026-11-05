@@ -11,6 +11,7 @@ import {
   previousMonth,
 } from '@sobra/shared';
 import type { Db } from '../../lib/db';
+import { toSystemKey } from '../../lib/categories';
 import { badRequest } from '../../lib/errors';
 import { fromDbCents, sumOrZero } from '../../lib/money';
 import { daysOfMonth, monthCount, monthDateRange, monthsBetween } from '../../lib/period';
@@ -175,7 +176,7 @@ export async function spendingByCategory(
   const spent = await expensesByCategory(db, userId, month, { accountId });
   const categories = await db.category.findMany({
     where: { userId, id: { in: [...spent.keys()] } },
-    select: { id: true, name: true, color: true, icon: true },
+    select: { id: true, name: true, color: true, icon: true, systemKey: true },
   });
   const total = fromDbCents([...spent.values()].reduce((sum, amount) => sum + amount, 0n));
   const items = categories
@@ -186,6 +187,7 @@ export async function spendingByCategory(
         name: category.name,
         color: category.color,
         icon: category.icon as IconName,
+        systemKey: toSystemKey(category.systemKey),
         amount,
         percent: percentOf(amount, total) ?? 0,
       };
@@ -286,7 +288,7 @@ export async function budgetVsActual(
 ): Promise<BudgetVsActual> {
   const budgets = await db.budget.findMany({
     where: { userId, month },
-    include: { category: { select: { name: true, color: true } } },
+    include: { category: { select: { name: true, color: true, systemKey: true } } },
     orderBy: [{ category: { name: 'asc' } }, { createdAt: 'asc' }],
   });
   const actual = await expensesByCategory(db, userId, month, {
@@ -304,6 +306,7 @@ export async function budgetVsActual(
       categoryId: budget.categoryId,
       name: budget.category.name,
       color: budget.category.color,
+      systemKey: toSystemKey(budget.category.systemKey),
       budgeted,
       actual: actualCents,
       remaining: fromDbCents(budget.amount - spent),

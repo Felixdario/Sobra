@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { validationMessage } from './messages';
+import { DESCRIPTION_MAX } from './transaction';
 import { idSchema, isoDateTimeSchema, localDateSchema, positiveCentsSchema } from './common';
 
 export const CSV_IMPORT_MAX_ROWS = 2000;
@@ -7,9 +9,9 @@ export const CSV_CELL_MAX = 500;
 
 const rawCellSchema = (field: string) =>
   z
-    .string({ error: `Coluna ${field} ausente` })
+    .string({ error: validationMessage('csv.columnMissing', { column: field }) })
     .trim()
-    .max(CSV_CELL_MAX, { error: `Coluna ${field} longa demais` });
+    .max(CSV_CELL_MAX, { error: validationMessage('csv.columnTooLong', { column: field }) });
 
 /**
  * A statement row as read from the file, before interpretation. Cells may be empty: the
@@ -23,21 +25,25 @@ export const csvImportRowSchema = z.object({
 
 const rowsSchema = <T extends z.ZodType>(row: T) =>
   z
-    .array(row)
-    .min(1, { error: 'O arquivo não tem linhas para importar' })
+    .array(row, { error: validationMessage('csv.noRows') })
+    .min(1, { error: validationMessage('csv.noRows') })
     .max(CSV_IMPORT_MAX_ROWS, {
-      error: `O arquivo deve ter no máximo ${CSV_IMPORT_MAX_ROWS} linhas`,
+      error: validationMessage('csv.tooManyRows', { max: CSV_IMPORT_MAX_ROWS }),
     });
 
-const fileNameSchema = z.string().trim().min(1).max(200);
+const fileNameSchema = z
+  .string({ error: validationMessage('csv.fileNameInvalid') })
+  .trim()
+  .min(1, { error: validationMessage('csv.fileNameInvalid') })
+  .max(200, { error: validationMessage('csv.fileNameInvalid') });
 
 /** The file's text, parsed by the API (delimiter and header are detected). */
 export const csvImportTextRequestSchema = z.object({
   accountId: idSchema,
   csv: z
-    .string({ error: 'Envie o conteúdo do arquivo CSV' })
-    .min(1, { error: 'O arquivo está vazio' })
-    .max(CSV_TEXT_MAX, { error: 'O arquivo é grande demais' }),
+    .string({ error: validationMessage('csv.contentMissing') })
+    .min(1, { error: validationMessage('csv.empty') })
+    .max(CSV_TEXT_MAX, { error: validationMessage('csv.tooLarge') }),
   fileName: fileNameSchema.optional(),
 });
 
@@ -47,18 +53,24 @@ export const csvImportRowsRequestSchema = z.object({
   rows: rowsSchema(csvImportRowSchema),
 });
 
-export const csvImportPreviewRequestSchema = z.union([
-  csvImportTextRequestSchema,
-  csvImportRowsRequestSchema,
-]);
+export const csvImportPreviewRequestSchema = z.union(
+  [csvImportTextRequestSchema, csvImportRowsRequestSchema],
+  { error: validationMessage('csv.requestInvalid') },
+);
 
 export const csvImportedTypeSchema = z.enum(['income', 'expense'], {
-  error: 'Tipo inválido: use income ou expense',
+  error: validationMessage('csv.typeInvalid'),
 });
 
 export const csvMappedRowSchema = z.object({
   date: localDateSchema,
-  description: z.string().trim().min(1).max(120),
+  description: z
+    .string({ error: validationMessage('transaction.descriptionRequired') })
+    .trim()
+    .min(1, { error: validationMessage('transaction.descriptionRequired') })
+    .max(DESCRIPTION_MAX, {
+      error: validationMessage('transaction.descriptionTooLong', { max: DESCRIPTION_MAX }),
+    }),
   type: csvImportedTypeSchema,
   amount: positiveCentsSchema,
 });
@@ -81,14 +93,14 @@ export const csvImportPreviewSchema = z.object({
 });
 
 export const csvImportCommitRowSchema = csvMappedRowSchema.extend({
-  categoryId: z.uuid({ error: 'Informe uma categoria válida' }),
+  categoryId: z.uuid({ error: validationMessage('category.required') }),
 });
 
 export const csvImportCommitRequestSchema = z.object({
   accountId: idSchema,
   rows: rowsSchema(csvImportCommitRowSchema),
   force: z
-    .boolean({ error: 'O campo force deve ser verdadeiro ou falso' })
+    .boolean({ error: validationMessage('csv.forceInvalid') })
     .default(false)
     .describe('Importa também as linhas que já existem na conta'),
   fileName: fileNameSchema.optional(),

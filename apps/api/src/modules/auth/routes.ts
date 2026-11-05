@@ -8,6 +8,7 @@ import {
   refreshSchema,
   registerSchema,
   tokenPairSchema,
+  userPreferencesUpdateSchema,
   userSchema,
 } from '@sobra/shared';
 import { unauthorized } from '../../lib/errors';
@@ -27,7 +28,14 @@ import {
 const tags = ['Autenticação'];
 
 const registerBody = registerSchema.meta({
-  examples: [{ name: 'Maria Silva', email: 'maria@exemplo.com', password: 'senha-forte-123' }],
+  examples: [
+    {
+      name: 'Maria Silva',
+      email: 'maria@exemplo.com',
+      password: 'senha-forte-123',
+      locale: 'pt-BR',
+    },
+  ],
 });
 const loginBody = loginSchema.meta({
   examples: [{ email: 'maria@exemplo.com', password: 'senha-forte-123' }],
@@ -87,7 +95,7 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
         tags,
         summary: 'Cria uma conta de usuário',
         description:
-          'Cria o usuário com categorias padrão em pt-BR e a conta "Carteira", e já devolve os tokens.',
+          'Cria o usuário com as categorias padrão e a conta "Carteira", e já devolve os tokens. `locale` (opcional) é o idioma do navegador ou do aparelho ("en-GB", "pt"): vira o locale suportado mais próximo (pt-BR ou en-US, padrão pt-BR) e define o idioma da interface e dos nomes padrão.',
         headers: sessionHeaders,
         body: registerBody,
         response: { 201: sessionBody, ...errorResponses(400, 409, 429) },
@@ -171,5 +179,24 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (request) => auth.getProfile(app.prisma, request.userId),
+  );
+
+  app.patch(
+    '/me/preferences',
+    {
+      onRequest: app.authenticate,
+      schema: {
+        tags,
+        summary: 'Atualiza idioma e moeda de exibição',
+        description:
+          'Aceita `locale` (pt-BR | en-US) e/ou `currency` (BRL | USD | EUR). A moeda só muda a formatação: os valores continuam em centavos da moeda em que a pessoa registra, sem conversão de câmbio. Devolve o usuário atualizado.',
+        security: bearerAuth,
+        body: userPreferencesUpdateSchema.meta({
+          examples: [{ locale: 'en-US', currency: 'USD' }],
+        }),
+        response: { 200: userSchema, ...errorResponses(400, 401) },
+      },
+    },
+    async (request) => auth.updatePreferences(app.prisma, request.userId, request.body),
   );
 };

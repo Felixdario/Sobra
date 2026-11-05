@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { validationMessage } from './messages';
 import {
   fromQuery,
   hexColorSchema,
@@ -11,33 +12,32 @@ import {
   positiveCentsSchema,
   sortSchema,
 } from './common';
+import { nullableSystemKeySchema } from './category';
 
 export const TRANSACTION_TYPES = ['income', 'expense', 'transfer'] as const;
 
 export const transactionTypeSchema = z.enum(TRANSACTION_TYPES, {
-  error: 'Tipo de transação inválido',
+  error: validationMessage('transaction.typeInvalid'),
 });
 
 export const DESCRIPTION_MAX = 120;
 export const NOTES_MAX = 500;
 
 const descriptionSchema = z
-  .string({ error: 'Informe a descrição' })
+  .string({ error: validationMessage('transaction.descriptionRequired') })
   .trim()
-  .min(1, { error: 'Informe a descrição' })
+  .min(1, { error: validationMessage('transaction.descriptionRequired') })
   .max(DESCRIPTION_MAX, {
-    error: `A descrição deve ter no máximo ${DESCRIPTION_MAX} caracteres`,
+    error: validationMessage('transaction.descriptionTooLong', { max: DESCRIPTION_MAX }),
   });
 
 const notesSchema = z
-  .string()
+  .string({ error: validationMessage('transaction.notesInvalid') })
   .trim()
-  .max(NOTES_MAX, { error: `As observações devem ter no máximo ${NOTES_MAX} caracteres` });
+  .max(NOTES_MAX, { error: validationMessage('transaction.notesTooLong', { max: NOTES_MAX }) });
 
-const categoryIdSchema = z.uuid({ error: 'Informe uma categoria válida' });
-const toAccountIdSchema = z.uuid({ error: 'Informe uma conta de destino válida' });
-
-const SAME_ACCOUNT_MESSAGE = 'A conta de destino deve ser diferente da conta de origem';
+const categoryIdSchema = z.uuid({ error: validationMessage('category.required') });
+const toAccountIdSchema = z.uuid({ error: validationMessage('transaction.toAccountRequired') });
 
 function isDistinctTransfer(value: {
   accountId?: string | undefined;
@@ -51,7 +51,7 @@ function isDistinctTransfer(value: {
 }
 
 const distinctTransferCheck = {
-  error: SAME_ACCOUNT_MESSAGE,
+  error: validationMessage('transaction.sameAccount'),
   path: ['toAccountId'],
 };
 
@@ -64,13 +64,13 @@ const baseShape = {
 
 const incomeExpenseShape = {
   ...baseShape,
-  type: z.enum(['income', 'expense'], { error: 'Tipo de transação inválido' }),
+  type: z.enum(['income', 'expense'], { error: validationMessage('transaction.typeInvalid') }),
   categoryId: categoryIdSchema,
 };
 
 const transferShape = {
   ...baseShape,
-  type: z.literal('transfer', { error: 'Tipo de transação inválido' }),
+  type: z.literal('transfer', { error: validationMessage('transaction.typeInvalid') }),
   toAccountId: toAccountIdSchema,
 };
 
@@ -80,7 +80,7 @@ export const transactionTemplateSchema = z.discriminatedUnion(
     z.object(incomeExpenseShape),
     z.object(transferShape).refine(isDistinctTransfer, distinctTransferCheck),
   ],
-  { error: 'Tipo de transação inválido: use income, expense ou transfer' },
+  { error: validationMessage('transaction.typeInvalidHint') },
 );
 
 const dated = { date: localDateSchema };
@@ -91,7 +91,7 @@ export const transactionCreateSchema = z.discriminatedUnion(
     z.object({ ...incomeExpenseShape, ...dated }),
     z.object({ ...transferShape, ...dated }).refine(isDistinctTransfer, distinctTransferCheck),
   ],
-  { error: 'Tipo de transação inválido: use income, expense ou transfer' },
+  { error: validationMessage('transaction.typeInvalidHint') },
 );
 
 export const transactionUpdateSchema = z
@@ -108,7 +108,7 @@ export const transactionUpdateSchema = z
   .partial()
   .refine(isDistinctTransfer, distinctTransferCheck)
   .refine((value) => Object.values(value).some((field) => field !== undefined), {
-    error: 'Informe ao menos um campo para atualizar',
+    error: validationMessage('common.updateEmpty'),
   });
 
 export function mergeTransactionUpdate(
@@ -140,6 +140,7 @@ export const transactionCategoryRefSchema = z.object({
   name: z.string(),
   color: hexColorSchema,
   icon: iconSchema,
+  systemKey: nullableSystemKeySchema,
 });
 
 /**

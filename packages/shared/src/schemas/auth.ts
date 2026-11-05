@@ -1,29 +1,36 @@
 import { z } from 'zod';
+import { validationMessage } from './messages';
+import { DEFAULT_CURRENCY, DEFAULT_LOCALE } from '../config';
 import { idSchema, isoDateTimeSchema, nameSchema } from './common';
+import { deviceLocaleSchema, displayCurrencySchema, localeSchema } from './preferences';
 
 export const PASSWORD_MIN = 8;
 export const PASSWORD_MAX = 128;
 
 export const emailSchema = z
-  .string({ error: 'Informe o e-mail' })
+  .string({ error: validationMessage('auth.emailRequired') })
   .trim()
   .toLowerCase()
-  .pipe(z.email({ error: 'E-mail inválido' }));
+  .pipe(z.email({ error: validationMessage('auth.emailInvalid') }));
 
 export const passwordSchema = z
-  .string({ error: 'Informe a senha' })
-  .min(PASSWORD_MIN, { error: `A senha deve ter no mínimo ${PASSWORD_MIN} caracteres` })
-  .max(PASSWORD_MAX, { error: `A senha deve ter no máximo ${PASSWORD_MAX} caracteres` });
+  .string({ error: validationMessage('auth.passwordRequired') })
+  .min(PASSWORD_MIN, { error: validationMessage('auth.passwordTooShort', { min: PASSWORD_MIN }) })
+  .max(PASSWORD_MAX, { error: validationMessage('auth.passwordTooLong', { max: PASSWORD_MAX }) });
 
 export const registerSchema = z.object({
   name: nameSchema(80),
   email: emailSchema,
   password: passwordSchema,
+  /** Browser/device language (optional); picks the interface language and default names. */
+  locale: deviceLocaleSchema.optional(),
 });
 
 export const loginSchema = z.object({
   email: emailSchema,
-  password: z.string({ error: 'Informe a senha' }).min(1, { error: 'Informe a senha' }),
+  password: z
+    .string({ error: validationMessage('auth.passwordRequired') })
+    .min(1, { error: validationMessage('auth.passwordRequired') }),
 });
 
 export const tokenPairSchema = z.object({
@@ -39,8 +46,8 @@ export const tokenPairSchema = z.object({
 export const cookieTokensSchema = tokenPairSchema.omit({ refreshToken: true });
 
 export const refreshSchema = z.object({
-  refreshToken: z.string({ error: 'Token de renovação ausente' }).min(1, {
-    error: 'Token de renovação ausente',
+  refreshToken: z.string({ error: validationMessage('auth.refreshTokenMissing') }).min(1, {
+    error: validationMessage('auth.refreshTokenMissing'),
   }),
 });
 
@@ -48,6 +55,12 @@ export const userSchema = z.object({
   id: idSchema,
   name: z.string(),
   email: z.email(),
+  /**
+   * Preferences (ADR-035). The defaults only let a newer client read an older API; the API always
+   * sends both.
+   */
+  locale: localeSchema.default(DEFAULT_LOCALE),
+  currency: displayCurrencySchema.default(DEFAULT_CURRENCY),
   createdAt: isoDateTimeSchema,
 });
 

@@ -10,4 +10,11 @@ export {
   type MonthKey,
 } from './month';
 export { parseLocalDate, toLocalDateKey } from './day';
-export { formatDate, formatMonth, formatRelativeDay } from './format';
+export {
+  formatDate,
+  formatMonth,
+  formatRelativeDay,
+  type DateFormatOptions,
+  type MonthStyle,
+  type RelativeDayOptions,
+} from './format';

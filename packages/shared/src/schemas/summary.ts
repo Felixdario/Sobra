@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { validationMessage } from './messages';
 import {
   centsSchema,
   fromQuery,
@@ -9,6 +10,7 @@ import {
   monthKeySchema,
   positiveCentsSchema,
 } from './common';
+import { nullableSystemKeySchema } from './category';
 
 /**
  * Percentages across the whole contract are on a 0–100 scale (12.5 means 12.5%), as returned by
@@ -64,6 +66,7 @@ export const spendingByCategoryItemSchema = z.object({
   name: z.string(),
   color: hexColorSchema,
   icon: iconSchema,
+  systemKey: nullableSystemKeySchema,
   amount: centsSchema,
   percent: percentSchema,
 });
@@ -90,6 +93,7 @@ export const budgetVsActualItemSchema = z.object({
   categoryId: idSchema,
   name: z.string(),
   color: hexColorSchema,
+  systemKey: nullableSystemKeySchema,
   budgeted: positiveCentsSchema,
   actual: centsSchema,
   remaining: centsSchema,
@@ -116,10 +120,12 @@ export const summaryRangeQuerySchema = z
     from: monthKeySchema,
     to: monthKeySchema,
     accountId: fromQuery(idSchema),
-    granularity: fromQuery(z.enum(['day', 'month'], { error: 'Granularidade inválida' })),
+    granularity: fromQuery(
+      z.enum(['day', 'month'], { error: validationMessage('summary.granularityInvalid') }),
+    ),
   })
   .refine((query) => query.from <= query.to, {
-    error: 'O mês inicial deve ser igual ou anterior ao mês final',
+    error: validationMessage('summary.rangeInvalid'),
     path: ['to'],
   });
 

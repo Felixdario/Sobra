@@ -41,3 +41,27 @@ describe('categorySchema', () => {
     ).toBe(true);
   });
 });
+
+describe('systemKey', () => {
+  const response = {
+    ...validCreate,
+    id: '3f2504e0-4f89-41d3-9a0c-0305e82c3301',
+    createdAt: '2026-11-04T12:00:00.000Z',
+    updatedAt: '2026-11-04T12:00:00.000Z',
+  };
+
+  it('aceita uma chave padrão ou null, e vira null quando uma API antiga não manda', () => {
+    expect(categorySchema.parse({ ...response, systemKey: 'groceries' }).systemKey).toBe(
+      'groceries',
+    );
+    expect(categorySchema.parse({ ...response, systemKey: null }).systemKey).toBeNull();
+    expect(categorySchema.parse(response).systemKey).toBeNull();
+    expect(categorySchema.safeParse({ ...response, systemKey: 'pets' }).success).toBe(false);
+  });
+
+  it('não é aceito na criação nem na edição', () => {
+    expect(categoryCreateSchema.parse({ ...validCreate, systemKey: 'other' })).not.toHaveProperty(
+      'systemKey',
+    );
+  });
+});

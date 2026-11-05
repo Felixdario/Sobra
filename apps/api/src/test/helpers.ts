@@ -3,11 +3,12 @@ import { copyFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import type { LightMyRequestResponse } from 'fastify';
 import { inject } from 'vitest';
+import type { z } from 'zod';
 import {
   apiErrorSchema,
   type AuthResponse,
   authResponseSchema,
-  type RegisterInput,
+  type registerSchema,
 } from '@sobra/shared';
 import { type App, buildApp } from '../app';
 import { loadEnv } from '../config/env';
@@ -40,7 +41,7 @@ export type TestUser = AuthResponse & { password: string };
 
 export async function registerUser(
   app: App,
-  overrides: Partial<RegisterInput> = {},
+  overrides: Partial<z.input<typeof registerSchema>> = {},
 ): Promise<TestUser> {
   const input = {
     name: 'Pessoa Teste',

@@ -103,7 +103,13 @@ function toTransaction(
     type: fields.type,
     categoryId: fields.categoryId,
     category: category
-      ? { id: category.id, name: category.name, color: category.color, icon: category.icon }
+      ? {
+          id: category.id,
+          name: category.name,
+          color: category.color,
+          icon: category.icon,
+          systemKey: category.systemKey,
+        }
       : null,
     toAccount: null,
   };

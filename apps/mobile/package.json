@@ -30,6 +30,7 @@
     "@expo-google-fonts/archivo": "^0.4.2",
     "@expo/metro-runtime": "~58.0.17",
     "@sobra/client": "workspace:*",
+    "@sobra/i18n": "workspace:*",
     "@sobra/shared": "workspace:*",
     "@sobra/tokens": "workspace:*",
     "@hookform/resolvers": "^7.0.2",

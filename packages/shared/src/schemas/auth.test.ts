@@ -12,6 +12,15 @@ import {
 const validRegister = { name: '  Ana Souza ', email: ' Ana@Example.COM ', password: 'segredo123' };
 
 describe('registerSchema', () => {
+  it('resolves the optional device locale instead of rejecting it', () => {
+    expect(registerSchema.parse({ ...validRegister, locale: 'en-GB' }).locale).toBe('en-US');
+    expect(registerSchema.parse({ ...validRegister, locale: 'fr' }).locale).toBe('pt-BR');
+    expect(registerSchema.parse(validRegister).locale).toBeUndefined();
+    expect(registerSchema.safeParse({ ...validRegister, locale: 'x'.repeat(36) }).success).toBe(
+      false,
+    );
+  });
+
   it('trims the name and normalizes the e-mail', () => {
     expect(registerSchema.parse(validRegister)).toEqual({
       name: 'Ana Souza',
@@ -84,6 +93,8 @@ describe('userSchema', () => {
     id: '3f2504e0-4f89-41d3-9a0c-0305e82c3301',
     name: 'Ana',
     email: 'ana@example.com',
+    locale: 'en-US' as const,
+    currency: 'EUR' as const,
     createdAt: '2026-11-04T12:00:00.000Z',
   };
 
@@ -91,6 +102,11 @@ describe('userSchema', () => {
     const parsed = userSchema.parse({ ...user, passwordHash: '$2b$10$...' });
     expect(parsed).toEqual(user);
     expect(parsed).not.toHaveProperty('passwordHash');
+  });
+
+  it('fills pt-BR/BRL when an older API omits the preferences', () => {
+    const legacy = { id: user.id, name: user.name, email: user.email, createdAt: user.createdAt };
+    expect(userSchema.parse(legacy)).toMatchObject({ locale: 'pt-BR', currency: 'BRL' });
   });
 
   it('is embedded in the auth response', () => {

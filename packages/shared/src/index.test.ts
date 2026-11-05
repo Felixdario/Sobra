@@ -7,6 +7,8 @@ import {
   cents,
   centsSchema,
   formatBRL,
+  formatMoney,
+  resolveLocale,
   healthResponseSchema,
   monthKeySchema,
   toMonthKey,
@@ -23,7 +25,17 @@ describe('@sobra/shared', () => {
 
   it('reexporta os utilitários de dinheiro e datas', () => {
     expect(formatBRL(cents(123_456))).toBe('R$\u00a01.234,56');
+    expect(formatMoney(cents(-100), { locale: 'en-US', currency: 'USD' })).toBe('−$1.00');
     expect(toMonthKey(new Date('2026-12-01T02:30:00Z'))).toBe('2026-11');
+  });
+
+  it('resolve o idioma do aparelho para um locale suportado', () => {
+    expect(resolveLocale('en-GB')).toBe('en-US');
+    expect(resolveLocale('pt-PT')).toBe('pt-BR');
+    expect(resolveLocale('en_us')).toBe('en-US');
+    expect(resolveLocale(['fr-FR', 'en-AU'])).toBe('en-US');
+    expect(resolveLocale(['fr-FR', null])).toBe('pt-BR');
+    expect(resolveLocale(undefined)).toBe('pt-BR');
   });
 
   it('valida a resposta de saúde', () => {

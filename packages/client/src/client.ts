@@ -44,6 +44,7 @@ import {
   type RecurringCreateBody,
   type RecurringUpdateBody,
   type RegisterBody,
+  type PreferencesUpdateBody,
   type SummaryMonthParams,
   type SummaryRangeParams,
   type TransactionCreateBody,
@@ -125,6 +126,12 @@ export function createApiClient(config: ApiClientConfig) {
       logout: (): Promise<void> => http.endSession(),
       me: (opts: RequestOptions = {}) =>
         http.request({ method: 'GET', path: '/me', ...opts }, userSchema),
+      /**
+       * Saves the interface language and/or display currency (ADR-035) and returns the updated
+       * user. The currency only changes formatting: amounts are never converted.
+       */
+      updatePreferences: (body: PreferencesUpdateBody) =>
+        http.request({ method: 'PATCH', path: '/me/preferences', body }, userSchema),
     },
 
     accounts: {

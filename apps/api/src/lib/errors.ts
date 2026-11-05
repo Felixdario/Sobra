@@ -1,13 +1,7 @@
-export type ErrorCode =
-  | 'VALIDATION_ERROR'
-  | 'BAD_REQUEST'
-  | 'UNAUTHORIZED'
-  | 'FORBIDDEN'
-  | 'NOT_FOUND'
-  | 'CONFLICT'
-  | 'PAYLOAD_TOO_LARGE'
-  | 'RATE_LIMITED'
-  | 'INTERNAL_ERROR';
+import type { ApiErrorCodeName } from '@sobra/shared';
+
+/** The list lives in the shared contract (`API_ERROR_CODES`), where clients translate it. */
+export type ErrorCode = ApiErrorCodeName;
 
 export class AppError extends Error {
   constructor(

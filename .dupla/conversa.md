@@ -96,3 +96,9 @@ Commits após a fase 7: 7f924cc (fix iOS), 8995618 (rename sobra), a8e5895 (.env
 🧭 → 🔧 (Executor K) sessão web com cookie httpOnly + CSRF double-submit; client com modo cookie; mobile intacto; ADR novo.
 🔧 → 🧭 (K) FEITO: cookie sobra_refresh HttpOnly/SameSite=Strict/Path=/auth + CSRF double-submit (sobra_csrf + X-CSRF-Token), client session:'cookie', web sem refresh no localStorage, mobile intacto, ADR-034.
 🧭 Validação própria: raiz verde (tokens 225, shared 268, client 60, api 149, web 84, mobile 141); navegador: login → localStorage vazio, JS só vê sobra_csrf; recarregar → /api/auth/refresh + /api/me → Painel. ✅ APROVADO → commit
+Commit 104dc0c.
+🧭 → 🔧 (Executor I) base i18n: formatMoney/parseMoney/datas por locale, @sobra/i18n com catálogos tipados pt-BR/en-US e plural, preferências locale+currency na API, estratégia de erros e categorias padrão, ADR.
+🔧 → 🧭 (I) FEITO base: formatMoney/parseMoney/datas por locale, @sobra/i18n próprio (catálogo tipado, PluralRules com fallback), preferências na API (migration), systemKey nas categorias padrão, erros por code, ADR-035; 1022 testes.
+🧭 Validação própria: raiz verde. 🔁 REVISAR (I): tradução de issues Zod na base (translateIssue + helper de formulário + teste de cobertura).
+🔧 → 🧭 (I) FEITO revisão: VALIDATION_MESSAGES no shared + translateIssue/translateFieldError, 6 buracos fechados, varredura de cobertura; 1050 testes.
+🧭 Validação própria: raiz verde, builds ok. ✅ APROVADO base i18n (2 rodadas). Planejador dividiu o catálogo em base + web.* + mobile.* (arquivos separados) para o trabalho em paralelo. → commit

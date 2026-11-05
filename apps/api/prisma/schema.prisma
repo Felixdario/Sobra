@@ -37,6 +37,10 @@ model User {
   name         String
   email        String   @unique
   passwordHash String
+  /// Interface language, "pt-BR" | "en-US" (validated by the shared contract, ADR-035).
+  locale       String   @default("pt-BR")
+  /// Display currency, "BRL" | "USD" | "EUR": formatting only, amounts are never converted.
+  currency     String   @default("BRL")
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -90,6 +94,8 @@ model Account {
   @@index([userId])
 }
 
+/// `systemKey` marks a default category the user has not renamed; clients show its translated
+/// name (ADR-035). Renaming clears it.
 model Category {
   id        String       @id @default(uuid(7))
   userId    String
@@ -97,6 +103,7 @@ model Category {
   kind      CategoryKind
   color     String
   icon      String
+  systemKey String?
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
 

@@ -1,8 +1,19 @@
 import { randomUUID } from 'node:crypto';
-import type { AuthResponse, LoginInput, RegisterInput, TokenPair, User } from '@sobra/shared';
+import {
+  DEFAULT_LOCALE,
+  type AuthResponse,
+  type DisplayCurrency,
+  type Locale,
+  type LoginInput,
+  type RegisterInput,
+  type TokenPair,
+  type User,
+  type UserPreferencesUpdate,
+} from '@sobra/shared';
 import { type Db, isUniqueViolation, type PrismaClient } from '../../lib/db';
 import { conflict, unauthorized } from '../../lib/errors';
-import { DEFAULT_ACCOUNT, DEFAULT_CATEGORIES } from './defaults';
+import { compact } from '../../lib/objects';
+import { defaultAccount, defaultCategories } from './defaults';
 import type { PasswordHasher } from './password';
 import { generateRefreshToken, hashRefreshToken } from './tokens';
 
@@ -18,12 +29,23 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const INVALID_CREDENTIALS = 'E-mail ou senha incorretos';
 export const INVALID_REFRESH = 'Sessão expirada ou inválida. Entre novamente';
 
-type UserRow = { id: string; name: string; email: string; createdAt: Date };
+type UserRow = {
+  id: string;
+  name: string;
+  email: string;
+  locale: string;
+  currency: string;
+  createdAt: Date;
+};
 
 const toUser = (row: UserRow): User => ({
   id: row.id,
   name: row.name,
   email: row.email,
+  // Only the API writes these columns, always through the shared enums; the response schema
+  // checks them again on the way out.
+  locale: row.locale as Locale,
+  currency: row.currency as DisplayCurrency,
   createdAt: row.createdAt.toISOString(),
 });
 
@@ -58,16 +80,20 @@ const revokeFamily = (db: Db, familyId: string) =>
     data: { revokedAt: new Date() },
   });
 
-/** Creates the user with the default categories and account. Run it inside a transaction. */
+/**
+ * Creates the user with the default categories and account, named in `locale` (pt-BR when
+ * absent). Run it inside a transaction.
+ */
 export async function createUserWithDefaults(
   db: Db,
-  input: { name: string; email: string; passwordHash: string },
+  input: { name: string; email: string; passwordHash: string; locale?: Locale | undefined },
 ): Promise<UserRow> {
-  const user = await db.user.create({ data: input });
+  const locale = input.locale ?? DEFAULT_LOCALE;
+  const user = await db.user.create({ data: { ...input, locale } });
   await db.category.createMany({
-    data: DEFAULT_CATEGORIES.map((category) => ({ ...category, userId: user.id })),
+    data: defaultCategories(locale).map((category) => ({ ...category, userId: user.id })),
   });
-  await db.account.create({ data: { ...DEFAULT_ACCOUNT, userId: user.id } });
+  await db.account.create({ data: { ...defaultAccount(locale), userId: user.id } });
   return user;
 }
 
@@ -79,6 +105,7 @@ export async function register(ctx: AuthContext, input: RegisterInput): Promise<
         name: input.name,
         email: input.email,
         passwordHash,
+        locale: input.locale,
       });
       const { tokens } = await issueTokens(ctx, tx, user.id);
       return { user: toUser(user), tokens };
@@ -145,8 +172,21 @@ export async function logout(ctx: AuthContext, refreshToken: string): Promise<vo
   if (current) await revokeFamily(ctx.prisma, current.familyId);
 }
 
+const USER_NOT_FOUND = 'Usuário não encontrado';
+
 export async function getProfile(db: Db, userId: string): Promise<User> {
   const user = await db.user.findUnique({ where: { id: userId } });
-  if (!user) throw unauthorized('Usuário não encontrado');
+  if (!user) throw unauthorized(USER_NOT_FOUND);
   return toUser(user);
+}
+
+/** Saves the given preferences (validated by `userPreferencesUpdateSchema`) and returns the user. */
+export async function updatePreferences(
+  db: Db,
+  userId: string,
+  input: UserPreferencesUpdate,
+): Promise<User> {
+  const { count } = await db.user.updateMany({ where: { id: userId }, data: compact(input) });
+  if (count === 0) throw unauthorized(USER_NOT_FOUND);
+  return getProfile(db, userId);
 }

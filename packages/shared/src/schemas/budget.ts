@@ -1,8 +1,9 @@
 import { z } from 'zod';
+import { validationMessage } from './messages';
 import { centsSchema, idSchema, monthKeySchema, positiveCentsSchema } from './common';
 
 export const budgetUpsertSchema = z.object({
-  categoryId: z.uuid({ error: 'Informe uma categoria válida' }),
+  categoryId: z.uuid({ error: validationMessage('category.required') }),
   month: monthKeySchema,
   amount: positiveCentsSchema,
 });

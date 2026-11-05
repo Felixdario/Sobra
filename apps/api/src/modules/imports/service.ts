@@ -92,7 +92,7 @@ export async function previewImport(
 
   const categories = await db.category.findMany({
     where: { userId },
-    select: { id: true, name: true, kind: true },
+    select: { id: true, name: true, kind: true, systemKey: true },
   });
   const suggest = createCategorySuggester(categories);
 

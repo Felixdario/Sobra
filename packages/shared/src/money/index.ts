@@ -9,5 +9,13 @@ export {
   subtractCents,
   sumCents,
 } from './arithmetic';
-export { centsToReais, parseBRL, reaisToCents } from './parse';
-export { formatBRL, type FormatBRLOptions } from './format';
+export { centsToReais, formatMoneyInput, parseBRL, parseMoney, reaisToCents } from './parse';
+export {
+  formatBRL,
+  formatCompactAmount,
+  formatMoney,
+  formatPercent,
+  MINUS_SIGN,
+  type FormatBRLOptions,
+  type FormatMoneyOptions,
+} from './format';

@@ -230,6 +230,7 @@ describe('/summary', () => {
           categoryId: mercado,
           name: 'Mercado',
           color: '#D06A1F',
+          systemKey: 'groceries',
           budgeted: 40_000,
           actual: 30_000,
           remaining: 10_000,

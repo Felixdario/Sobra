@@ -80,6 +80,8 @@ export const user: User = {
   id: ids.user,
   name: 'Ana Demo',
   email: 'demo@sobra.dev',
+  locale: 'pt-BR',
+  currency: 'BRL',
   createdAt: NOW,
 };
 
@@ -102,6 +104,7 @@ export const category: Category = {
   kind: 'expense',
   color: '#1C50B5',
   icon: 'cart',
+  systemKey: 'groceries',
   createdAt: NOW,
   updatedAt: NOW,
 };
@@ -123,7 +126,13 @@ export const expense = (
   createdAt: NOW,
   updatedAt: NOW,
   account: { id: ids.nubank, name: 'Nubank' },
-  category: { id: ids.mercado, name: 'Mercado', color: '#1C50B5', icon: 'cart' },
+  category: {
+    id: ids.mercado,
+    name: 'Mercado',
+    color: '#1C50B5',
+    icon: 'cart',
+    systemKey: 'groceries',
+  },
   toAccount: null,
 });
 

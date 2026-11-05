@@ -244,6 +244,15 @@ describe('invalidações após mutação', () => {
     expect([...invalidationMap[name]].sort()).toEqual([...expected].sort());
   });
 
+  it('preferências: troca o me no cache e não invalida nada', async () => {
+    const updated = { ...user, locale: 'en-US' as const, currency: 'EUR' as const };
+    const { queryClient, mutations } = setup(() => ({ status: 200, body: updated }));
+    const invalidated = seedEveryDomain(queryClient);
+    await run(queryClient, mutations.auth.updatePreferences, { locale: 'en-US', currency: 'EUR' });
+    expect(queryClient.getQueryData(queryKeys.me())).toEqual(updated);
+    expect(invalidated()).toEqual([]);
+  });
+
   it('login troca o cache pelo usuário novo; logout limpa tudo', async () => {
     const { queryClient, mutations } = setup((req) =>
       req.path === '/auth/login'

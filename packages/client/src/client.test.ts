@@ -57,6 +57,19 @@ describe('autenticação', () => {
     expect(requests[0]?.path).toBe('/me');
   });
 
+  it('updatePreferences faz PATCH /me/preferences e devolve o usuário validado', async () => {
+    const updated = { ...user, locale: 'en-US', currency: 'USD' };
+    const { client, requests } = setup(() => ({ status: 200, body: updated }));
+    await expect(
+      client.auth.updatePreferences({ locale: 'en-US', currency: 'USD' }),
+    ).resolves.toEqual(updated);
+    expect(requests[0]).toMatchObject({
+      method: 'PATCH',
+      path: '/me/preferences',
+      body: { locale: 'en-US', currency: 'USD' },
+    });
+  });
+
   it('login guarda os tokens, devolve o usuário e não manda Bearer', async () => {
     const { client, tokenStore, requests } = setup(
       () => ({ status: 200, body: { user, tokens: tokens(7) } }),

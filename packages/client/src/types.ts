@@ -20,6 +20,7 @@ import {
   type categoryUpdateSchema,
   type loginSchema,
   type registerSchema,
+  type userPreferencesUpdateSchema,
 } from '@sobra/shared';
 import type { z } from 'zod';
 
@@ -30,6 +31,7 @@ export type TransactionPage = z.output<typeof transactionPageSchema>;
 // Request bodies are the *input* side of the shared schemas (what the API accepts).
 export type RegisterBody = z.input<typeof registerSchema>;
 export type LoginBody = z.input<typeof loginSchema>;
+export type PreferencesUpdateBody = z.input<typeof userPreferencesUpdateSchema>;
 export type AccountCreateBody = AccountCreateInput;
 export type AccountUpdateBody = AccountUpdateInput;
 export type CategoryCreateBody = z.input<typeof categoryCreateSchema>;
