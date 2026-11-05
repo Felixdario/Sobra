@@ -5,6 +5,10 @@ Fastify 5 + Prisma 7 (SQLite em dev/teste) + Zod 4 via `fastify-type-provider-zo
 
 ## Comandos (a partir da raiz)
 
+Atalhos da raiz (ver o README principal): `corepack pnpm bootstrap` cria `apps/api/.env` a partir do
+`.env.example` se não existir, roda `db:deploy` e `db:seed`; `corepack pnpm dev` sobe API e web
+juntos. Os comandos por pacote:
+
 ```sh
 corepack pnpm install                              # também roda `prisma generate` (postinstall)
 corepack pnpm --filter @financas/api db:migrate    # cria/aplica migrations no SQLite de dev

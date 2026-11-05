@@ -84,3 +84,9 @@ Commits de2cb96 (web) e 2f90396 (mobile).
 🧭 Validação própria: captura pior-caso-painel-depois-1440 conferida (R$ 999.999.999,99, nomes de 120 chars, CJK, 1000% estourado). ✅ APROVADO P1. Aguardando P2.
 🔧 → 🧭 (P2) FEITO: lista infinita no client (+8 testes) e mobile sem espelhamento; break-ui com cenários em __DEV__ + fontScale 1/1.5/2; correções de corte, abas, folha rolável; animações (sem animação por dígito, reduce motion, troca de mês por gesto); impeccable; a11y (anúncios, teclado tecla a tecla, 72 pares de contraste); ADR-033; docs/polimento-mobile.md.
 🧭 Validação própria: captura fonte-ampliada conferida; raiz verde (tokens 225, shared 267, client 50, api 132, web 82, mobile 139), web e api build. ✅ APROVADO fase 6 (1 rodada cada) → commit
+Commit 864e87c.
+
+## Fase 7
+🧭 → 🔧 (Executor R) README de portfólio: 3 comandos testados em clone limpo, capturas, 2 diagramas Mermaid, decisões com links de ADR, números reais de testes, limitações honestas, próximos aprendizados, LICENSE MIT.
+🔧 → 🧭 (R) FEITO: scripts bootstrap/dev/dev:mobile + scripts/ensure-env.mjs; README (capturas, 3 comandos, 2 Mermaid validados, 11 decisões, 895 testes, limitações, próximos passos); LICENSE MIT; clone limpo testado.
+🧭 ✅ APROVADO fase 7 → commit; validação própria em clone do commit a seguir.

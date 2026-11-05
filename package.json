@@ -7,6 +7,9 @@
     "node": ">=22.12"
   },
   "scripts": {
+    "bootstrap": "node scripts/ensure-env.mjs && corepack pnpm --filter @financas/api db:deploy && corepack pnpm --filter @financas/api db:seed",
+    "dev": "corepack pnpm --parallel --filter @financas/api --filter @financas/web dev",
+    "dev:mobile": "corepack pnpm --filter @financas/mobile start",
     "typecheck": "corepack pnpm -r typecheck",
     "lint": "corepack pnpm -r lint",
     "test": "corepack pnpm -r test",
