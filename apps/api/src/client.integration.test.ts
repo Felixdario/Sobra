@@ -1,15 +1,15 @@
 import type { AddressInfo } from 'node:net';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
-import { createApiClient, createMemoryTokenStore, type TokenStore } from '@financas/client';
+import { createApiClient, createMemoryTokenStore, type TokenStore } from '@sobra/client';
 import type { App } from './app';
 import { createTestApp, registerUser, type TestUser } from './test/helpers';
 
 /**
- * `@financas/client` against the real API (HTTP on 127.0.0.1, private SQLite): the contract
+ * `@sobra/client` against the real API (HTTP on 127.0.0.1, private SQLite): the contract
  * the client validates is the one the API serves, and the single-flight refresh survives the
  * API's refresh-token reuse detection.
  */
-describe('@financas/client contra a API real', () => {
+describe('@sobra/client contra a API real', () => {
   let app: App;
   let baseUrl: string;
   let registered: TestUser;

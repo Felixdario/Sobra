@@ -9,7 +9,7 @@ import {
   type TransactionFilters,
   toLocalDateKey,
   type TransactionUpdate,
-} from '@financas/shared';
+} from '@sobra/shared';
 import { type Db, isUniqueViolation, type Prisma } from '../../lib/db';
 import { AppError, conflict, notFound } from '../../lib/errors';
 import { fromDbCents, toDbCents } from '../../lib/money';

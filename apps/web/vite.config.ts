@@ -6,7 +6,7 @@ import { buildTokensCss } from './src/theme/tokensCss';
 const TOKENS_ID = 'virtual:sobra-tokens.css';
 const RESOLVED_TOKENS_ID = `\0${TOKENS_ID}`;
 
-/** Serves the CSS generated from @financas/tokens as a stylesheet, so it lands in the built CSS. */
+/** Serves the CSS generated from @sobra/tokens as a stylesheet, so it lands in the built CSS. */
 function sobraTokens(): Plugin {
   return {
     name: 'sobra-tokens',

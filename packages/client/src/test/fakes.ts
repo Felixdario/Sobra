@@ -1,5 +1,5 @@
-import type { Account, Category, TokenPair, Transaction, User } from '@financas/shared';
-import { cents } from '@financas/shared';
+import type { Account, Category, TokenPair, Transaction, User } from '@sobra/shared';
+import { cents } from '@sobra/shared';
 import type { FetchFn, FetchRequestInit } from '../runtime';
 
 export type FakeRequest = {
@@ -77,7 +77,7 @@ export const tokens = (n: number): TokenPair => ({
 export const user: User = {
   id: ids.user,
   name: 'Ana Demo',
-  email: 'demo@financas.dev',
+  email: 'demo@sobra.dev',
   createdAt: NOW,
 };
 

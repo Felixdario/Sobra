@@ -563,7 +563,7 @@ export function renderPreviewHtml(): string {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sobra — tokens</title>
-<meta name="description" content="Referência visual dos tokens de design do Sobra, gerada de @financas/tokens.">
+<meta name="description" content="Referência visual dos tokens de design do Sobra, gerada de @sobra/tokens.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="${fontFamilies.webStylesheet}">
@@ -572,12 +572,12 @@ ${css}
 </style>
 </head>
 <body>
-<!-- Gerado por packages/tokens/scripts/build-preview.ts. Não edite à mão: rode \`corepack pnpm --filter @financas/tokens build:preview\`. -->
+<!-- Gerado por packages/tokens/scripts/build-preview.ts. Não edite à mão: rode \`corepack pnpm --filter @sobra/tokens build:preview\`. -->
 <main class="page">
 <header class="intro">
 <div>
 <h1>Sobra — tokens de design</h1>
-<p>Referência gerada a partir de <code>@financas/tokens</code>. Os valores são do usuário de demonstração (sintéticos). Claro e escuro lado a lado; cada razão de contraste é calculada pela fórmula WCAG 2.</p>
+<p>Referência gerada a partir de <code>@sobra/tokens</code>. Os valores são do usuário de demonstração (sintéticos). Claro e escuro lado a lado; cada razão de contraste é calculada pela fórmula WCAG 2.</p>
 </div>
 <dl class="decisions">
 <div><dt>Nome</dt><dd>Sobra: quanto sobra no fim do mês</dd></div>

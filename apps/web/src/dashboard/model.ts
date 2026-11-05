@@ -1,4 +1,4 @@
-import type { MonthSummary, SpendingByCategory } from '@financas/shared';
+import type { MonthSummary, SpendingByCategory } from '@sobra/shared';
 import type { MonthProgress } from '../lib/month';
 import { PLANE_COUNT } from '../theme/tokensCss';
 

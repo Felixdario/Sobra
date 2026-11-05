@@ -1,5 +1,5 @@
-import { createApiClient, type FetchLike, type TokenStore } from '@financas/client';
-import { createMutations, createQueries, shouldRetry } from '@financas/client/query';
+import { createApiClient, type FetchLike, type TokenStore } from '@sobra/client';
+import { createMutations, createQueries, shouldRetry } from '@sobra/client/query';
 import { QueryClient } from '@tanstack/react-query';
 
 export type ServicesConfig = {

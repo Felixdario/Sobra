@@ -1,4 +1,4 @@
-import { formatDate, type CsvImportPreview } from '@financas/shared';
+import { formatDate, type CsvImportPreview } from '@sobra/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { FileUp, Undo2 } from 'lucide-react';
 import { useState, type DragEvent } from 'react';

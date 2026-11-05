@@ -4,7 +4,7 @@ import {
   hasZodFastifySchemaValidationErrors,
   isResponseSerializationError,
 } from 'fastify-type-provider-zod';
-import type { ApiError } from '@financas/shared';
+import type { ApiError } from '@sobra/shared';
 import { Prisma } from '../lib/db';
 import { AppError, type ErrorCode } from '../lib/errors';
 

@@ -1,4 +1,4 @@
-import { APP_NAME } from '@financas/shared';
+import { APP_NAME } from '@sobra/shared';
 import { Link } from 'react-router';
 import styles from './BrandMark.module.css';
 

@@ -1,19 +1,19 @@
 # PostgreSQL para quem tem Docker (dev opcional / base para produção). Veja ADR-010.
-# Uso: docker compose up -d  →  postgresql://financas:financas@localhost:5432/financas
+# Uso: docker compose up -d  →  postgresql://sobra:sobra@localhost:5432/sobra
 services:
   postgres:
     image: postgres:17-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: financas
-      POSTGRES_PASSWORD: financas
-      POSTGRES_DB: financas
+      POSTGRES_USER: sobra
+      POSTGRES_PASSWORD: sobra
+      POSTGRES_DB: sobra
     ports:
       - '5432:5432'
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U financas -d financas']
+      test: ['CMD-SHELL', 'pg_isready -U sobra -d sobra']
       interval: 5s
       timeout: 3s
       retries: 10

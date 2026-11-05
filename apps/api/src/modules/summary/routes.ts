@@ -9,7 +9,7 @@ import {
   spendingByCategorySchema,
   summaryMonthQuerySchema,
   summaryRangeQuerySchema,
-} from '@financas/shared';
+} from '@sobra/shared';
 import { bearerAuth, errorResponses } from '../../lib/http';
 import * as summary from './service';
 

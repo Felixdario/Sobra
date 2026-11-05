@@ -4,7 +4,7 @@ import {
   type NativeTheme,
   type TextStyleName,
   type ThemeMode,
-} from '@financas/tokens';
+} from '@sobra/tokens';
 import {
   createContext,
   use,

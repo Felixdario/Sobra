@@ -10,7 +10,7 @@ import {
   recurringCreateSchema,
   type RecurringCreateInput,
   type TransactionCreate,
-} from '@financas/shared';
+} from '@sobra/shared';
 import type { Db, PrismaClient } from '../lib/db';
 import { fromDbCents, sumOrZero, toDbCents } from '../lib/money';
 import { daysOfMonth, monthDateRange } from '../lib/period';
@@ -24,7 +24,7 @@ import { createRandom, type Random } from './random';
 
 export const DEMO_USER = {
   name: 'Ana Demo',
-  email: 'demo@financas.dev',
+  email: 'demo@sobra.dev',
   password: 'demo1234',
 } as const;
 

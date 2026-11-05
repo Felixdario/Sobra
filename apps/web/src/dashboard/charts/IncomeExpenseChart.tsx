@@ -1,5 +1,5 @@
-import { formatMonth, type IncomeVsExpensePoint } from '@financas/shared';
-import { space } from '@financas/tokens';
+import { formatMonth, type IncomeVsExpensePoint } from '@sobra/shared';
+import { space } from '@sobra/tokens';
 import { scaleBand, scaleLinear } from '@visx/scale';
 import { useState } from 'react';
 import { capitalize, compactReais, money, signedMoney } from '../../lib/format';

@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { NOTES_MAX, type Account, type Category, type Transaction } from '@financas/shared';
+import { NOTES_MAX, type Account, type Category, type Transaction } from '@sobra/shared';
 import { Trash } from 'lucide-react';
 import { useForm, useWatch } from 'react-hook-form';
 import { FormError } from '../auth/FormError';

@@ -1,4 +1,4 @@
-import type { SpendingByCategory } from '@financas/shared';
+import type { SpendingByCategory } from '@sobra/shared';
 
 export const CATEGORY_LIMIT = 7;
 

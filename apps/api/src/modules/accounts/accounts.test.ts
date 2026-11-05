@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { accountSchema } from '@financas/shared';
+import { accountSchema } from '@sobra/shared';
 import type { App } from '../../app';
 import {
   authHeader,

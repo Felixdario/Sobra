@@ -1,4 +1,4 @@
-import { formatMonth, type MonthKey } from '@financas/shared';
+import { formatMonth, type MonthKey } from '@sobra/shared';
 import { Link, useSearchParams } from 'react-router';
 import { money, signedMoney } from '../lib/format';
 import { currentMonth, monthName, monthProgress, parseMonthParam } from '../lib/month';

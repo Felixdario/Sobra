@@ -1,4 +1,4 @@
-import type { MonthSummary } from '@financas/shared';
+import type { MonthSummary } from '@sobra/shared';
 import { fitChars } from '../lib/fit';
 import { money, percent, percentagePoints, signedMoney } from '../lib/format';
 import { monthName, type MonthProgress } from '../lib/month';

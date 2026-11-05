@@ -1,10 +1,10 @@
-import type { AccountType, CategoryKind, IconName } from '@financas/shared';
-import { identityHex } from '@financas/tokens';
+import type { AccountType, CategoryKind, IconName } from '@sobra/shared';
+import { identityHex } from '@sobra/tokens';
 
 type DefaultCategory = { name: string; kind: CategoryKind; color: string; icon: IconName };
 
 /**
- * Colors from the identity palette in @financas/tokens (`identityColors`, the same one the web
+ * Colors from the identity palette in @sobra/tokens (`identityColors`, the same one the web
  * color picker shows): 13 categories, 13 distinct colors (ΔE OKLab ≥ 8 between any two; 3:1 on
  * both surfaces).
  */

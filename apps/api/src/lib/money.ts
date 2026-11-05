@@ -1,4 +1,4 @@
-import { type Cents, cents } from '@financas/shared';
+import { type Cents, cents } from '@sobra/shared';
 
 const MAX_SAFE = BigInt(Number.MAX_SAFE_INTEGER);
 const MIN_SAFE = BigInt(Number.MIN_SAFE_INTEGER);

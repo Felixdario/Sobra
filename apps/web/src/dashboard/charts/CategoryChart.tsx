@@ -1,4 +1,4 @@
-import type { SpendingByCategory } from '@financas/shared';
+import type { SpendingByCategory } from '@sobra/shared';
 import { money, percent } from '../../lib/format';
 import styles from './CategoryChart.module.css';
 import { categoryRows } from './data';

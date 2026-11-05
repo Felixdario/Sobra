@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { PASSWORD_MIN, registerSchema } from '@financas/shared';
+import { PASSWORD_MIN, registerSchema } from '@sobra/shared';
 import { useMutation } from '@tanstack/react-query';
 import { Link } from 'expo-router';
 import { useRef, type ComponentRef } from 'react';

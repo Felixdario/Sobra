@@ -1,4 +1,4 @@
-import { cents } from '@financas/shared';
+import { cents } from '@sobra/shared';
 import { formatMoney, MINUS, speakMoney } from './money';
 
 const NBSP = ' ';

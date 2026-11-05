@@ -1,5 +1,5 @@
-import type { FetchLike } from '@financas/client';
-import { toMonthKey, type MonthKey } from '@financas/shared';
+import type { FetchLike } from '@sobra/client';
+import { toMonthKey, type MonthKey } from '@sobra/shared';
 import { newUser, oneTransaction, worstCase, type ScenarioData } from './scenarioData';
 
 /*

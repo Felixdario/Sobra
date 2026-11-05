@@ -1,4 +1,4 @@
-import type { IconName } from '@financas/shared';
+import type { IconName } from '@sobra/shared';
 import {
   Baby,
   Briefcase,

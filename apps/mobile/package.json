@@ -1,5 +1,5 @@
 {
-  "name": "@financas/mobile",
+  "name": "@sobra/mobile",
   "version": "0.0.0",
   "private": true,
   "main": "expo-router/entry",
@@ -29,9 +29,9 @@
   "dependencies": {
     "@expo-google-fonts/archivo": "^0.4.2",
     "@expo/metro-runtime": "~58.0.17",
-    "@financas/client": "workspace:*",
-    "@financas/shared": "workspace:*",
-    "@financas/tokens": "workspace:*",
+    "@sobra/client": "workspace:*",
+    "@sobra/shared": "workspace:*",
+    "@sobra/tokens": "workspace:*",
     "@hookform/resolvers": "^7.0.2",
     "@tanstack/react-query": "^5.105.3",
     "expo": "~58.0.23",

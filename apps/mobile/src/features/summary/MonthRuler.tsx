@@ -1,4 +1,4 @@
-import { cents } from '@financas/shared';
+import { cents } from '@sobra/shared';
 import { useId, useState } from 'react';
 import { View } from 'react-native';
 import Svg, { Rect } from 'react-native-svg';

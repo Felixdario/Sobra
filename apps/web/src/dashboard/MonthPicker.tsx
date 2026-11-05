@@ -1,4 +1,4 @@
-import { nextMonth, previousMonth, type MonthKey } from '@financas/shared';
+import { nextMonth, previousMonth, type MonthKey } from '@sobra/shared';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '../components/Button';
 import { monthTitle } from '../lib/month';

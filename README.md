@@ -46,7 +46,7 @@ corepack pnpm bootstrap   # cria apps/api/.env, aplica as migrations e semeia o 
 corepack pnpm dev         # API e web juntos
 ```
 
-Abra **http://localhost:5173** e entre com **demo@financas.dev / demo1234** (o botão "Entrar com a
+Abra **http://localhost:5173** e entre com **demo@sobra.dev / demo1234** (o botão "Entrar com a
 conta de demonstração" preenche os campos). O demo tem seis meses de dados até hoje.
 
 | Serviço       | Endereço              | Observação                                         |
@@ -105,14 +105,14 @@ de URL ([ADR-010](docs/decisoes.md#adr-010--prisma-7-com-sqlite-via-driver-adapt
 
 Monorepo pnpm com três pacotes compartilhados e três apps. Os pacotes são consumidos como fonte
 TypeScript, sem etapa de build
-([ADR-005](docs/decisoes.md#adr-005--financasshared-consumido-como-fonte-typescript)).
+([ADR-005](docs/decisoes.md#adr-005--sobrashared-consumido-como-fonte-typescript)).
 
 ```mermaid
 flowchart LR
   subgraph pacotes["packages/"]
-    shared["@financas/shared<br/>schemas Zod, dinheiro, datas"]
-    tokens["@financas/tokens<br/>cores, tipo, espaço, movimento"]
-    client["@financas/client<br/>fetch tipado, sessão, TanStack Query"]
+    shared["@sobra/shared<br/>schemas Zod, dinheiro, datas"]
+    tokens["@sobra/tokens<br/>cores, tipo, espaço, movimento"]
+    client["@sobra/client<br/>fetch tipado, sessão, TanStack Query"]
   end
   subgraph apps["apps/"]
     api["api<br/>Fastify 5 + Prisma 7"]
@@ -134,13 +134,13 @@ flowchart LR
   mobile -- "Bearer JWT 15 min<br/>refresh no Keychain/Keystore" --> api
 ```
 
-- **Contrato único:** os schemas Zod de `@financas/shared` validam a entrada na API, filtram a saída
+- **Contrato único:** os schemas Zod de `@sobra/shared` validam a entrada na API, filtram a saída
   (campo fora do contrato não vaza), geram o OpenAPI e validam a resposta no cliente. Mudou o
   contrato, quebra o typecheck da API, do web e do mobile ao mesmo tempo.
 - **Sessão:** access token JWT de 15 minutos e refresh token opaco de 30 dias, rotacionado a cada uso.
   O banco guarda só o SHA-256 do refresh; reapresentar um token já usado derruba a família inteira
   daquele login.
-- **Cliente compartilhado:** web e mobile usam o mesmo `@financas/client`; muda só onde os tokens
+- **Cliente compartilhado:** web e mobile usam o mesmo `@sobra/client`; muda só onde os tokens
   ficam (`TokenStore`).
 
 O ponto mais delicado é a renovação de sessão. Com rotação e detecção de reuso, duas renovações
@@ -151,7 +151,7 @@ sequenceDiagram
   autonumber
   participant A as Tela A
   participant B as Tela B
-  participant C as @financas/client
+  participant C as @sobra/client
   participant API as API
   participant DB as Banco
 
@@ -177,7 +177,7 @@ sequenceDiagram
 
 No web há ainda um `navigator.locks` para que abas diferentes também façam um refresh por vez. Se a
 API recusar o refresh, o cliente limpa a sessão e volta ao login; falha de rede no refresh mantém a
-sessão ([ADR-023](docs/decisoes.md#adr-023--cliente-da-api-compartilhado-financasclient-refresh-single-flight-e-onde-guardar-os-tokens)).
+sessão ([ADR-023](docs/decisoes.md#adr-023--cliente-da-api-compartilhado-sobraclient-refresh-single-flight-e-onde-guardar-os-tokens)).
 Um teste de integração em `apps/api/src/client.integration.test.ts` mostra que, sem o single-flight,
 três requisições concorrentes derrubam a sessão.
 
@@ -189,7 +189,7 @@ três requisições concorrentes derrubam a sessão.
 | API           | Fastify 5, Prisma 7 (SQLite via driver adapter), Zod 4, argon2id, Swagger UI                   |
 | Web           | React 19, Vite 8, React Router 7, TanStack Query e Table, visx, CSS Modules, Sonner            |
 | Mobile        | Expo SDK 58, React Native 0.88, Expo Router, Reanimated 4, Gesture Handler 3, react-native-svg |
-| Compartilhado | `@financas/shared` (Zod, date-fns), `@financas/tokens`, `@financas/client`                     |
+| Compartilhado | `@sobra/shared` (Zod, date-fns), `@sobra/tokens`, `@sobra/client`                              |
 | Testes        | Vitest, Testing Library, axe-core, Jest (jest-expo)                                            |
 | Ferramentas   | pnpm 10 via Corepack, ESLint 10, Prettier, GitHub Actions                                      |
 
@@ -209,13 +209,13 @@ Todas as 33 decisões estão em [`docs/decisoes.md`](docs/decisoes.md). As que m
   mensagens em pt-BR ([ADR-009](docs/decisoes.md#adr-009--contrato-de-dados-ids-uuid-transações-como-união-discriminada-mensagens-em-pt-br),
   [ADR-014](docs/decisoes.md#adr-014--openapi-com-fastifyswagger--swagger-ui-em-docs-gerado-dos-schemas-zod)).
 - **Cliente com refresh single-flight e atualização otimista** com rollback, inclusive em listas
-  infinitas ([ADR-023](docs/decisoes.md#adr-023--cliente-da-api-compartilhado-financasclient-refresh-single-flight-e-onde-guardar-os-tokens)).
+  infinitas ([ADR-023](docs/decisoes.md#adr-023--cliente-da-api-compartilhado-sobraclient-refresh-single-flight-e-onde-guardar-os-tokens)).
 - **Datas como texto `YYYY-MM-DD` no fuso de São Paulo**, para uma compra das 23h30 não cair no mês
   seguinte ([ADR-007](docs/decisoes.md#adr-007--datas-com-date-fns--date-fnstz-sempre-no-fuso-de-são-paulo),
   [ADR-011](docs/decisoes.md#adr-011--data-da-transação-como-texto-yyyy-mm-dd)).
 - **Tokens de design com testes de contraste:** todo par texto/fundo dos dois temas tem mínimo WCAG
   verificado (AAA nos números principais) e a paleta de gráficos é testada para daltonismo
-  ([ADR-022](docs/decisoes.md#adr-022--tokens-compartilhados-em-financastokens-ts-puro)).
+  ([ADR-022](docs/decisoes.md#adr-022--tokens-compartilhados-em-sobratokens-ts-puro)).
 - **Direção visual "Concreto e azulejo" e a régua do mês:** uma família tipográfica, um único azul
   para o dado principal, e a sobra como plano nomeado na régua
   ([ADR-021](docs/decisoes.md#adr-021--direção-visual-concreto-e-azulejo-e-tipografia-archivo)).
@@ -295,14 +295,14 @@ Relatórios em [`docs/polimento-web.md`](docs/polimento-web.md) e
 
 `corepack pnpm test` na raiz roda **895 testes**, todos passando:
 
-| Pacote             | Testes | O que cobre                                                                    |
-| ------------------ | -----: | ------------------------------------------------------------------------------ |
-| `@financas/shared` |    267 | dinheiro (parse, half-even, rateio), datas no fuso, schemas do contrato        |
-| `@financas/tokens` |    225 | contraste WCAG dos dois temas, ΔE da paleta para daltonismo, CSS gerado        |
-| `@financas/client` |     50 | single-flight, sessão expirada, erros pt-BR, invalidações, otimista e rollback |
-| `apps/api`         |    132 | rotas pela API real (SQLite por arquivo), isolamento entre usuários, seed      |
-| `apps/web`         |     82 | telas com API falsa, pior caso, axe-core sem violação séria ou crítica         |
-| `apps/mobile`      |    139 | lançar, lista, folha, acessibilidade (nomes, papéis, anúncios), contraste      |
+| Pacote          | Testes | O que cobre                                                                    |
+| --------------- | -----: | ------------------------------------------------------------------------------ |
+| `@sobra/shared` |    267 | dinheiro (parse, half-even, rateio), datas no fuso, schemas do contrato        |
+| `@sobra/tokens` |    225 | contraste WCAG dos dois temas, ΔE da paleta para daltonismo, CSS gerado        |
+| `@sobra/client` |     50 | single-flight, sessão expirada, erros pt-BR, invalidações, otimista e rollback |
+| `apps/api`      |    132 | rotas pela API real (SQLite por arquivo), isolamento entre usuários, seed      |
+| `apps/web`      |     82 | telas com API falsa, pior caso, axe-core sem violação séria ou crítica         |
+| `apps/mobile`   |    139 | lançar, lista, folha, acessibilidade (nomes, papéis, anúncios), contraste      |
 
 - **Typecheck estrito** em todos os pacotes (`corepack pnpm typecheck`), ESLint e Prettier na raiz.
 - **Acessibilidade:** axe-core roda nos testes do web; numa passada no Chrome real com
@@ -330,7 +330,7 @@ polimento). O produto e a direção visual estão em [`PRODUCT.md`](PRODUCT.md) 
   a folha ainda precisam ser conferidos num celular.
 - **Refresh token no `localStorage` no web.** Um XSS poderia lê-lo; a rotação com detecção de reuso
   reduz o estrago, mas o caminho certo antes de um deploy público é cookie `httpOnly` com proteção
-  CSRF ([ADR-023](docs/decisoes.md#adr-023--cliente-da-api-compartilhado-financasclient-refresh-single-flight-e-onde-guardar-os-tokens)).
+  CSRF ([ADR-023](docs/decisoes.md#adr-023--cliente-da-api-compartilhado-sobraclient-refresh-single-flight-e-onde-guardar-os-tokens)).
 - **SQLite em desenvolvimento; PostgreSQL não testado.** A troca exige os passos descritos acima.
 - **Sem deploy e sem build nativo.** Não há ambiente publicado, EAS Build nem app nas lojas; o CI
   nunca rodou.

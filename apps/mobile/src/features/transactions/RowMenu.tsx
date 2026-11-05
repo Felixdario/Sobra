@@ -1,4 +1,4 @@
-import type { Transaction } from '@financas/shared';
+import type { Transaction } from '@sobra/shared';
 import { View } from 'react-native';
 import { makeStyles } from '../../theme/makeStyles';
 import { AppText } from '../../ui/AppText';

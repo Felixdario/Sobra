@@ -1,4 +1,4 @@
-import type { Category, CategoryKind } from '@financas/shared';
+import type { Category, CategoryKind } from '@sobra/shared';
 import { useQuery } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
 import { useState } from 'react';

@@ -1,4 +1,4 @@
-import type { MonthKey, MonthSummary, SpendingByCategory } from '@financas/shared';
+import type { MonthKey, MonthSummary, SpendingByCategory } from '@sobra/shared';
 import { Link } from 'react-router';
 import { ErrorLine } from '../components/ErrorLine';
 import { Skeleton } from '../components/Skeleton';

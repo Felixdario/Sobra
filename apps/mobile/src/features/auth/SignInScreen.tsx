@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { loginSchema } from '@financas/shared';
+import { loginSchema } from '@sobra/shared';
 import { useMutation } from '@tanstack/react-query';
 import { Link } from 'expo-router';
 import { useRef, type ComponentRef } from 'react';
@@ -18,7 +18,7 @@ type LoginForm = z.input<typeof loginSchema>;
 type LoginValues = z.output<typeof loginSchema>;
 
 /** Public demo account seeded by the API (apps/api/src/seed/demo.ts). */
-export const DEMO_CREDENTIALS = { email: 'demo@financas.dev', password: 'demo1234' } as const;
+export const DEMO_CREDENTIALS = { email: 'demo@sobra.dev', password: 'demo1234' } as const;
 
 export function SignInScreen() {
   const styles = useStyles();

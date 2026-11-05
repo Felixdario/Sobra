@@ -1,4 +1,4 @@
-import type { IconName } from '@financas/shared';
+import type { IconName } from '@sobra/shared';
 import { ArrowLeftRight } from 'lucide-react';
 import { ICONS } from '../lib/icons';
 import styles from './IdentityMark.module.css';

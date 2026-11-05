@@ -4,10 +4,10 @@ import type {
   monthSummarySchema,
   transactionSchema,
   userSchema,
-} from '@financas/shared';
+} from '@sobra/shared';
 import type { z } from 'zod';
 
-export type { BudgetVsActual, SpendingByCategory } from '@financas/shared';
+export type { BudgetVsActual, SpendingByCategory } from '@sobra/shared';
 
 /** Wire shapes (what the API sends), before the client's schemas brand them. */
 export type AccountInput = z.input<typeof accountSchema>;

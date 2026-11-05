@@ -1,4 +1,4 @@
-import { absCents, formatBRL, type Cents } from '@financas/shared';
+import { absCents, formatBRL, type Cents } from '@sobra/shared';
 
 export const MINUS = '−';
 

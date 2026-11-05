@@ -1,4 +1,4 @@
-import { apiErrorSchema, tokenPairSchema, type TokenPair } from '@financas/shared';
+import { apiErrorSchema, tokenPairSchema, type TokenPair } from '@sobra/shared';
 import type { z } from 'zod';
 import { ApiError, CLIENT_ERROR_CODES, CLIENT_ERROR_MESSAGES, httpErrorMessage } from './errors';
 import {

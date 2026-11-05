@@ -1,4 +1,4 @@
-import { concreto, toCssStylesheet } from '@financas/tokens';
+import { concreto, toCssStylesheet } from '@sobra/tokens';
 
 /**
  * Ink steps for the month ruler (DESIGN.md, "A régua do mês"): darkest first, so the largest

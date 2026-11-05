@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import type { AuthResponse, LoginInput, RegisterInput, TokenPair, User } from '@financas/shared';
+import type { AuthResponse, LoginInput, RegisterInput, TokenPair, User } from '@sobra/shared';
 import { type Db, isUniqueViolation, type PrismaClient } from '../../lib/db';
 import { conflict, unauthorized } from '../../lib/errors';
 import { DEFAULT_ACCOUNT, DEFAULT_CATEGORIES } from './defaults';

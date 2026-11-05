@@ -95,7 +95,7 @@ corrente parcial sem dramatizar uma taxa de poupança muito negativa no dia 4.
 
 ## Evidence on Hand
 
-- Dados de demonstração determinísticos em `apps/api/src/seed/demo.ts` (usuário `demo@financas.dev`).
+- Dados de demonstração determinísticos em `apps/api/src/seed/demo.ts` (usuário `demo@sobra.dev`).
   São sintéticos e devem ser rotulados como demo em qualquer captura pública.
 - Não existem depoimentos, métricas de uso, logotipo ou ilustrações. Não inventar.
 

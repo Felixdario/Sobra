@@ -6,7 +6,7 @@ import {
 } from '@expo-google-fonts/archivo';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import type { FetchLike } from '@financas/client';
+import type { FetchLike } from '@sobra/client';
 import { StatusBar } from 'expo-status-bar';
 import * as SystemUI from 'expo-system-ui';
 import { useEffect } from 'react';

@@ -1,4 +1,4 @@
-import { accountSchema, categorySchema, transactionSchema } from '@financas/shared';
+import { accountSchema, categorySchema, transactionSchema } from '@sobra/shared';
 import { accounts, categories, expense, ids, recent, transfer } from '../../test/fixtures';
 import {
   buildPayload,

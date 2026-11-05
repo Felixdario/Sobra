@@ -1,4 +1,4 @@
-import { breakpoints } from '@financas/tokens';
+import { breakpoints } from '@sobra/tokens';
 import { useMediaQuery } from './useMediaQuery';
 
 /** At or above the 768px "medium" breakpoint: tables instead of stacked lists. */

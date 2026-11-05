@@ -2,7 +2,7 @@ import fastifySwagger from '@fastify/swagger';
 import fastifySwaggerUi from '@fastify/swagger-ui';
 import fp from 'fastify-plugin';
 import { jsonSchemaTransform, jsonSchemaTransformObject } from 'fastify-type-provider-zod';
-import { APP_NAME } from '@financas/shared';
+import { APP_NAME } from '@sobra/shared';
 
 export const swaggerPlugin = fp(
   async (app) => {

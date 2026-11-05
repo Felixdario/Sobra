@@ -15,7 +15,7 @@ import {
   type MonthKey,
 } from './index';
 
-describe('@financas/shared', () => {
+describe('@sobra/shared', () => {
   it('expõe o nome do app e a localização', () => {
     expect(APP_NAME).toBe('Sobra');
     expect([LOCALE, CURRENCY, TIME_ZONE]).toEqual(['pt-BR', 'BRL', 'America/Sao_Paulo']);

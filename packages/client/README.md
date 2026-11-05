@@ -1,10 +1,10 @@
-# @financas/client
+# @sobra/client
 
 Cliente tipado da API do Sobra, o mesmo no web e no mobile. TypeScript puro, sem DOM nem React
 Native. Duas entradas:
 
-- `@financas/client`: `createApiClient`, `ApiError` e `TokenStore`. Depende só de `@financas/shared` e `zod`.
-- `@financas/client/query`: `queryKeys`, `createQueries`, `createMutations` (invalidações e
+- `@sobra/client`: `createApiClient`, `ApiError` e `TokenStore`. Depende só de `@sobra/shared` e `zod`.
+- `@sobra/client/query`: `queryKeys`, `createQueries`, `createMutations` (invalidações e
   atualização otimista de transações) e `shouldRetry` para TanStack Query v5. Só importa
   `@tanstack/query-core`, e só os tipos dele (peer opcional). `@tanstack/react-query` reexporta
   o query-core, então as opções servem para `useQuery`/`useMutation` direto.
@@ -26,8 +26,8 @@ Os motivos estão no ADR-023 (`docs/decisoes.md`).
 
 ```ts
 // src/lib/api.ts
-import { createApiClient, type TokenStore } from '@financas/client';
-import { createMutations, createQueries, shouldRetry } from '@financas/client/query';
+import { createApiClient, type TokenStore } from '@sobra/client';
+import { createMutations, createQueries, shouldRetry } from '@sobra/client/query';
 import { QueryClient } from '@tanstack/react-query';
 
 const REFRESH_KEY = 'sobra.refresh';
@@ -77,8 +77,8 @@ remove.mutate(tx.id, { onError: (error) => toast.error(error.message) });
 
 ```ts
 import * as SecureStore from 'expo-secure-store';
-import { createApiClient, type TokenStore } from '@financas/client';
-import { tokenPairSchema } from '@financas/shared';
+import { createApiClient, type TokenStore } from '@sobra/client';
+import { tokenPairSchema } from '@sobra/shared';
 
 const KEY = 'sobra.session';
 const tokenStore: TokenStore = {
@@ -121,7 +121,7 @@ export const api = createApiClient({
 
 ## Testes
 
-`corepack pnpm --filter @financas/client test`: fetch falso, sem rede. Cobre token,
+`corepack pnpm --filter @sobra/client test`: fetch falso, sem rede. Cobre token,
 single-flight, sessão expirada, contrato, erros pt-BR, chaves, invalidações e otimista (listas e páginas infinitas) com
 rollback. O teste de integração com a API real fica em `apps/api/src/client.integration.test.ts`
 (a API usa este pacote como devDependency, então não há dependência circular).

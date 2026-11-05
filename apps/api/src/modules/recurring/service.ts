@@ -4,7 +4,7 @@ import type {
   RecurringCreate,
   RecurringUpdate,
   TransactionTemplate,
-} from '@financas/shared';
+} from '@sobra/shared';
 import { type Db, isUniqueViolation } from '../../lib/db';
 import { notFound } from '../../lib/errors';
 import { fromDbCents, toDbCents } from '../../lib/money';

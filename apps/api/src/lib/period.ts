@@ -1,4 +1,4 @@
-import { type MonthKey, nextMonth, parseMonthKey } from '@financas/shared';
+import { type MonthKey, nextMonth, parseMonthKey } from '@sobra/shared';
 
 /** Bounds for `date >= start AND date < end` over "YYYY-MM-DD" strings (ADR-011). */
 export function monthDateRange(month: MonthKey): { start: string; end: string } {

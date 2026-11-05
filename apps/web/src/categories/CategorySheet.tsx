@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { categoryCreateSchema, type Category, type CategoryKind } from '@financas/shared';
-import { identityColors } from '@financas/tokens';
+import { categoryCreateSchema, type Category, type CategoryKind } from '@sobra/shared';
+import { identityColors } from '@sobra/tokens';
 import { useMutation } from '@tanstack/react-query';
 import { Trash } from 'lucide-react';
 import { Controller, useForm } from 'react-hook-form';

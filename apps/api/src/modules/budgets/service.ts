@@ -1,4 +1,4 @@
-import type { Budget, BudgetUpsert, MonthKey } from '@financas/shared';
+import type { Budget, BudgetUpsert, MonthKey } from '@sobra/shared';
 import type { Db } from '../../lib/db';
 import { badRequest, notFound } from '../../lib/errors';
 import { fromDbCents, sumOrZero, toDbCents } from '../../lib/money';

@@ -1,4 +1,4 @@
-import { durations, springs } from '@financas/tokens';
+import { durations, springs } from '@sobra/tokens';
 import { Pencil, Trash2 } from 'lucide-react-native';
 import { createContext, use, useCallback, useMemo, useRef, type ReactNode } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';

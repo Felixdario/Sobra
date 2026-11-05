@@ -8,5 +8,5 @@ export default defineConfig({
   outDir: 'dist',
   clean: true,
   sourcemap: true,
-  noExternal: ['@financas/shared', '@financas/tokens', 'date-fns', '@date-fns/tz'],
+  noExternal: ['@sobra/shared', '@sobra/tokens', 'date-fns', '@date-fns/tz'],
 });

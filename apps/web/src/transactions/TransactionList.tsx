@@ -1,4 +1,4 @@
-import type { Transaction } from '@financas/shared';
+import type { Transaction } from '@sobra/shared';
 import { IdentityMark } from '../components/IdentityMark';
 import { accountLabel, amountOf, categoryLabel, formatShortDate } from './display';
 import styles from './TransactionList.module.css';

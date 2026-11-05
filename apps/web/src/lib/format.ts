@@ -1,4 +1,4 @@
-import { cents, formatBRL, type Cents } from '@financas/shared';
+import { cents, formatBRL, type Cents } from '@sobra/shared';
 
 /** U+2212: DESIGN.md writes every negative value with the real minus sign, not a hyphen. */
 export const MINUS = '−';

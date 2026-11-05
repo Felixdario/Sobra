@@ -1,4 +1,4 @@
-import { formatBRL, toLocalDateKey } from '@financas/shared';
+import { formatBRL, toLocalDateKey } from '@sobra/shared';
 import { loadDotEnv, loadEnv, sqlitePath } from '../src/config/env';
 import { createPrismaClient } from '../src/lib/db';
 import { createPasswordHasher } from '../src/modules/auth/password';

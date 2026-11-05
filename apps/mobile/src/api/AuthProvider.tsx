@@ -1,4 +1,4 @@
-import { isApiError } from '@financas/client';
+import { isApiError } from '@sobra/client';
 import {
   createContext,
   use,

@@ -1,4 +1,4 @@
-import { radii, space } from '@financas/tokens';
+import { radii, space } from '@sobra/tokens';
 
 /**
  * A bar with 4px rounded data end and a square base (dataviz mark spec). Vertical bars grow up

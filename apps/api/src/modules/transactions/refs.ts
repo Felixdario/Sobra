@@ -1,4 +1,4 @@
-import type { TransactionCreate } from '@financas/shared';
+import type { TransactionCreate } from '@sobra/shared';
 import type { Db } from '../../lib/db';
 import { badRequest } from '../../lib/errors';
 import { findOwnedAccount } from '../accounts/service';

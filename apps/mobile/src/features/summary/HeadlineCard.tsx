@@ -1,4 +1,4 @@
-import { cents, type Cents, type MonthSummary } from '@financas/shared';
+import { cents, type Cents, type MonthSummary } from '@sobra/shared';
 import { Triangle } from 'lucide-react-native';
 import { View } from 'react-native';
 import { formatMoney, speakMoney } from '../../lib/money';

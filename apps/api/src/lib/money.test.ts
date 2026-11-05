@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cents } from '@financas/shared';
+import { cents } from '@sobra/shared';
 import { fromDbCents, sumOrZero, toDbCents } from './money';
 
 describe('lib/money', () => {

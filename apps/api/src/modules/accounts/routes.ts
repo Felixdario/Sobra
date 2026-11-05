@@ -1,11 +1,6 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
-import {
-  accountCreateSchema,
-  accountSchema,
-  accountUpdateSchema,
-  fromQuery,
-} from '@financas/shared';
+import { accountCreateSchema, accountSchema, accountUpdateSchema, fromQuery } from '@sobra/shared';
 import { bearerAuth, errorResponses, idParamsSchema } from '../../lib/http';
 import * as accounts from './service';
 

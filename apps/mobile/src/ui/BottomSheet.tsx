@@ -1,4 +1,4 @@
-import { durations, springs } from '@financas/tokens';
+import { durations, springs } from '@sobra/tokens';
 import { useEffect, useState, type ReactNode } from 'react';
 import {
   BackHandler,

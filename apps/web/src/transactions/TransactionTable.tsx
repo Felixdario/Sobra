@@ -1,5 +1,5 @@
-import type { TransactionSortField } from '@financas/client';
-import type { Transaction } from '@financas/shared';
+import type { TransactionSortField } from '@sobra/client';
+import type { Transaction } from '@sobra/shared';
 import {
   createColumnHelper,
   flexRender,

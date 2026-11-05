@@ -1,5 +1,5 @@
 import type { MutationOptions, QueryClient } from '@tanstack/query-core';
-import type { RecurringSyncResult, Transaction } from '@financas/shared';
+import type { RecurringSyncResult, Transaction } from '@sobra/shared';
 import type { ApiClient } from '../client';
 import type { ApiError } from '../errors';
 import type {

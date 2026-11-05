@@ -1,4 +1,4 @@
-import { isApiError } from '@financas/client';
+import { isApiError } from '@sobra/client';
 import { CircleAlert, WifiOff } from 'lucide-react';
 import { Button } from './Button';
 import styles from './ErrorLine.module.css';

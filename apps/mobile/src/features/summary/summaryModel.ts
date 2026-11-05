@@ -6,7 +6,7 @@ import {
   type MonthKey,
   type MonthSummary,
   type SpendingByCategoryItem,
-} from '@financas/shared';
+} from '@sobra/shared';
 import { formatMoney, formatPercent } from '../../lib/money';
 import { monthName, progressLabel, type MonthProgress } from '../../lib/month';
 

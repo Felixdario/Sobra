@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { accountSchema, categorySchema, csvImportPreviewSchema } from '@financas/shared';
+import { accountSchema, categorySchema, csvImportPreviewSchema } from '@sobra/shared';
 import type { App } from '../../app';
 import {
   authHeader,

@@ -1,4 +1,4 @@
-import { durations, easings } from '@financas/tokens';
+import { durations, easings } from '@sobra/tokens';
 import { CircleAlert } from 'lucide-react-native';
 import {
   createContext,

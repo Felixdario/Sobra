@@ -1,4 +1,4 @@
-import { contrastRatio, createNativeTheme, type ThemeMode } from '@financas/tokens';
+import { contrastRatio, createNativeTheme, type ThemeMode } from '@sobra/tokens';
 
 /*
  * Every text/background and graphic/background pair the mobile screens draw, in both themes

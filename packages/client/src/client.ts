@@ -17,7 +17,7 @@ import {
   transactionSchema,
   type Account,
   type User,
-} from '@financas/shared';
+} from '@sobra/shared';
 import { z } from 'zod';
 import {
   createTransport,

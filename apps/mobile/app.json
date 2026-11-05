@@ -1,9 +1,9 @@
 {
   "expo": {
     "name": "Sobra",
-    "slug": "financas",
+    "slug": "sobra",
     "version": "0.0.0",
-    "scheme": "financas",
+    "scheme": "sobra",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "backgroundColor": "#F1F1EE",

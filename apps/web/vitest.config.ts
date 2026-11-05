@@ -1,7 +1,7 @@
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vitest/config';
 
-// Separate from vite.config.ts: that one loads @financas/tokens (TS source) at config time,
+// Separate from vite.config.ts: that one loads @sobra/tokens (TS source) at config time,
 // which needs `--configLoader runner`; tests import the tokens through Vite's transform instead.
 export default defineConfig({
   plugins: [react()],

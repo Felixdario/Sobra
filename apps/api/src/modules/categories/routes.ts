@@ -6,7 +6,7 @@ import {
   categorySchema,
   categoryUpdateSchema,
   fromQuery,
-} from '@financas/shared';
+} from '@sobra/shared';
 import { bearerAuth, errorResponses, idParamsSchema } from '../../lib/http';
 import * as categories from './service';
 

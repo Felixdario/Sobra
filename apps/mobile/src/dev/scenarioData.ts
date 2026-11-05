@@ -1,4 +1,4 @@
-import { DESCRIPTION_MAX, previousMonth, toMonthKey, type MonthKey } from '@financas/shared';
+import { DESCRIPTION_MAX, previousMonth, toMonthKey, type MonthKey } from '@sobra/shared';
 import type {
   AccountInput,
   BudgetVsActual,
@@ -252,7 +252,7 @@ export const worstCase: ScenarioData = {
     id: id(1),
     name: 'Maria Aparecida dos Santos Albuquerque de Vasconcellos Cavalcanti Wiśniewska',
     email:
-      'maria.aparecida.albuquerque.vasconcellos+financas-pessoais@correio-eletronico-corporativo.example.com.br',
+      'maria.aparecida.albuquerque.vasconcellos+sobra-pessoais@correio-eletronico-corporativo.example.com.br',
     createdAt: ts,
   },
   accounts: worstAccounts,

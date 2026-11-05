@@ -1,4 +1,4 @@
-import type { TokenPair } from '@financas/shared';
+import type { TokenPair } from '@sobra/shared';
 
 /**
  * Where the session lives. Async so React Native can back it with expo-secure-store; the web

@@ -1,4 +1,4 @@
-import type { CategoryKind } from '@financas/shared';
+import type { CategoryKind } from '@sobra/shared';
 import { normalizeText } from './csv';
 
 type KeywordRule = { kind: CategoryKind; category: string; pattern: RegExp };

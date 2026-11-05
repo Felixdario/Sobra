@@ -1,4 +1,4 @@
-import type { Transaction } from '@financas/shared';
+import type { Transaction } from '@sobra/shared';
 import { useMutation } from '@tanstack/react-query';
 import { useServices } from '../../api/ServicesProvider';
 import { haptics } from '../../lib/haptics';

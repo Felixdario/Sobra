@@ -4,8 +4,8 @@ import {
   monthKey,
   parseLocalDate,
   type BalanceHistory,
-} from '@financas/shared';
-import { space } from '@financas/tokens';
+} from '@sobra/shared';
+import { space } from '@sobra/tokens';
 import { scaleLinear } from '@visx/scale';
 import { useState, type PointerEvent } from 'react';
 import { capitalize, compactMoney, compactReais, money } from '../../lib/format';

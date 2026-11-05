@@ -8,8 +8,8 @@ import {
   parseBRL,
   type Account,
   type AccountType,
-} from '@financas/shared';
-import { identityColors } from '@financas/tokens';
+} from '@sobra/shared';
+import { identityColors } from '@sobra/tokens';
 import { useMutation } from '@tanstack/react-query';
 import { Archive } from 'lucide-react';
 import { Controller, useForm } from 'react-hook-form';

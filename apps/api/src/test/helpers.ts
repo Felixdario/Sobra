@@ -8,7 +8,7 @@ import {
   type AuthResponse,
   authResponseSchema,
   type RegisterInput,
-} from '@financas/shared';
+} from '@sobra/shared';
 import { type App, buildApp } from '../app';
 import { loadEnv } from '../config/env';
 

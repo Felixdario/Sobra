@@ -1,4 +1,4 @@
-import { lastNMonths, type Account, type Category, type MonthKey } from '@financas/shared';
+import { lastNMonths, type Account, type Category, type MonthKey } from '@sobra/shared';
 import { View } from 'react-native';
 import { monthTitle } from '../../lib/month';
 import { makeStyles } from '../../theme/makeStyles';

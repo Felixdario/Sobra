@@ -1,4 +1,4 @@
-import type { RecurrenceFrequency } from '@financas/shared';
+import type { RecurrenceFrequency } from '@sobra/shared';
 
 export type ScheduleRule = {
   frequency: RecurrenceFrequency;

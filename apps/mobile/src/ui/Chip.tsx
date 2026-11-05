@@ -1,4 +1,4 @@
-import { hitSlopFor } from '@financas/tokens';
+import { hitSlopFor } from '@sobra/tokens';
 import type { ReactNode } from 'react';
 import { makeStyles } from '../theme/makeStyles';
 import { useTheme } from '../theme/ThemeProvider';

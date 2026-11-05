@@ -27,7 +27,7 @@ export const ids = {
 export const user: UserInput = {
   id: ids.user,
   name: 'Ana Demo',
-  email: 'demo@financas.dev',
+  email: 'demo@sobra.dev',
   createdAt: ts,
 };
 

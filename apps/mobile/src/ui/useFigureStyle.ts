@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { LayoutChangeEvent, TextStyle } from 'react-native';
 import { figureWidthEm, fitFigure, FIGURE_STEPS, type FigureStep } from '../lib/figure';
-import type { NativeTextStyle } from '@financas/tokens';
+import type { NativeTextStyle } from '@sobra/tokens';
 import { effectiveScale, FIGURE_MAX_FONT_SCALE, MAX_FONT_SCALE } from '../theme/fontScale';
 import { useThemeContext } from '../theme/ThemeProvider';
 

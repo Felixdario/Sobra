@@ -4,7 +4,7 @@ import type {
   CategoryKind,
   CategoryUpdate,
   IconName,
-} from '@financas/shared';
+} from '@sobra/shared';
 import { type Db, isUniqueViolation } from '../../lib/db';
 import { conflict, notFound } from '../../lib/errors';
 import { compact } from '../../lib/objects';

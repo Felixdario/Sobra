@@ -5,7 +5,7 @@ import {
   toLocalDateKey,
   toMonthKey,
   type MonthKey,
-} from '@financas/shared';
+} from '@sobra/shared';
 import { capitalize } from './format';
 
 const DAY_MS = 24 * 60 * 60 * 1000;

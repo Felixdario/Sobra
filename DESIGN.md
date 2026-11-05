@@ -126,7 +126,7 @@ components:
 
 # Design System: Sobra
 
-> Fonte da verdade dos valores: `packages/tokens` (`@financas/tokens`). Este documento explica
+> Fonte da verdade dos valores: `packages/tokens` (`@sobra/tokens`). Este documento explica
 > **como** usar; quando um número aqui divergir do pacote, o pacote vence e este arquivo está
 > desatualizado. Referência visual gerada dos tokens: `docs/design/tokens.html`.
 > Os valores acima são do tema claro; o escuro está em `packages/tokens/src/themes.ts`.

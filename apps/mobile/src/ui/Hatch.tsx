@@ -1,4 +1,4 @@
-import { space } from '@financas/tokens';
+import { space } from '@sobra/tokens';
 import { Defs, Path, Pattern, Rect } from 'react-native-svg';
 
 /**

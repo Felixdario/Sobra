@@ -1,4 +1,4 @@
-import type { Transaction, TransactionCreate } from '@financas/shared';
+import type { Transaction, TransactionCreate } from '@sobra/shared';
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useServices } from '../lib/servicesContext';

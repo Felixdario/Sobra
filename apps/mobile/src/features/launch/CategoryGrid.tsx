@@ -1,4 +1,4 @@
-import type { Category } from '@financas/shared';
+import type { Category } from '@sobra/shared';
 import { useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { STACK_FONT_SCALE } from '../../theme/fontScale';

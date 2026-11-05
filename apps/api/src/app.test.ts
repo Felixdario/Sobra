@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { healthResponseSchema } from '@financas/shared';
+import { healthResponseSchema } from '@sobra/shared';
 import type { App } from './app';
 import { createTestApp, errorOf } from './test/helpers';
 

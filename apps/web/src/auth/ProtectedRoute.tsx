@@ -1,4 +1,4 @@
-import { isApiError } from '@financas/client';
+import { isApiError } from '@sobra/client';
 import { useQuery } from '@tanstack/react-query';
 import { Navigate, Outlet, useLocation } from 'react-router';
 import { ErrorLine } from '../components/ErrorLine';

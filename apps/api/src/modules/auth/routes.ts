@@ -7,7 +7,7 @@ import {
   registerSchema,
   tokenPairSchema,
   userSchema,
-} from '@financas/shared';
+} from '@sobra/shared';
 import { bearerAuth, errorResponses } from '../../lib/http';
 import { createPasswordHasher } from './password';
 import * as auth from './service';

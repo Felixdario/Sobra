@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { categorySchema, tokenPairSchema, userSchema } from '@financas/shared';
+import { categorySchema, tokenPairSchema, userSchema } from '@sobra/shared';
 import type { App } from '../../app';
 import { authHeader, createTestApp, errorOf, registerUser } from '../../test/helpers';
 

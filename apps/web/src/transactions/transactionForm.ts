@@ -6,7 +6,7 @@ import {
   transactionTypeSchema,
   type Transaction,
   type TransactionCreate,
-} from '@financas/shared';
+} from '@sobra/shared';
 import { z } from 'zod';
 
 /**

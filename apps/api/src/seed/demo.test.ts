@@ -5,7 +5,7 @@ import {
   budgetSchema,
   incomeVsExpenseSeriesSchema,
   monthSummarySchema,
-} from '@financas/shared';
+} from '@sobra/shared';
 import type { App } from '../app';
 import { createPasswordHasher } from '../modules/auth/password';
 import { authHeader, createTestApp, registerUser } from '../test/helpers';

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { apiErrorSchema, idSchema } from '@financas/shared';
+import { apiErrorSchema, idSchema } from '@sobra/shared';
 
 z.globalRegistry.add(apiErrorSchema, { id: 'ApiError' });
 

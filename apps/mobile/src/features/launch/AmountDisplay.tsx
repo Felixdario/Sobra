@@ -1,5 +1,5 @@
-import { cents } from '@financas/shared';
-import { durations, easings } from '@financas/tokens';
+import { cents } from '@sobra/shared';
+import { durations, easings } from '@sobra/tokens';
 import { useEffect } from 'react';
 import Animated, {
   Easing,

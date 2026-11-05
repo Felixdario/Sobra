@@ -1,11 +1,11 @@
-import type { TransactionInfiniteParams } from '@financas/client/query';
+import type { TransactionInfiniteParams } from '@sobra/client/query';
 import {
   cents,
   type Cents,
   type MonthKey,
   type Transaction,
   type TransactionCreate,
-} from '@financas/shared';
+} from '@sobra/shared';
 import { dayLabel } from '../launch/dates';
 
 export type ListRow =

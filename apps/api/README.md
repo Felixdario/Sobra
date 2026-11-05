@@ -1,7 +1,7 @@
-# @financas/api
+# @sobra/api
 
 Fastify 5 + Prisma 7 (SQLite em dev/teste) + Zod 4 via `fastify-type-provider-zod`. Os schemas de
-`@financas/shared` são o contrato: validam a entrada, filtram a saída e geram o OpenAPI em `/docs`.
+`@sobra/shared` são o contrato: validam a entrada, filtram a saída e geram o OpenAPI em `/docs`.
 
 ## Comandos (a partir da raiz)
 
@@ -11,11 +11,11 @@ juntos. Os comandos por pacote:
 
 ```sh
 corepack pnpm install                              # também roda `prisma generate` (postinstall)
-corepack pnpm --filter @financas/api db:migrate    # cria/aplica migrations no SQLite de dev
-corepack pnpm --filter @financas/api db:seed       # (re)cria o usuário demo
-corepack pnpm --filter @financas/api dev           # http://localhost:3333 · docs em /docs
-corepack pnpm --filter @financas/api test          # cada arquivo de teste usa um SQLite próprio
-corepack pnpm --filter @financas/api build && corepack pnpm --filter @financas/api start
+corepack pnpm --filter @sobra/api db:migrate    # cria/aplica migrations no SQLite de dev
+corepack pnpm --filter @sobra/api db:seed       # (re)cria o usuário demo
+corepack pnpm --filter @sobra/api dev           # http://localhost:3333 · docs em /docs
+corepack pnpm --filter @sobra/api test          # cada arquivo de teste usa um SQLite próprio
+corepack pnpm --filter @sobra/api build && corepack pnpm --filter @sobra/api start
 ```
 
 Outros: `db:deploy` (aplica migrations sem criar), `db:reset` (apaga e recria o banco de dev e roda
@@ -23,7 +23,7 @@ o seed), `db:generate`. Variáveis em `.env.example` (copie para `apps/api/.env`
 
 ## Usuário demo
 
-`db:reset` (ou só `db:seed`, num banco já migrado) cria **demo@financas.dev / demo1234** ("Ana Demo")
+`db:reset` (ou só `db:seed`, num banco já migrado) cria **demo@sobra.dev / demo1234** ("Ana Demo")
 com seis meses de dados até hoje: contas Nubank, Poupança Caixa, Cartão Inter e Carteira; salário,
 freelance, aluguel, contas da casa, mercado, transporte, restaurantes, lazer e assinaturas (estas
 como recorrências reais); transferências para a poupança e pagamento da fatura do cartão;
@@ -31,9 +31,9 @@ orçamentos de 7 categorias em todos os meses. Ao final o seed imprime transaç�
 despesas e taxa de poupança por mês, os saldos e o resumo do mês atual.
 
 ```sh
-corepack pnpm --filter @financas/api db:reset                      # banco novo + demo
-corepack pnpm --filter @financas/api db:seed                       # recria só o demo
-SEED_TODAY=2026-11-04 corepack pnpm --filter @financas/api db:seed # data de referência fixa
+corepack pnpm --filter @sobra/api db:reset                      # banco novo + demo
+corepack pnpm --filter @sobra/api db:seed                       # recria só o demo
+SEED_TODAY=2026-11-04 corepack pnpm --filter @sobra/api db:seed # data de referência fixa
 ```
 
 O seed é idempotente (apaga e recria só os dados do demo) e determinístico: PRNG com semente fixa,

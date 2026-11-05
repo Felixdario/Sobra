@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { budgetSchema } from '@financas/shared';
+import { budgetSchema } from '@sobra/shared';
 import type { App } from '../../app';
 import { categoryByName, defaultAccount, seedTransactions } from '../../test/factories';
 import {

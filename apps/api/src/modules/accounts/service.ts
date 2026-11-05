@@ -1,9 +1,4 @@
-import {
-  type Account,
-  type AccountCreate,
-  type AccountUpdate,
-  type IconName,
-} from '@financas/shared';
+import { type Account, type AccountCreate, type AccountUpdate, type IconName } from '@sobra/shared';
 import type { Db } from '../../lib/db';
 import { notFound } from '../../lib/errors';
 import { fromDbCents, sumOrZero, toDbCents } from '../../lib/money';

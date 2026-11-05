@@ -1,5 +1,5 @@
-import type { TokenStore } from '@financas/client';
-import { tokenPairSchema } from '@financas/shared';
+import type { TokenStore } from '@sobra/client';
+import { tokenPairSchema } from '@sobra/shared';
 import type { KeyValueStore } from './storage';
 
 export const SESSION_KEY = 'sobra.session';

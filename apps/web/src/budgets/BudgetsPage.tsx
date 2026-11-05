@@ -1,4 +1,4 @@
-import { previousMonth, type Budget, type Category, type MonthKey } from '@financas/shared';
+import { previousMonth, type Budget, type Category, type MonthKey } from '@sobra/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Copy, Pencil, Trash } from 'lucide-react';
 import { useState } from 'react';

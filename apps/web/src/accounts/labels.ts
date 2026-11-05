@@ -1,4 +1,4 @@
-import type { AccountType, IconName } from '@financas/shared';
+import type { AccountType, IconName } from '@sobra/shared';
 
 export const ACCOUNT_TYPE_LABELS: Record<AccountType, string> = {
   checking: 'Conta corrente',

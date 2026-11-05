@@ -1,5 +1,5 @@
 {
-  "name": "financas",
+  "name": "sobra",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.18.0",
@@ -7,9 +7,9 @@
     "node": ">=22.12"
   },
   "scripts": {
-    "bootstrap": "node scripts/ensure-env.mjs && corepack pnpm --filter @financas/api db:deploy && corepack pnpm --filter @financas/api db:seed",
-    "dev": "corepack pnpm --parallel --filter @financas/api --filter @financas/web dev",
-    "dev:mobile": "corepack pnpm --filter @financas/mobile start",
+    "bootstrap": "node scripts/ensure-env.mjs && corepack pnpm --filter @sobra/api db:deploy && corepack pnpm --filter @sobra/api db:seed",
+    "dev": "corepack pnpm --parallel --filter @sobra/api --filter @sobra/web dev",
+    "dev:mobile": "corepack pnpm --filter @sobra/mobile start",
     "typecheck": "corepack pnpm -r typecheck",
     "lint": "corepack pnpm -r lint",
     "test": "corepack pnpm -r test",

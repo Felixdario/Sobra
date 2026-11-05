@@ -1,5 +1,5 @@
-import type { TransactionCreateBody, TransactionUpdateBody } from '@financas/client';
-import { cents, type Account, type Category, type Transaction } from '@financas/shared';
+import type { TransactionCreateBody, TransactionUpdateBody } from '@sobra/client';
+import { cents, type Account, type Category, type Transaction } from '@sobra/shared';
 
 export type LaunchType = 'expense' | 'income';
 

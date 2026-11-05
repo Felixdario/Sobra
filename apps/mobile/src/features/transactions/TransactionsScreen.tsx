@@ -1,10 +1,10 @@
-import { isApiError } from '@financas/client';
-import { isOptimisticId } from '@financas/client/query';
-import { TIME_ZONE, type Transaction } from '@financas/shared';
+import { isApiError } from '@sobra/client';
+import { isOptimisticId } from '@sobra/client/query';
+import { TIME_ZONE, type Transaction } from '@sobra/shared';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { Search, SlidersHorizontal, X } from 'lucide-react-native';
 import { useMemo, useState } from 'react';
-import { durations, easings } from '@financas/tokens';
+import { durations, easings } from '@sobra/tokens';
 import { RefreshControl, TextInput, View } from 'react-native';
 import Animated, { Easing, LinearTransition } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';

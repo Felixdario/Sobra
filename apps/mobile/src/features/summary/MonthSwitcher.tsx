@@ -1,5 +1,5 @@
-import { nextMonth, previousMonth, type MonthKey } from '@financas/shared';
-import { hitSlopFor } from '@financas/tokens';
+import { nextMonth, previousMonth, type MonthKey } from '@sobra/shared';
+import { hitSlopFor } from '@sobra/tokens';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { View } from 'react-native';
 import { monthProgress, monthTitle, progressLabel } from '../../lib/month';

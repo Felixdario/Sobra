@@ -6,7 +6,7 @@ import {
   spendingByCategorySchema,
   transactionSchema,
   userSchema,
-} from '@financas/shared';
+} from '@sobra/shared';
 import { newUser, oneTransaction, worstCase } from './scenarioData';
 
 /** The scenarios must be data the API could really send: the client validates every response. */

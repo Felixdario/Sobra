@@ -1,4 +1,4 @@
-import { cents, type Transaction } from '@financas/shared';
+import { cents, type Transaction } from '@sobra/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { createContext, use, useCallback, useMemo, useState, type ReactNode } from 'react';
 import { useServices } from '../../api/ServicesProvider';

@@ -9,7 +9,7 @@ import {
   DESCRIPTION_MAX,
   localDateSchema,
   parseBRL,
-} from '@financas/shared';
+} from '@sobra/shared';
 import { badRequest } from '../../lib/errors';
 
 export type ParsedCsvRow = { rowNumber: number; raw: CsvImportRow };

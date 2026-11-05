@@ -1,4 +1,4 @@
-import type { Category, CsvImportPreview, CsvImportPreviewRow } from '@financas/shared';
+import type { Category, CsvImportPreview, CsvImportPreviewRow } from '@sobra/shared';
 import { CircleAlert, Copy } from 'lucide-react';
 import { signedMoney } from '../lib/format';
 import { useWide } from '../lib/useWide';

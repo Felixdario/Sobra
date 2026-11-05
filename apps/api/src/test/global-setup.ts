@@ -14,7 +14,7 @@ const apiRoot = resolve(import.meta.dirname, '../..');
 
 /** Migrates one template database per run; each test file copies it (see `createTestApp`). */
 export default function setup(project: TestProject) {
-  const dir = mkdtempSync(join(tmpdir(), 'financas-api-test-'));
+  const dir = mkdtempSync(join(tmpdir(), 'sobra-api-test-'));
   const templateDatabase = join(dir, 'template.db');
 
   execFileSync(

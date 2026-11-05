@@ -1,4 +1,4 @@
-import type { NativeTextStyle, TextStyleName } from '@financas/tokens';
+import type { NativeTextStyle, TextStyleName } from '@sobra/tokens';
 
 /*
  * Large text (Dynamic Type / Android font size). On iOS and Android the system scales every Text

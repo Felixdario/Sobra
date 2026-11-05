@@ -1,4 +1,4 @@
-import { previousMonth, toMonthKey } from '@financas/shared';
+import { previousMonth, toMonthKey } from '@sobra/shared';
 import { screen } from '@testing-library/react-native';
 import { budgets, ids, monthSummary, spending, tokens, user } from '../../test/fixtures';
 import { renderWithServices, type Routes } from '../../test/render';

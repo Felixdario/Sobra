@@ -1,4 +1,4 @@
-import { parseLocalDate, TIME_ZONE, toLocalDateKey } from '@financas/shared';
+import { parseLocalDate, TIME_ZONE, toLocalDateKey } from '@sobra/shared';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const NOON_MS = 12 * 60 * 60 * 1000;

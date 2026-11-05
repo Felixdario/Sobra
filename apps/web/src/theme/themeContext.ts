@@ -1,4 +1,4 @@
-import type { ThemeMode } from '@financas/tokens';
+import type { ThemeMode } from '@sobra/tokens';
 import { createContext, use } from 'react';
 import type { ThemePreference } from './theme';
 

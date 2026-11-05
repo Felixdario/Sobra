@@ -9,7 +9,7 @@ import {
   type SpendingByCategory,
   percentOf,
   previousMonth,
-} from '@financas/shared';
+} from '@sobra/shared';
 import type { Db } from '../../lib/db';
 import { badRequest } from '../../lib/errors';
 import { fromDbCents, sumOrZero } from '../../lib/money';

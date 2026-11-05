@@ -6,7 +6,7 @@ import {
   recurringSyncResultSchema,
   recurringUpdateSchema,
   toLocalDateKey,
-} from '@financas/shared';
+} from '@sobra/shared';
 import { bearerAuth, errorResponses, idParamsSchema } from '../../lib/http';
 import * as recurring from './service';
 

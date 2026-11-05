@@ -1,4 +1,4 @@
-import type { TextStyleName } from '@financas/tokens';
+import type { TextStyleName } from '@sobra/tokens';
 import { Text, type TextProps } from 'react-native';
 import { effectiveScale, MAX_FONT_SCALE } from '../theme/fontScale';
 import { useThemeContext } from '../theme/ThemeProvider';

@@ -1,4 +1,4 @@
-import { parseLocalDate, type Transaction } from '@financas/shared';
+import { parseLocalDate, type Transaction } from '@sobra/shared';
 import { money, signedMoney, spokenMoney } from '../lib/format';
 
 const shortDate = new Intl.DateTimeFormat('pt-BR', {

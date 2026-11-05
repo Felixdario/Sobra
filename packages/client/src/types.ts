@@ -20,7 +20,7 @@ import {
   type categoryUpdateSchema,
   type loginSchema,
   type registerSchema,
-} from '@financas/shared';
+} from '@sobra/shared';
 import type { z } from 'zod';
 
 /** `GET /transactions` response, validated by the client: `paginated(transactionSchema)`. */

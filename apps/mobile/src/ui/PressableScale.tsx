@@ -1,4 +1,4 @@
-import { durations, easings } from '@financas/tokens';
+import { durations, easings } from '@sobra/tokens';
 import { useState, type ReactNode } from 'react';
 import { Pressable, type PressableProps, type StyleProp, type ViewStyle } from 'react-native';
 import Animated, { cubicBezier, useReducedMotion } from 'react-native-reanimated';

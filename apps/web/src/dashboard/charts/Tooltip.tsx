@@ -1,4 +1,4 @@
-import { space } from '@financas/tokens';
+import { space } from '@sobra/tokens';
 import styles from './chart.module.css';
 
 export type TooltipRow = { key: string; value: string; label: string; color: string };

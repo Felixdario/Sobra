@@ -6,7 +6,7 @@ import {
   transactionFiltersSchema,
   transactionSchema,
   transactionUpdateSchema,
-} from '@financas/shared';
+} from '@sobra/shared';
 import { bearerAuth, errorResponses, idParamsSchema } from '../../lib/http';
 import * as transactions from './service';
 

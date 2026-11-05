@@ -6,7 +6,7 @@ import type {
   CsvImportPreviewRow,
   CsvMappedRow,
   ImportBatch,
-} from '@financas/shared';
+} from '@sobra/shared';
 import type { Db, PrismaClient } from '../../lib/db';
 import { badRequest, notFound } from '../../lib/errors';
 import { fromDbCents, toDbCents } from '../../lib/money';

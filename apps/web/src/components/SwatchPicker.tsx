@@ -1,6 +1,6 @@
-import type { IconName } from '@financas/shared';
-import { ICON_NAMES } from '@financas/shared';
-import { identityColors } from '@financas/tokens';
+import type { IconName } from '@sobra/shared';
+import { ICON_NAMES } from '@sobra/shared';
+import { identityColors } from '@sobra/tokens';
 import { useId } from 'react';
 import { ICON_LABELS, ICONS } from '../lib/icons';
 import styles from './SwatchPicker.module.css';

@@ -5,7 +5,7 @@ import {
   paginated,
   recurringSchema,
   transactionSchema,
-} from '@financas/shared';
+} from '@sobra/shared';
 import type { App } from '../../app';
 import {
   authHeader,

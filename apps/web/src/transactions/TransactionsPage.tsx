@@ -1,6 +1,6 @@
-import { isOptimisticId } from '@financas/client/query';
-import type { TransactionSortField } from '@financas/client';
-import type { Transaction } from '@financas/shared';
+import { isOptimisticId } from '@sobra/client/query';
+import type { TransactionSortField } from '@sobra/client';
+import type { Transaction } from '@sobra/shared';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';

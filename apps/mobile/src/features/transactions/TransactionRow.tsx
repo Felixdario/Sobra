@@ -1,4 +1,4 @@
-import { cents, type Transaction } from '@financas/shared';
+import { cents, type Transaction } from '@sobra/shared';
 import { ArrowLeftRight } from 'lucide-react-native';
 import { View } from 'react-native';
 import { formatMoney, speakMoney } from '../../lib/money';

@@ -1,11 +1,11 @@
-import type { TransactionListParams, TransactionSortField } from '@financas/client';
+import type { TransactionListParams, TransactionSortField } from '@sobra/client';
 import {
   isMonthKey,
   PAGE_SIZE_DEFAULT,
   TRANSACTION_TYPES,
   type MonthKey,
   type TransactionType,
-} from '@financas/shared';
+} from '@sobra/shared';
 import { currentMonth } from '../lib/month';
 
 export type SortDirection = 'asc' | 'desc';

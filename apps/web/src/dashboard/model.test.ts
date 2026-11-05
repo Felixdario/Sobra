@@ -1,4 +1,4 @@
-import { monthSummarySchema, spendingByCategorySchema } from '@financas/shared';
+import { monthSummarySchema, spendingByCategorySchema } from '@sobra/shared';
 import { describe, expect, it } from 'vitest';
 import { novemberPartial, october } from '../test/fakeApi';
 import { buildRuler, rulerPlanes, savingsHeadline } from './model';

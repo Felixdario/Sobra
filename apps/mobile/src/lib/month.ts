@@ -4,7 +4,7 @@ import {
   toLocalDateKey,
   toMonthKey,
   type MonthKey,
-} from '@financas/shared';
+} from '@sobra/shared';
 
 export type MonthProgress =
   { kind: 'closed' } | { kind: 'partial'; day: number; daysInMonth: number } | { kind: 'future' };

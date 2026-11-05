@@ -1,4 +1,4 @@
-import { lastNMonths, type MonthKey } from '@financas/shared';
+import { lastNMonths, type MonthKey } from '@sobra/shared';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useServices } from '../lib/servicesContext';
 

@@ -8,7 +8,7 @@ import {
   type Category,
   type Transaction,
   type TransactionCreate,
-} from '@financas/shared';
+} from '@sobra/shared';
 import type {
   TransactionCreateBody,
   TransactionListParams,

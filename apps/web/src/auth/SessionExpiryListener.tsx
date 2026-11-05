@@ -1,4 +1,4 @@
-import { CLIENT_ERROR_MESSAGES } from '@financas/client';
+import { CLIENT_ERROR_MESSAGES } from '@sobra/client';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';

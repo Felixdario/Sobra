@@ -1,4 +1,4 @@
-import { breakpoints } from '@financas/tokens';
+import { breakpoints } from '@sobra/tokens';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { LogOut, Menu, X } from 'lucide-react';
 import { useEffect, useId, useRef, useState } from 'react';

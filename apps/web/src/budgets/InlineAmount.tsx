@@ -1,4 +1,4 @@
-import { centsToReais, parseBRL, type Cents } from '@financas/shared';
+import { centsToReais, parseBRL, type Cents } from '@sobra/shared';
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { Button } from '../components/Button';
 import styles from './BudgetsPage.module.css';

@@ -1,4 +1,4 @@
-import type { Category, CsvImportCommitRow, CsvImportPreview } from '@financas/shared';
+import type { Category, CsvImportCommitRow, CsvImportPreview } from '@sobra/shared';
 
 export type RowChoice = { include: boolean; categoryId: string };
 export type Choices = Record<number, RowChoice>;

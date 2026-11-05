@@ -1,4 +1,4 @@
-import { cents } from '@financas/shared';
+import { cents } from '@sobra/shared';
 import type { App } from '../app';
 import { toDbCents } from '../lib/money';
 

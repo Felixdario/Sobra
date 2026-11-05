@@ -1,4 +1,4 @@
-import { budgetVsActualItemSchema, cents, monthKey, monthSummarySchema } from '@financas/shared';
+import { budgetVsActualItemSchema, cents, monthKey, monthSummarySchema } from '@sobra/shared';
 import { budgets, ids, monthSummary, spending } from '../../test/fixtures';
 import { budgetStatus, budgetText, buildHeadline, buildRuler } from './summaryModel';
 

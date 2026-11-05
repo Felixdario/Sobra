@@ -1,4 +1,4 @@
-import type { BudgetVsActual } from '@financas/shared';
+import type { BudgetVsActual } from '@sobra/shared';
 import { Link } from 'react-router';
 import { BudgetMeter } from '../../components/BudgetMeter';
 import meterStyles from '../../components/BudgetMeter.module.css';

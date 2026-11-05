@@ -17,20 +17,20 @@ describe('entrar', () => {
       { path: '/entrar' },
     );
     const ui = userEvent.setup();
-    await ui.type(await screen.findByLabelText('E-mail'), '  Demo@Financas.dev ');
+    await ui.type(await screen.findByLabelText('E-mail'), '  Demo@Sobra.dev ');
     await ui.type(screen.getByLabelText('Senha'), 'demo1234');
     await ui.click(screen.getByRole('button', { name: 'Entrar' }));
 
     expect(await screen.findByRole('heading', { name: 'Painel', level: 1 })).toBeInTheDocument();
     const login = requests.find((r) => r.path === '/auth/login');
-    expect(login?.body).toEqual({ email: 'demo@financas.dev', password: 'demo1234' });
+    expect(login?.body).toEqual({ email: 'demo@sobra.dev', password: 'demo1234' });
     expect(window.localStorage.getItem(REFRESH_KEY)).toBe(tokens.refreshToken);
   });
 
   it('mostra o erro da API em português quando a senha está errada', async () => {
     renderApp({ 'POST /auth/login': () => invalidCredentials }, { path: '/entrar' });
     const ui = userEvent.setup();
-    await ui.type(await screen.findByLabelText('E-mail'), 'demo@financas.dev');
+    await ui.type(await screen.findByLabelText('E-mail'), 'demo@sobra.dev');
     await ui.type(screen.getByLabelText('Senha'), 'errada123');
     await ui.click(screen.getByRole('button', { name: 'Entrar' }));
 
@@ -55,7 +55,7 @@ describe('entrar', () => {
       .setup()
       .click(await screen.findByRole('button', { name: 'Entrar com a conta de demonstração' }));
 
-    expect(screen.getByLabelText('E-mail')).toHaveValue('demo@financas.dev');
+    expect(screen.getByLabelText('E-mail')).toHaveValue('demo@sobra.dev');
     expect(screen.getByLabelText('Senha')).toHaveValue('demo1234');
   });
 });

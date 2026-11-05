@@ -1,7 +1,7 @@
 import cors from '@fastify/cors';
 import rateLimit from '@fastify/rate-limit';
 import Fastify, { type FastifyServerOptions } from 'fastify';
-import { installZodPtBR } from '@financas/shared';
+import { installZodPtBR } from '@sobra/shared';
 import { type Env, loadEnv, sqlitePath } from './config/env';
 import { accountsRoutes } from './modules/accounts/routes';
 import { authRoutes } from './modules/auth/routes';

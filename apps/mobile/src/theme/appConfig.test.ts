@@ -1,4 +1,4 @@
-import { darkTheme, lightTheme } from '@financas/tokens';
+import { darkTheme, lightTheme } from '@sobra/tokens';
 import appJson from '../../app.json';
 
 describe('app.json', () => {

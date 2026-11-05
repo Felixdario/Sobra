@@ -1,4 +1,4 @@
-import { monthKey, transactionSchema } from '@financas/shared';
+import { monthKey, transactionSchema } from '@sobra/shared';
 import { expense, ids, income, transfer } from '../../test/fixtures';
 import { groupByDay, hasFilters, PAGE_SIZE, toParams } from './listModel';
 

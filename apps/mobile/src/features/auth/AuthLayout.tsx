@@ -1,4 +1,4 @@
-import { APP_NAME } from '@financas/shared';
+import { APP_NAME } from '@sobra/shared';
 import type { ReactNode } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';

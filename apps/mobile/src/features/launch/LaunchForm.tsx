@@ -1,4 +1,4 @@
-import { cents, DESCRIPTION_MAX, NOTES_MAX, type Account, type Category } from '@financas/shared';
+import { cents, DESCRIPTION_MAX, NOTES_MAX, type Account, type Category } from '@sobra/shared';
 import { ArrowLeftRight, Calendar, Pencil, StickyNote, Wallet } from 'lucide-react-native';
 import { useState } from 'react';
 import { TextInput, View } from 'react-native';

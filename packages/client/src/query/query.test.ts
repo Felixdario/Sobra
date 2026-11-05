@@ -5,7 +5,7 @@ import {
   type QueryKey,
 } from '@tanstack/query-core';
 import { afterEach, describe, expect, expectTypeOf, it } from 'vitest';
-import type { Account, Transaction } from '@financas/shared';
+import type { Account, Transaction } from '@sobra/shared';
 import { createApiClient } from '../client';
 import { ApiError } from '../errors';
 import {
@@ -252,7 +252,7 @@ describe('invalidações após mutação', () => {
     );
     seedCache(queryClient);
     await run(queryClient, mutations.auth.login, {
-      email: 'demo@financas.dev',
+      email: 'demo@sobra.dev',
       password: 'demo1234',
     });
     expect(queryClient.getQueryData(queryKeys.me())).toEqual(user);

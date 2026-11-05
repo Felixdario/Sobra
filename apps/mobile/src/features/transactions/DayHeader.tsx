@@ -1,4 +1,4 @@
-import type { Cents } from '@financas/shared';
+import type { Cents } from '@sobra/shared';
 import { View } from 'react-native';
 import { formatMoney, speakMoney } from '../../lib/money';
 import { makeStyles } from '../../theme/makeStyles';

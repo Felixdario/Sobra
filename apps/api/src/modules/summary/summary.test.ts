@@ -5,7 +5,7 @@ import {
   incomeVsExpenseSeriesSchema,
   monthSummarySchema,
   spendingByCategorySchema,
-} from '@financas/shared';
+} from '@sobra/shared';
 import type { App } from '../../app';
 import {
   categoryByName,

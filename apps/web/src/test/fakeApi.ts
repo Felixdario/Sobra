@@ -1,11 +1,11 @@
-import type { FetchLike } from '@financas/client';
+import type { FetchLike } from '@sobra/client';
 import type {
   balanceHistorySchema,
   budgetVsActualSchema,
   incomeVsExpenseSeriesSchema,
   MonthSummaryInput,
   spendingByCategorySchema,
-} from '@financas/shared';
+} from '@sobra/shared';
 import type { z } from 'zod';
 
 type SpendingByCategory = z.input<typeof spendingByCategorySchema>;
@@ -56,7 +56,7 @@ export const ids = {
 export const user = {
   id: ids.user,
   name: 'Ana Demo',
-  email: 'demo@financas.dev',
+  email: 'demo@sobra.dev',
   createdAt: '2026-05-01T12:00:00.000Z',
 };
 

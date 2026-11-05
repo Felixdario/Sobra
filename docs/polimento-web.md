@@ -5,7 +5,7 @@ Passada de "quebrar, auditar, corrigir" no `apps/web`. Decisões registradas no 
 
 ## Como reproduzir o pior caso
 
-Com `corepack pnpm --filter @financas/web dev`, abra qualquer tela com `?dados=pior` (ou use o
+Com `corepack pnpm --filter @sobra/web dev`, abra qualquer tela com `?dados=pior` (ou use o
 seletor fixo no rodapé, que só existe em desenvolvimento). Cenários: **Dados demo** (API real),
 **Pior caso**, **Usuário novo**, **Uma transação**, **Sem rede** e **Erro 500**. Os dados entram
 pelo `fetch` do cliente (`src/dev/scenarios.ts`), o mesmo caminho dos testes. O pior caso tem
@@ -81,7 +81,7 @@ próprio: 235 KB + 311 KB (69 + 98 KB gzip), 546 KB no total, sem aviso.
 
 - **Linha nova entrando com 240 ms** (DESIGN.md, "Lançamento salvo"): o id otimista é trocado
   pelo id da API, o que remonta a linha e tocaria a entrada duas vezes; exige chave estável no
-  cliente (pacote `@financas/client`, fora do escopo desta rodada).
+  cliente (pacote `@sobra/client`, fora do escopo desta rodada).
 - **Sem rede repete o erro em cada cartão do painel.** Correto pela regra "o erro fica no lugar do
   bloco", mas uma faixa única seria mais calma; depende da decisão em aberto sobre modo offline.
 - **Usuário sem nenhuma conta** vê "Lance o primeiro gasto", mas não consegue lançar sem conta. A

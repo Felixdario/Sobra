@@ -1,4 +1,4 @@
-import type { TextStyleName } from '@financas/tokens';
+import type { TextStyleName } from '@sobra/tokens';
 
 /**
  * Advance widths of Archivo SemiBold, in em, by character class. Digits are 0.58em (DESIGN.md:

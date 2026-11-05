@@ -1,4 +1,4 @@
-import type { Account, Category } from '@financas/shared';
+import type { Account, Category } from '@sobra/shared';
 import { useEffect, useState } from 'react';
 import { SelectField } from '../components/SelectField';
 import { TextField } from '../components/TextField';

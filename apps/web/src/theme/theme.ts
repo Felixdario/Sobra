@@ -1,4 +1,4 @@
-import type { ThemeMode } from '@financas/tokens';
+import type { ThemeMode } from '@sobra/tokens';
 
 /** Must match `public/theme-init.js`, which applies the choice before the first paint. */
 export const THEME_STORAGE_KEY = 'sobra.theme';

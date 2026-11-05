@@ -1,4 +1,4 @@
-import { cents, type BudgetVsActualItem } from '@financas/shared';
+import { cents, type BudgetVsActualItem } from '@sobra/shared';
 import { Check, TriangleAlert } from 'lucide-react-native';
 import { useId, useState } from 'react';
 import { View } from 'react-native';

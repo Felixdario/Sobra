@@ -1,4 +1,4 @@
-import { monthKey } from '@financas/shared';
+import { monthKey } from '@sobra/shared';
 import { describe, expect, it } from 'vitest';
 import { nextSort, readListState, toApiParams, writeListState } from './listState';
 

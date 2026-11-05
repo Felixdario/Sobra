@@ -1,9 +1,9 @@
-import { isApiError } from '@financas/client';
-import { nextMonth, previousMonth, TIME_ZONE, toMonthKey, type MonthKey } from '@financas/shared';
+import { isApiError } from '@sobra/client';
+import { nextMonth, previousMonth, TIME_ZONE, toMonthKey, type MonthKey } from '@sobra/shared';
 import { useQuery } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
 import { RefreshControl, ScrollView, useWindowDimensions, View } from 'react-native';
-import { durations, easings, springs } from '@financas/tokens';
+import { durations, easings, springs } from '@sobra/tokens';
 import { GestureDetector, usePanGesture } from 'react-native-gesture-handler';
 import Animated, {
   Easing,

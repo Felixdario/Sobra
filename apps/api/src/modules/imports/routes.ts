@@ -6,7 +6,7 @@ import {
   csvImportPreviewRequestSchema,
   csvImportPreviewSchema,
   importBatchSchema,
-} from '@financas/shared';
+} from '@sobra/shared';
 import { bearerAuth, errorResponses, idParamsSchema } from '../../lib/http';
 import * as imports from './service';
 

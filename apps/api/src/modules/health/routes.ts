@@ -1,5 +1,5 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
-import { healthResponseSchema } from '@financas/shared';
+import { healthResponseSchema } from '@sobra/shared';
 
 export const healthRoutes: FastifyPluginAsyncZod = async (app) => {
   app.get(

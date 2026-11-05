@@ -1,6 +1,6 @@
 import { describe, expect, expectTypeOf, it, vi } from 'vitest';
 import type { z } from 'zod';
-import type { paginated, Transaction, transactionSchema } from '@financas/shared';
+import type { paginated, Transaction, transactionSchema } from '@sobra/shared';
 import { createApiClient, type ApiClientConfig } from './client';
 import { ApiError, CLIENT_ERROR_MESSAGES } from './errors';
 import { createMemoryTokenStore } from './tokenStore';
@@ -63,11 +63,11 @@ describe('autenticação', () => {
       { loggedIn: false },
     );
     await expect(
-      client.auth.login({ email: 'demo@financas.dev', password: 'demo1234' }),
+      client.auth.login({ email: 'demo@sobra.dev', password: 'demo1234' }),
     ).resolves.toEqual(user);
     expect(await tokenStore.get()).toEqual(tokens(7));
     expect(requests[0]?.headers.authorization).toBeUndefined();
-    expect(requests[0]?.body).toEqual({ email: 'demo@financas.dev', password: 'demo1234' });
+    expect(requests[0]?.body).toEqual({ email: 'demo@sobra.dev', password: 'demo1234' });
   });
 
   it('senha errada é ApiError 401 sem tentar refresh', async () => {

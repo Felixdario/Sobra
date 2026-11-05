@@ -5,7 +5,7 @@ import {
   budgetQuerySchema,
   budgetSchema,
   budgetUpsertSchema,
-} from '@financas/shared';
+} from '@sobra/shared';
 import { bearerAuth, errorResponses, idParamsSchema } from '../../lib/http';
 import * as budgets from './service';
 

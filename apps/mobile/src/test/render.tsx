@@ -1,5 +1,5 @@
-import { createMemoryTokenStore, type FetchLike } from '@financas/client';
-import type { TokenPair } from '@financas/shared';
+import { createMemoryTokenStore, type FetchLike } from '@sobra/client';
+import type { TokenPair } from '@sobra/shared';
 import { render } from '@testing-library/react-native';
 import type { ReactElement, ReactNode } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
