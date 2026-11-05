@@ -34,13 +34,21 @@ const envSchema = z
           .split(',')
           .map((origin) => origin.trim())
           .filter(Boolean),
-      ),
+      )
+      .refine((origins) => !origins.includes('*'), {
+        error: 'CORS_ORIGINS não aceita "*": a API envia credenciais (cookie de sessão do web)',
+      }),
+    /**
+     * `Secure` on the session cookies (ADR-034). Defaults to on in production and off elsewhere,
+     * so the web works over http://localhost in dev; `false` is refused in production.
+     */
+    AUTH_COOKIE_SECURE: z.enum(['true', 'false']).optional(),
     AUTH_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(10),
     AUTH_RATE_LIMIT_WINDOW: z.string().min(1).default('1 minute'),
     /** Argon2 cost (see ARGON2_PROFILES); `test` only for the test suite. */
     ARGON2_PROFILE: z.enum(['production', 'test']).default('production'),
   })
-  .transform(({ JWT_SECRET, ...env }, ctx) => {
+  .transform(({ JWT_SECRET, AUTH_COOKIE_SECURE, ...env }, ctx) => {
     if (JWT_SECRET === undefined && env.NODE_ENV === 'production') {
       ctx.addIssue({
         code: 'custom',
@@ -57,7 +65,22 @@ const envSchema = z
       });
       return z.NEVER;
     }
-    return { ...env, JWT_SECRET: JWT_SECRET ?? DEV_JWT_SECRET };
+    if (AUTH_COOKIE_SECURE === 'false' && env.NODE_ENV === 'production') {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['AUTH_COOKIE_SECURE'],
+        message: 'AUTH_COOKIE_SECURE=false é proibido em produção',
+      });
+      return z.NEVER;
+    }
+    return {
+      ...env,
+      JWT_SECRET: JWT_SECRET ?? DEV_JWT_SECRET,
+      AUTH_COOKIE_SECURE:
+        AUTH_COOKIE_SECURE === undefined
+          ? env.NODE_ENV === 'production'
+          : AUTH_COOKIE_SECURE === 'true',
+    };
   });
 
 export type Env = z.infer<typeof envSchema>;

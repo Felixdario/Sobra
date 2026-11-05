@@ -8,6 +8,7 @@ export const idParamsSchema = z.object({ id: idSchema });
 const ERROR_DESCRIPTIONS = {
   400: 'Dados inválidos',
   401: 'Não autenticado',
+  403: 'Proibido (por exemplo, token CSRF ausente ou diferente do cookie)',
   404: 'Não encontrado (ou pertence a outro usuário)',
   409: 'Conflito com o estado atual',
   429: 'Limite de requisições excedido',

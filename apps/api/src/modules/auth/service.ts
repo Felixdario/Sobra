@@ -16,7 +16,7 @@ export type AuthContext = {
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const INVALID_CREDENTIALS = 'E-mail ou senha incorretos';
-const INVALID_REFRESH = 'Sessão expirada ou inválida. Entre novamente';
+export const INVALID_REFRESH = 'Sessão expirada ou inválida. Entre novamente';
 
 type UserRow = { id: string; name: string; email: string; createdAt: Date };
 

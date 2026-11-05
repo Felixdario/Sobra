@@ -1,4 +1,10 @@
-export { createApiClient, type ApiClient, type ApiClientConfig } from './client';
+export {
+  createApiClient,
+  type ApiClient,
+  type ApiClientConfig,
+  type CookieSessionConfig,
+  type TokenSessionConfig,
+} from './client';
 export {
   ApiError,
   CLIENT_ERROR_CODES,
@@ -15,5 +21,5 @@ export type {
   FetchRequestInit,
   FetchResponseLike,
 } from './runtime';
-export { createMemoryTokenStore, type TokenStore } from './tokenStore';
+export { createMemoryTokenStore, type AccessTokenStore, type TokenStore } from './tokenStore';
 export * from './types';

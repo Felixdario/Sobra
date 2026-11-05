@@ -2,6 +2,7 @@ export type ErrorCode =
   | 'VALIDATION_ERROR'
   | 'BAD_REQUEST'
   | 'UNAUTHORIZED'
+  | 'FORBIDDEN'
   | 'NOT_FOUND'
   | 'CONFLICT'
   | 'PAYLOAD_TOO_LARGE'
@@ -25,6 +26,8 @@ export const badRequest = (message: string, details?: unknown) =>
 
 export const unauthorized = (message = 'Autenticação necessária') =>
   new AppError(401, 'UNAUTHORIZED', message);
+
+export const forbidden = (message: string) => new AppError(403, 'FORBIDDEN', message);
 
 export const notFound = (message = 'Recurso não encontrado') =>
   new AppError(404, 'NOT_FOUND', message);

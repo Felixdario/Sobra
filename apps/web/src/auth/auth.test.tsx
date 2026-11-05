@@ -1,9 +1,18 @@
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
-import { REFRESH_KEY } from '../lib/services';
-import { dashboardRoutes, tokens, user } from '../test/fakeApi';
+import { describe, expect, it, vi } from 'vitest';
+import { LEGACY_REFRESH_KEY, SESSION_EXPIRED_EVENT } from '../lib/services';
+import { dashboardRoutes, setSessionCookie, tokens, user } from '../test/fakeApi';
 import { renderApp } from '../test/renderApp';
+
+const csrfCookie = () => /(?:^|; )sobra_csrf=([^;]*)/.exec(document.cookie)?.[1] ?? null;
+
+/** Nothing in localStorage looks like a refresh token. */
+function expectNoTokenInStorage() {
+  const values = Object.keys(window.localStorage).map((key) => window.localStorage.getItem(key));
+  expect(values.join(' ')).not.toMatch(/refresh/i);
+  expect(window.localStorage.getItem(LEGACY_REFRESH_KEY)).toBeNull();
+}
 
 const invalidCredentials = {
   status: 401,
@@ -11,9 +20,15 @@ const invalidCredentials = {
 };
 
 describe('entrar', () => {
-  it('entra com e-mail e senha, guarda o refresh token e abre o painel', async () => {
+  it('entra no modo cookie e abre o painel sem guardar refresh token no navegador', async () => {
     const { requests } = renderApp(
-      { ...dashboardRoutes(), 'POST /auth/login': () => ({ status: 200, body: { user, tokens } }) },
+      {
+        ...dashboardRoutes(),
+        'POST /auth/login': () => {
+          setSessionCookie(); // the API's Set-Cookie (the httpOnly refresh cookie is not visible)
+          return { status: 200, body: { user, tokens } };
+        },
+      },
       { path: '/entrar' },
     );
     const ui = userEvent.setup();
@@ -24,7 +39,14 @@ describe('entrar', () => {
     expect(await screen.findByRole('heading', { name: 'Painel', level: 1 })).toBeInTheDocument();
     const login = requests.find((r) => r.path === '/auth/login');
     expect(login?.body).toEqual({ email: 'demo@sobra.dev', password: 'demo1234' });
-    expect(window.localStorage.getItem(REFRESH_KEY)).toBe(tokens.refreshToken);
+    expect(login).toMatchObject({ credentials: 'include', headers: { 'x-sobra-client': 'web' } });
+    const dataRequests = () => requests.filter((r) => !r.path.startsWith('/auth/'));
+    await waitFor(() => expect(dataRequests().length).toBeGreaterThan(0));
+    expect(new Set(dataRequests().map((r) => r.headers.authorization))).toEqual(
+      new Set(['Bearer access-1']),
+    );
+    expect(requests.some((r) => r.path === '/auth/refresh')).toBe(false);
+    expectNoTokenInStorage();
   });
 
   it('mostra o erro da API em português quando a senha está errada', async () => {
@@ -35,7 +57,7 @@ describe('entrar', () => {
     await ui.click(screen.getByRole('button', { name: 'Entrar' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent('E-mail ou senha incorretos');
-    expect(window.localStorage.getItem(REFRESH_KEY)).toBeNull();
+    expect(csrfCookie()).toBeNull();
   });
 
   it('valida os campos com os schemas do shared antes de chamar a API', async () => {
@@ -81,12 +103,29 @@ describe('rota protegida', () => {
     expect(router.state.location.state).toEqual({ from: '/orcamentos' });
   });
 
-  it('com sessão guardada, renova o token e abre a página pedida', async () => {
-    renderApp(dashboardRoutes(), { path: '/orcamentos', signedIn: true });
+  it('página recarregada com sessão no cookie: renova pelo cookie (com CSRF) e abre a página pedida', async () => {
+    const { requests } = renderApp(dashboardRoutes(), { path: '/orcamentos', signedIn: true });
 
     expect(
       await screen.findByRole('heading', { name: 'Orçamentos', level: 1 }),
     ).toBeInTheDocument();
+    const refreshes = requests.filter((r) => r.path === '/auth/refresh');
+    expect(refreshes).toHaveLength(1);
+    expect(refreshes[0]).toMatchObject({
+      body: undefined,
+      credentials: 'include',
+      headers: { 'x-sobra-client': 'web', 'x-csrf-token': 'csrf-1' },
+    });
+    expect(requests.indexOf(refreshes[0]!)).toBe(0);
+    expect(requests.find((r) => r.path === '/me')?.headers.authorization).toBe('Bearer access-1');
+  });
+
+  it('apaga o refresh token que versões antigas deixaram no localStorage', async () => {
+    window.localStorage.setItem(LEGACY_REFRESH_KEY, 'refresh-antigo');
+    renderApp(dashboardRoutes(), { path: '/', signedIn: true });
+
+    expect(await screen.findByRole('heading', { name: 'Painel', level: 1 })).toBeInTheDocument();
+    expectNoTokenInStorage();
   });
 
   it('sessão recusada pela API volta ao login com aviso', async () => {
@@ -105,6 +144,32 @@ describe('rota protegida', () => {
       await screen.findByText('Sua sessão expirou. Entre de novo para continuar.'),
     ).toBeInTheDocument();
     await waitFor(() => expect(router.state.location.pathname).toBe('/entrar'));
-    expect(window.localStorage.getItem(REFRESH_KEY)).toBeNull();
+    expect(csrfCookie()).toBeNull();
+  });
+});
+
+describe('sair', () => {
+  it('chama a API pelo cookie, apaga o cookie de CSRF e volta ao login', async () => {
+    const { requests, router, services } = renderApp(
+      { ...dashboardRoutes(), 'POST /auth/logout': () => ({ status: 204 }) },
+      { path: '/', signedIn: true },
+    );
+    const expired = vi.fn();
+    services.events.addEventListener(SESSION_EXPIRED_EVENT, expired);
+    await screen.findByRole('heading', { name: 'Painel', level: 1 });
+
+    await userEvent.setup().click(screen.getAllByRole('button', { name: 'Sair' })[0]!);
+
+    await waitFor(() => expect(router.state.location.pathname).toBe('/entrar'));
+    expect(requests.find((r) => r.path === '/auth/logout')).toMatchObject({
+      body: undefined,
+      credentials: 'include',
+      headers: { 'x-csrf-token': 'csrf-1' },
+    });
+    expect(csrfCookie()).toBeNull();
+    expect(await screen.findByRole('heading', { name: 'Entrar no Sobra' })).toBeInTheDocument();
+    // Queries still mounted while logging out must not try the cookie and announce an expiry.
+    expect(requests.filter((r) => r.path === '/auth/refresh')).toHaveLength(1);
+    expect(expired).not.toHaveBeenCalled();
   });
 });

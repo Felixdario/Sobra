@@ -15,6 +15,8 @@ export type FetchRequestInit = {
   headers: Record<string, string>;
   body?: string;
   signal?: AbortSignalLike;
+  /** 'include' in the cookie session, so the browser sends and stores the session cookies. */
+  credentials?: 'include' | 'same-origin' | 'omit';
 };
 
 export type FetchResponseLike = {

@@ -40,6 +40,29 @@ O seed é idempotente (apaga e recria só os dados do demo) e determinístico: P
 então a mesma data de referência gera os mesmos lançamentos (ADR-019). O código fica em
 `src/seed/demo.ts`; `src/seed/demo.test.ts` semeia um SQLite temporário e confere tudo pela API.
 
+## Sessão: corpo (mobile) ou cookie `httpOnly` (web)
+
+`/auth/login`, `/auth/register` e `/auth/refresh` entregam o refresh token de dois jeitos (ADR-034,
+código em `src/modules/auth/session.ts`):
+
+- **Sem header (mobile):** `{ accessToken, refreshToken, expiresIn }` no corpo, como sempre.
+  `/auth/refresh` e `/auth/logout` recebem `{ refreshToken }` no corpo.
+- **`X-Sobra-Client: web`:** o corpo traz só `{ accessToken, expiresIn }`; o refresh vai no cookie
+  `sobra_refresh` (`HttpOnly; SameSite=Strict; Path=/auth`, `Secure` conforme `AUTH_COOKIE_SECURE`)
+  e um cookie legível `sobra_csrf` (`Path=/`) acompanha. `/auth/refresh` e `/auth/logout` sem corpo
+  leem o cookie e exigem `X-CSRF-Token` igual a `sobra_csrf`; senão **403** `FORBIDDEN`. O logout
+  sempre limpa os dois cookies.
+
+Rotas com `Authorization: Bearer` não checam CSRF: o navegador não envia esse header sozinho.
+`AUTH_COOKIE_SECURE` liga `Secure` (padrão: ligado só com `NODE_ENV=production`, onde `false` é
+recusado). O CORS libera credenciais só para as origens exatas de `CORS_ORIGINS` (`*` é recusado).
+Atrás de um proxy com prefixo (o Vite serve a API em `/api`), o proxy reescreve o caminho do cookie
+para `/api/auth`.
+
+```sh
+curl -i -X POST localhost:3333/auth/login -H 'content-type: application/json'   -H 'x-sobra-client: web' -d '{"email":"demo@sobra.dev","password":"demo1234"}'
+```
+
 ## Estrutura
 
 ```
@@ -49,6 +72,7 @@ src/config/env.ts           env validado com Zod (app.config)
 src/plugins/                prisma, auth (JWT + app.authenticate), errors, zod, swagger
 src/lib/                    errors (AppError, notFound…), http (errorResponses, idParamsSchema), db, money
 src/modules/<dominio>/      routes.ts (HTTP) · service.ts (regras + Prisma) · <dominio>.test.ts
+src/modules/auth/session.ts transporte da sessão: cookies do web, CSRF, corpo do mobile
 src/test/helpers.ts         createTestApp, registerUser, authHeader, errorOf
 src/seed/                   gerador do usuário demo (prisma/seed.ts é o ponto de entrada)
 ```
@@ -71,7 +95,7 @@ src/seed/                   gerador do usuário demo (prisma/seed.ts é o ponto 
      `date >= 'AAAA-MM-01' AND date < '<mês seguinte>-01'`.
    - Use `compact(input)` para mandar patches parciais ao Prisma e `Db` para aceitar tanto o
      client quanto um `tx` de `$transaction`.
-   - Erros de negócio: `badRequest`, `conflict` (409, mensagem pt-BR), `notFound`, `unauthorized`
+   - Erros de negócio: `badRequest`, `conflict` (409, mensagem pt-BR), `notFound`, `unauthorized`, `forbidden`
      de `src/lib/errors.ts`. O error handler converte para `{ error: { code, message, details } }`.
 2. **Routes** — `routes.ts` exporta um `FastifyPluginAsyncZod`:
    ```ts

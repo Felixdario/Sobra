@@ -3,7 +3,7 @@
 Cliente tipado da API do Sobra, o mesmo no web e no mobile. TypeScript puro, sem DOM nem React
 Native. Duas entradas:
 
-- `@sobra/client`: `createApiClient`, `ApiError` e `TokenStore`. Depende só de `@sobra/shared` e `zod`.
+- `@sobra/client`: `createApiClient`, `ApiError`, `TokenStore` e `AccessTokenStore`. Depende só de `@sobra/shared` e `zod`.
 - `@sobra/client/query`: `queryKeys`, `createQueries`, `createMutations` (invalidações e
   atualização otimista de transações) e `shouldRetry` para TanStack Query v5. Só importa
   `@tanstack/query-core`, e só os tipos dele (peer opcional). `@tanstack/react-query` reexporta
@@ -22,39 +22,42 @@ O que o cliente faz em toda chamada:
 
 Os motivos estão no ADR-023 (`docs/decisoes.md`).
 
+## Dois modos de sessão
+
+|                                  | `session: 'token'` (padrão, mobile)                    | `session: 'cookie'` (web)                                                        |
+| -------------------------------- | ------------------------------------------------------ | -------------------------------------------------------------------------------- |
+| Refresh token                    | no corpo, guardado no `tokenStore`                     | cookie `httpOnly` `sobra_refresh` (`Path=/auth`), invisível ao JS                |
+| `tokenStore`                     | `TokenStore` com o par inteiro (obrigatório)           | `AccessTokenStore`, só o access token (memória por padrão)                       |
+| Toda requisição                  | `Authorization: Bearer`                                | `Bearer` + `credentials: 'include'` + `X-Sobra-Client: web` + `X-CSRF-Token`     |
+| `/auth/refresh` e `/auth/logout` | `{ refreshToken }` no corpo                            | sem corpo; a API lê o cookie e exige `X-CSRF-Token` igual ao cookie `sobra_csrf` |
+| Depois de reiniciar/recarregar   | store com `accessToken: ''` renova antes da 1ª chamada | store vazio + cookie de CSRF presente renova pelo cookie antes da 1ª chamada     |
+
+No modo cookie o pacote não lê `document.cookie` (continua sem DOM): o app injeta
+`getCsrfToken`. Store vazio **sem** cookie de CSRF quer dizer "sem sessão": um 401 não dispara
+refresh nem `onSessionExpired`. Um 403 no refresh (CSRF) propaga o erro e mantém a sessão.
+Motivos no ADR-034.
+
 ## Web (React + Vite)
 
 ```ts
-// src/lib/api.ts
-import { createApiClient, type TokenStore } from '@sobra/client';
+// src/lib/api.ts (o app real está em apps/web/src/lib/services.ts)
+import { createApiClient } from '@sobra/client';
 import { createMutations, createQueries, shouldRetry } from '@sobra/client/query';
 import { QueryClient } from '@tanstack/react-query';
 
-const REFRESH_KEY = 'sobra.refresh';
-let memory = { accessToken: '', expiresIn: 0 }; // access token só em memória
-
-const tokenStore: TokenStore = {
-  async get() {
-    const refreshToken = localStorage.getItem(REFRESH_KEY);
-    // Depois de recarregar, accessToken é '': o cliente renova antes da primeira chamada.
-    return refreshToken ? { ...memory, refreshToken } : null;
-  },
-  async set({ accessToken, expiresIn, refreshToken }) {
-    memory = { accessToken, expiresIn };
-    localStorage.setItem(REFRESH_KEY, refreshToken);
-  },
-  async clear() {
-    memory = { accessToken: '', expiresIn: 0 };
-    localStorage.removeItem(REFRESH_KEY);
-  },
-};
+const readCookie = (name: string) =>
+  document.cookie
+    .split('; ')
+    .find((part) => part.startsWith(`${name}=`))
+    ?.slice(name.length + 1) ?? null;
 
 export const queryClient = new QueryClient({ defaultOptions: { queries: { retry: shouldRetry } } });
 
 export const api = createApiClient({
-  baseUrl: import.meta.env.VITE_API_URL,
-  tokenStore,
-  // Abas compartilham o refresh do localStorage: um refresh por vez entre todas elas.
+  baseUrl: '/api', // mesmo site da página (proxy do Vite), senão o cookie vira de terceiro
+  session: 'cookie', // refresh em cookie httpOnly; access token só em memória
+  getCsrfToken: () => readCookie('sobra_csrf'),
+  // As abas compartilham o cookie: um refresh por vez entre todas elas.
   refreshLock: (run) => navigator.locks.request('sobra-refresh', run),
   onSessionExpired: () => {
     queryClient.clear();
@@ -63,6 +66,9 @@ export const api = createApiClient({
 });
 export const queries = createQueries(api);
 export const mutations = createMutations(api);
+
+// Há sessão para tentar depois de recarregar? O cookie de CSRF nasce e morre com o de refresh.
+export const hasStoredSession = () => readCookie('sobra_csrf') !== null;
 ```
 
 ```tsx
@@ -114,7 +120,8 @@ export const api = createApiClient({
   `['transactions', 'infinite', params]`, página como `pageParam`). As mutações de transação já
   atualizam essas páginas de forma otimista (criar entra na página certa pela data; editar e
   apagar espelham; rollback em erro), então a tela não precisa de código próprio.
-- **Logout:** `mutations.auth.logout` apaga a sessão local mesmo sem rede e limpa o cache.
+- **Logout:** `mutations.auth.logout` chama `POST /auth/logout` (corpo no modo token, cookie + CSRF
+  no modo cookie), apaga a sessão local mesmo sem rede e limpa o cache.
 - **Sessão no boot:** chame `queries.me()`. Se der `SESSION_EXPIRED` ou 401, mostre o login.
 - `@tanstack/query-core` precisa ser a mesma versão 5.x que o `@tanstack/react-query` do app
   traz. Com o pnpm isso acontece sozinho quando as faixas são compatíveis.

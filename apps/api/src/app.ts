@@ -1,3 +1,4 @@
+import cookie from '@fastify/cookie';
 import cors from '@fastify/cors';
 import rateLimit from '@fastify/rate-limit';
 import Fastify, { type FastifyServerOptions } from 'fastify';
@@ -31,7 +32,9 @@ export async function buildApp({ env = loadEnv(), logger = false }: BuildAppOpti
 
   await app.register(zodPlugin);
   await app.register(errorsPlugin);
-  await app.register(cors, { origin: env.CORS_ORIGINS });
+  // Credentials (the web session cookie) only for the exact origins of the env, never "*".
+  await app.register(cors, { origin: env.CORS_ORIGINS, credentials: true });
+  await app.register(cookie);
   await app.register(rateLimit, { global: false });
   await app.register(prismaPlugin, { sqliteFile: sqlitePath(env.DATABASE_URL) });
   await app.register(authPlugin, {

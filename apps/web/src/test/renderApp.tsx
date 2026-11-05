@@ -3,8 +3,14 @@ import { createMemoryRouter } from 'react-router';
 import { vi } from 'vitest';
 import { App } from '../app/App';
 import { routes } from '../app/routes';
-import { createServices, REFRESH_KEY } from '../lib/services';
-import { BASE_URL, createFakeApi, type FakeHandler, type FakeRoutes } from './fakeApi';
+import { createServices } from '../lib/services';
+import {
+  BASE_URL,
+  createFakeApi,
+  type FakeHandler,
+  type FakeRoutes,
+  setSessionCookie,
+} from './fakeApi';
 
 /** "Today" for every app test: day 4 of November 2026 in São Paulo. */
 export const NOW = new Date('2026-11-04T12:00:00-03:00');
@@ -17,7 +23,8 @@ export function renderApp(
 ) {
   vi.useFakeTimers({ toFake: ['Date'] });
   vi.setSystemTime(NOW);
-  if (signedIn) window.localStorage.setItem(REFRESH_KEY, 'refresh-0');
+  // A session from a previous visit: the browser kept the cookies, the memory is empty.
+  if (signedIn) setSessionCookie();
   const api = createFakeApi(apiRoutes);
   const services = createServices({ baseUrl: BASE_URL, fetch: api.fetch, retry: false });
   const router = createMemoryRouter(routes, { initialEntries: [path] });

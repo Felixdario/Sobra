@@ -9,6 +9,7 @@ export type FakeRequest = {
   headers: Record<string, string>;
   body: unknown;
   signal: FetchRequestInit['signal'];
+  credentials: FetchRequestInit['credentials'];
 };
 
 export type FakeReply = { status: number; body?: unknown };
@@ -27,6 +28,7 @@ export function createFakeFetch(handler: FakeHandler) {
       headers: init.headers,
       body: init.body === undefined ? undefined : JSON.parse(init.body),
       signal: init.signal,
+      credentials: init.credentials,
     };
     requests.push(request);
     const reply = await handler(request);

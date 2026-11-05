@@ -1,6 +1,11 @@
 import type { AddressInfo } from 'node:net';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
-import { createApiClient, createMemoryTokenStore, type TokenStore } from '@sobra/client';
+import {
+  createApiClient,
+  createMemoryTokenStore,
+  type FetchLike,
+  type TokenStore,
+} from '@sobra/client';
 import type { App } from './app';
 import { createTestApp, registerUser, type TestUser } from './test/helpers';
 
@@ -122,6 +127,83 @@ describe('@sobra/client contra a API real', () => {
     ).rejects.toMatchObject({
       status: 401,
       code: 'UNAUTHORIZED',
+    });
+  });
+
+  describe("session: 'cookie' (web)", () => {
+    /**
+     * What the browser does and Node's fetch does not: keep the cookies the API sets (honoring
+     * Max-Age=0 on logout) and send them back. Paths are ignored; only /auth reads them anyway.
+     */
+    function browserJar() {
+      const cookies = new Map<string, string>();
+      const fetchWithJar = async (url: string, init: RequestInit) => {
+        const headers = new Headers(init.headers);
+        if (cookies.size > 0) {
+          headers.set('cookie', [...cookies].map(([name, value]) => `${name}=${value}`).join('; '));
+        }
+        const response = await fetch(url, { ...init, headers });
+        for (const line of response.headers.getSetCookie()) {
+          const [pair = ''] = line.split(';');
+          const [name = '', value = ''] = pair.split('=');
+          if (/max-age=0|expires=thu, 01 jan 1970/i.test(line)) cookies.delete(name);
+          else cookies.set(name, value);
+        }
+        return response;
+      };
+      return { cookies, fetch: fetchWithJar as unknown as FetchLike };
+    }
+
+    const webClient = (jar: ReturnType<typeof browserJar>, onSessionExpired = vi.fn()) =>
+      createApiClient({
+        baseUrl,
+        session: 'cookie',
+        fetch: jar.fetch,
+        getCsrfToken: () => jar.cookies.get('sobra_csrf') ?? null,
+        onSessionExpired,
+      });
+
+    it('login, recarregar (cliente novo, mesmo cookie), renovar e sair', async () => {
+      const jar = browserJar();
+      await webClient(jar).auth.login({
+        email: registered.user.email,
+        password: registered.password,
+      });
+      expect([...jar.cookies.keys()].sort()).toEqual(['sobra_csrf', 'sobra_refresh']);
+      const firstRefresh = jar.cookies.get('sobra_refresh');
+
+      const reloaded = webClient(jar);
+      await expect(reloaded.auth.me()).resolves.toMatchObject({ id: registered.user.id });
+      expect(jar.cookies.get('sobra_refresh')).not.toBe(firstRefresh);
+
+      await reloaded.auth.logout();
+      expect(jar.cookies.size).toBe(0);
+
+      // Logged out: no cookies, nothing to renew. A plain 401, not a "session expired".
+      const onSessionExpired = vi.fn();
+      await expect(webClient(jar, onSessionExpired).auth.me()).rejects.toMatchObject({
+        status: 401,
+        code: 'UNAUTHORIZED',
+      });
+      expect(onSessionExpired).not.toHaveBeenCalled();
+    });
+
+    it('cookie de refresh revogado no servidor: limpa a sessão e avisa onSessionExpired', async () => {
+      const jar = browserJar();
+      await webClient(jar).auth.login({
+        email: registered.user.email,
+        password: registered.password,
+      });
+      await app.prisma.refreshToken.updateMany({
+        where: { userId: registered.user.id },
+        data: { revokedAt: new Date() },
+      });
+
+      const onSessionExpired = vi.fn();
+      await expect(webClient(jar, onSessionExpired).auth.me()).rejects.toMatchObject({
+        code: 'SESSION_EXPIRED',
+      });
+      expect(onSessionExpired).toHaveBeenCalledTimes(1);
     });
   });
 });

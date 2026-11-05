@@ -41,6 +41,7 @@ if (!Element.prototype.setPointerCapture) {
 beforeEach(() => {
   vi.stubGlobal('matchMedia', vi.fn(matchMedia));
   window.localStorage.clear();
+  document.cookie = 'sobra_csrf=; Max-Age=0; Path=/';
   delete document.documentElement.dataset.theme;
 });
 

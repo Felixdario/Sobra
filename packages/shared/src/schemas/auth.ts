@@ -32,6 +32,12 @@ export const tokenPairSchema = z.object({
   expiresIn: z.int().positive(),
 });
 
+/**
+ * Tokens for a cookie session (web, ADR-034): the refresh token travels only in an httpOnly
+ * cookie, so the body carries just the access token.
+ */
+export const cookieTokensSchema = tokenPairSchema.omit({ refreshToken: true });
+
 export const refreshSchema = z.object({
   refreshToken: z.string({ error: 'Token de renovação ausente' }).min(1, {
     error: 'Token de renovação ausente',
@@ -50,9 +56,16 @@ export const authResponseSchema = z.object({
   tokens: tokenPairSchema,
 });
 
+export const cookieAuthResponseSchema = z.object({
+  user: userSchema,
+  tokens: cookieTokensSchema,
+});
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type TokenPair = z.infer<typeof tokenPairSchema>;
+export type CookieTokens = z.infer<typeof cookieTokensSchema>;
 export type RefreshInput = z.infer<typeof refreshSchema>;
 export type User = z.infer<typeof userSchema>;
 export type AuthResponse = z.infer<typeof authResponseSchema>;
+export type CookieAuthResponse = z.infer<typeof cookieAuthResponseSchema>;

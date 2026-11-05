@@ -15,7 +15,14 @@ type BudgetVsActual = z.input<typeof budgetVsActualSchema>;
 
 export const BASE_URL = 'http://api.test';
 
-export type FakeRequest = { method: string; path: string; query: URLSearchParams; body: unknown };
+export type FakeRequest = {
+  method: string;
+  path: string;
+  query: URLSearchParams;
+  headers: Record<string, string>;
+  credentials: string | undefined;
+  body: unknown;
+};
 export type FakeReply = { status: number; body?: unknown };
 export type FakeHandler = (request: FakeRequest) => FakeReply | Promise<FakeReply>;
 export type FakeRoutes = Record<string, FakeHandler>;
@@ -26,12 +33,17 @@ export type FakeRoutes = Record<string, FakeHandler>;
  */
 export function createFakeApi(routes: FakeRoutes | FakeHandler) {
   const requests: FakeRequest[] = [];
-  const fetch = async (url: string, init: { method: string; body?: string }) => {
+  const fetch = async (
+    url: string,
+    init: { method: string; headers: Record<string, string>; credentials?: string; body?: string },
+  ) => {
     const parsed = new URL(url);
     const request: FakeRequest = {
       method: init.method,
       path: parsed.pathname,
       query: parsed.searchParams,
+      headers: init.headers,
+      credentials: init.credentials,
       body: init.body ? JSON.parse(init.body) : undefined,
     };
     requests.push(request);
@@ -60,7 +72,17 @@ export const user = {
   createdAt: '2026-05-01T12:00:00.000Z',
 };
 
-export const tokens = { accessToken: 'access-1', refreshToken: 'refresh-1', expiresIn: 900 };
+/** What the API answers the web (X-Sobra-Client: web): the refresh token is only in the cookie. */
+export const tokens = { accessToken: 'access-1', expiresIn: 900 };
+
+/**
+ * Plays the browser storing the session cookies the API sets. jsdom cannot hold the httpOnly
+ * refresh cookie the way a browser does (and the page never reads it), so only the readable CSRF
+ * cookie is set.
+ */
+export function setSessionCookie(csrf = 'csrf-1') {
+  document.cookie = `sobra_csrf=${csrf}; Path=/`;
+}
 
 export const october: MonthSummaryInput = {
   month: '2026-10',

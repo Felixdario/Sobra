@@ -130,7 +130,7 @@ flowchart LR
   mobile --> tokens
   api --> db
 
-  web -- "Bearer JWT 15 min<br/>refresh opaco no localStorage" --> api
+  web -- "Bearer JWT 15 min em memória<br/>refresh em cookie httpOnly + CSRF" --> api
   mobile -- "Bearer JWT 15 min<br/>refresh no Keychain/Keystore" --> api
 ```
 
@@ -140,8 +140,9 @@ flowchart LR
 - **Sessão:** access token JWT de 15 minutos e refresh token opaco de 30 dias, rotacionado a cada uso.
   O banco guarda só o SHA-256 do refresh; reapresentar um token já usado derruba a família inteira
   daquele login.
-- **Cliente compartilhado:** web e mobile usam o mesmo `@sobra/client`; muda só onde os tokens
-  ficam (`TokenStore`).
+- **Cliente compartilhado:** web e mobile usam o mesmo `@sobra/client`; muda só como o refresh
+  token viaja: no web, cookie `httpOnly` que o JavaScript nunca vê, com CSRF double-submit
+  (`session: 'cookie'`); no mobile, no corpo e no Keychain/Keystore (`TokenStore`).
 
 O ponto mais delicado é a renovação de sessão. Com rotação e detecção de reuso, duas renovações
 paralelas com o mesmo token encerrariam a sessão, por isso o cliente faz uma só:
@@ -175,7 +176,8 @@ sequenceDiagram
   Note over API,DB: R1 apresentado de novo revoga a família inteira (reuso)
 ```
 
-No web há ainda um `navigator.locks` para que abas diferentes também façam um refresh por vez. Se a
+No web há ainda um `navigator.locks` para que abas diferentes (que compartilham o cookie) também
+façam um refresh por vez. Se a
 API recusar o refresh, o cliente limpa a sessão e volta ao login; falha de rede no refresh mantém a
 sessão ([ADR-023](docs/decisoes.md#adr-023--cliente-da-api-compartilhado-sobraclient-refresh-single-flight-e-onde-guardar-os-tokens)).
 Um teste de integração em `apps/api/src/client.integration.test.ts` mostra que, sem o single-flight,
@@ -195,7 +197,7 @@ três requisições concorrentes derrubam a sessão.
 
 ## Decisões técnicas
 
-Todas as 33 decisões estão em [`docs/decisoes.md`](docs/decisoes.md). As que mais pesaram:
+Todas as 34 decisões estão em [`docs/decisoes.md`](docs/decisoes.md). As que mais pesaram:
 
 - **Dinheiro em centavos inteiros, `BigInt` no banco, arredondamento meio-para-o-par.** Nada passa
   por float; R$ 1 bilhão cabe ([ADR-008](docs/decisoes.md#adr-008--dinheiro-parse-por-string-e-arredondamento-half-even),
@@ -205,6 +207,9 @@ Todas as 33 decisões estão em [`docs/decisoes.md`](docs/decisoes.md). As que m
   ([ADR-010](docs/decisoes.md#adr-010--prisma-7-com-sqlite-via-driver-adapter-postgresql-é-troca-de-provider)).
 - **Refresh token rotativo com detecção de reuso**, como recomenda a OAuth 2.0 Security BCP para
   clientes públicos ([ADR-012](docs/decisoes.md#adr-012--sessão-jwt-de-acesso-curto--refresh-token-opaco-com-rotação-e-detecção-de-reuso)).
+- **Sessão do web em cookie `httpOnly` + CSRF double-submit, mobile no SecureStore:** um XSS no web
+  não leva o refresh token; `X-Sobra-Client: web` escolhe o transporte e o mobile segue igual
+  ([ADR-034](docs/decisoes.md#adr-034--sessão-do-web-em-cookie-httponly-com-csrf-double-submit-mobile-segue-com-o-corpo)).
 - **Contrato Zod compartilhado** entre API, web e mobile, com transações como união discriminada e
   mensagens em pt-BR ([ADR-009](docs/decisoes.md#adr-009--contrato-de-dados-ids-uuid-transações-como-união-discriminada-mensagens-em-pt-br),
   [ADR-014](docs/decisoes.md#adr-014--openapi-com-fastifyswagger--swagger-ui-em-docs-gerado-dos-schemas-zod)).

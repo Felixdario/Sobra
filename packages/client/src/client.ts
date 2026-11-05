@@ -1,6 +1,5 @@
 import {
   accountSchema,
-  authResponseSchema,
   budgetSchema,
   categorySchema,
   csvImportCommitResultSchema,
@@ -16,7 +15,6 @@ import {
   spendingByCategorySchema,
   transactionSchema,
   type Account,
-  type User,
 } from '@sobra/shared';
 import { z } from 'zod';
 import {
@@ -25,9 +23,10 @@ import {
   parseWith,
   type RefreshLock,
   type RequestOptions,
+  type SessionMode,
 } from './http';
 import { asFetchFn, defaultFetch, type FetchLike } from './runtime';
-import type { TokenStore } from './tokenStore';
+import { type AccessTokenStore, createMemoryTokenStore, type TokenStore } from './tokenStore';
 import {
   transactionPageSchema,
   type AccountCreateBody,
@@ -52,10 +51,27 @@ import {
   type TransactionUpdateBody,
 } from './types';
 
-export type ApiClientConfig = {
+/** Mobile: the whole token pair travels in the body and lives in `tokenStore`. */
+export type TokenSessionConfig = {
+  session?: 'token';
+  tokenStore: TokenStore;
+};
+
+/**
+ * Web (ADR-034): the refresh token is an httpOnly cookie the API sets and JavaScript never sees.
+ * Requests go with `credentials: 'include'` and `X-Sobra-Client: web`; `getCsrfToken` returns the
+ * value of the `sobra_csrf` cookie, sent as `X-CSRF-Token` (the package does not touch the DOM).
+ */
+export type CookieSessionConfig = {
+  session: 'cookie';
+  /** Keeps only the access token. Defaults to memory, which is what the web wants. */
+  tokenStore?: AccessTokenStore;
+  getCsrfToken?: () => string | null;
+};
+
+export type ApiClientConfig = (TokenSessionConfig | CookieSessionConfig) & {
   /** API origin, e.g. `http://localhost:3333`. */
   baseUrl: string;
-  tokenStore: TokenStore;
   /** Defaults to the global `fetch`. */
   fetch?: FetchLike;
   /** Per-attempt timeout in ms (default 15 s). */
@@ -66,19 +82,29 @@ export type ApiClientConfig = {
    */
   onSessionExpired?: () => void;
   /**
-   * Cross-tab lock around the refresh (web): with two tabs sharing localStorage, the in-memory
-   * single flight is per tab: `(run) => navigator.locks.request('sobra-refresh', run)`.
+   * Cross-tab lock around the refresh (web): tabs share the session cookie but each has its own
+   * in-memory single flight: `(run) => navigator.locks.request('sobra-refresh', run)`.
    */
   refreshLock?: RefreshLock;
 };
 
 const byId = (base: string, id: string) => `${base}/${encodeURIComponent(id)}`;
 
+function sessionMode(config: ApiClientConfig): SessionMode {
+  if (config.session === 'cookie') {
+    return {
+      kind: 'cookie',
+      store: config.tokenStore ?? createMemoryTokenStore(),
+      getCsrfToken: config.getCsrfToken,
+    };
+  }
+  return { kind: 'token', store: config.tokenStore };
+}
+
 export function createApiClient(config: ApiClientConfig) {
-  const { tokenStore } = config;
   const http = createTransport({
     baseUrl: config.baseUrl,
-    tokenStore,
+    session: sessionMode(config),
     fetch: config.fetch ? asFetchFn(config.fetch) : defaultFetch(),
     timeoutMs: config.timeoutMs ?? DEFAULT_TIMEOUT_MS,
     onSessionExpired: config.onSessionExpired,
@@ -86,42 +112,17 @@ export function createApiClient(config: ApiClientConfig) {
   });
   const list = <S extends z.ZodType>(item: S) => z.array(item);
 
-  async function startSession(path: string, body: unknown): Promise<User> {
-    const { user, tokens } = await http.request(
-      { method: 'POST', path, body, auth: false },
-      authResponseSchema,
-    );
-    await tokenStore.set(tokens);
-    return user;
-  }
-
   return {
     auth: {
       /** Creates the user and stores the session. */
-      register: (body: RegisterBody) => startSession('/auth/register', body),
+      register: (body: RegisterBody) => http.startSession('/auth/register', body),
       /** Signs in and stores the session. A wrong password is an `ApiError` 401. */
-      login: (body: LoginBody) => startSession('/auth/login', body),
+      login: (body: LoginBody) => http.startSession('/auth/login', body),
       /**
        * Ends the session on the API (best effort) and always clears the local store.
        * Does not call `onSessionExpired`.
        */
-      logout: async (): Promise<void> => {
-        const tokens = await tokenStore.get();
-        try {
-          if (tokens) {
-            await http.requestEmpty({
-              method: 'POST',
-              path: '/auth/logout',
-              body: { refreshToken: tokens.refreshToken },
-              auth: false,
-            });
-          }
-        } catch {
-          // Offline or already revoked: the local session goes away regardless.
-        } finally {
-          await tokenStore.clear();
-        }
-      },
+      logout: (): Promise<void> => http.endSession(),
       me: (opts: RequestOptions = {}) =>
         http.request({ method: 'GET', path: '/me', ...opts }, userSchema),
     },

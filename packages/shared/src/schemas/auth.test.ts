@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   authResponseSchema,
+  cookieTokensSchema,
   loginSchema,
   refreshSchema,
   registerSchema,
@@ -68,6 +69,13 @@ describe('token schemas', () => {
     expect(refreshSchema.safeParse({ refreshToken: '' }).error?.issues[0]?.message).toBe(
       'Token de renovação ausente',
     );
+  });
+});
+
+describe('cookieTokensSchema', () => {
+  it('carries only the access token: a refresh token in the body is dropped', () => {
+    const tokens = { accessToken: 'a.b.c', refreshToken: 'r', expiresIn: 900 };
+    expect(cookieTokensSchema.parse(tokens)).toEqual({ accessToken: 'a.b.c', expiresIn: 900 });
   });
 });
 

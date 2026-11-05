@@ -90,3 +90,9 @@ Commit 864e87c.
 🧭 → 🔧 (Executor R) README de portfólio: 3 comandos testados em clone limpo, capturas, 2 diagramas Mermaid, decisões com links de ADR, números reais de testes, limitações honestas, próximos aprendizados, LICENSE MIT.
 🔧 → 🧭 (R) FEITO: scripts bootstrap/dev/dev:mobile + scripts/ensure-env.mjs; README (capturas, 3 comandos, 2 Mermaid validados, 11 decisões, 895 testes, limitações, próximos passos); LICENSE MIT; clone limpo testado.
 🧭 ✅ APROVADO fase 7 → commit; validação própria em clone do commit a seguir.
+
+## Pós-portfólio (pedido do dono: cookies + i18n, tirar seções finais do README)
+Commits após a fase 7: 7f924cc (fix iOS), 8995618 (rename sobra), a8e5895 (.env.example mobile); push para github.com/Felixdario/sobra.
+🧭 → 🔧 (Executor K) sessão web com cookie httpOnly + CSRF double-submit; client com modo cookie; mobile intacto; ADR novo.
+🔧 → 🧭 (K) FEITO: cookie sobra_refresh HttpOnly/SameSite=Strict/Path=/auth + CSRF double-submit (sobra_csrf + X-CSRF-Token), client session:'cookie', web sem refresh no localStorage, mobile intacto, ADR-034.
+🧭 Validação própria: raiz verde (tokens 225, shared 268, client 60, api 149, web 84, mobile 141); navegador: login → localStorage vazio, JS só vê sobra_csrf; recarregar → /api/auth/refresh + /api/me → Painel. ✅ APROVADO → commit

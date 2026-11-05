@@ -1,4 +1,11 @@
-import { apiErrorSchema, tokenPairSchema, type TokenPair } from '@sobra/shared';
+import {
+  apiErrorSchema,
+  authResponseSchema,
+  cookieAuthResponseSchema,
+  cookieTokensSchema,
+  tokenPairSchema,
+  type User,
+} from '@sobra/shared';
 import type { z } from 'zod';
 import { ApiError, CLIENT_ERROR_CODES, CLIENT_ERROR_MESSAGES, httpErrorMessage } from './errors';
 import {
@@ -8,7 +15,7 @@ import {
   type FetchRequestInit,
   startTimer,
 } from './runtime';
-import type { TokenStore } from './tokenStore';
+import type { AccessTokenStore, TokenStore } from './tokenStore';
 
 export const DEFAULT_TIMEOUT_MS = 15_000;
 
@@ -31,9 +38,27 @@ export type Call = {
 
 export type HttpResponse = { status: number; body: unknown };
 
+/**
+ * How the refresh token travels (ADR-034).
+ * - `token` (mobile): the whole pair in the body and in the store.
+ * - `cookie` (web): the refresh token is an httpOnly cookie set by the API. Every request goes
+ *   with `credentials: 'include'`, `X-Sobra-Client: web` and `X-CSRF-Token` (double submit, read
+ *   from `getCsrfToken`), and the store keeps only the access token.
+ */
+export type SessionMode =
+  | { kind: 'token'; store: TokenStore }
+  | {
+      kind: 'cookie';
+      store: AccessTokenStore;
+      getCsrfToken?: (() => string | null) | undefined;
+    };
+
+export const CLIENT_HEADER = 'x-sobra-client';
+export const CSRF_HEADER = 'x-csrf-token';
+
 export type TransportConfig = {
   baseUrl: string;
-  tokenStore: TokenStore;
+  session: SessionMode;
   fetch: FetchFn;
   timeoutMs: number;
   onSessionExpired?: (() => void) | undefined;
@@ -41,8 +66,8 @@ export type TransportConfig = {
 };
 
 /**
- * Serializes refreshes across JS contexts that share the token store (browser tabs). The web
- * passes `(run) => navigator.locks.request('sobra-refresh', run)`.
+ * Serializes refreshes across JS contexts that share the session (browser tabs share the
+ * cookie jar). The web passes `(run) => navigator.locks.request('sobra-refresh', run)`.
  */
 export type RefreshLock = (run: () => Promise<boolean>) => Promise<boolean>;
 
@@ -53,6 +78,10 @@ export type Transport = {
   request<S extends z.ZodType>(call: Call, schema: S): Promise<z.output<S>>;
   /** `send` for endpoints that answer 204. */
   requestEmpty(call: Call): Promise<void>;
+  /** POSTs to /auth/login or /auth/register and stores the session. */
+  startSession(path: string, body: unknown): Promise<User>;
+  /** Ends the session on the API (best effort) and always clears the store. */
+  endSession(): Promise<void>;
 };
 
 export function buildQueryString(query: Readonly<Record<string, QueryValue>> = {}): string {
@@ -95,9 +124,29 @@ function errorFromResponse(status: number, body: unknown): ApiError {
 
 export function createTransport(config: TransportConfig): Transport {
   const baseUrl = config.baseUrl.replace(/\/+$/, '');
-  const { tokenStore } = config;
+  const { session } = config;
 
-  async function fetchOnce(call: Call, accessToken: string | undefined): Promise<HttpResponse> {
+  /**
+   * The access token in use, or `null` when there is no session at all (no Bearer, no renewal).
+   * An empty `accessToken` means "renew before calling". In the cookie session an empty store
+   * (page reloaded) still has a session behind it while the CSRF cookie exists: the API sets and
+   * clears it together with the httpOnly refresh cookie. Without it (never signed in, logged out)
+   * there is nothing to renew, so a 401 stays a plain 401 instead of a "session expired".
+   */
+  async function currentAccessToken(): Promise<string | null> {
+    const stored = await session.store.get();
+    if (stored) return stored.accessToken;
+    return session.kind === 'cookie' && session.getCsrfToken?.() ? '' : null;
+  }
+
+  /** What /auth/refresh and /auth/logout receive: the refresh token in the body, or the cookie. */
+  async function refreshCredentials(): Promise<{ body: unknown } | null> {
+    if (session.kind === 'cookie') return { body: undefined };
+    const tokens = await session.store.get();
+    return tokens ? { body: { refreshToken: tokens.refreshToken } } : null;
+  }
+
+  async function fetchOnce(call: Call, accessToken: string | null): Promise<HttpResponse> {
     if (call.signal?.aborted) throw abortedError();
 
     const controller = createAbortController();
@@ -118,6 +167,12 @@ export function createTransport(config: TransportConfig): Transport {
     if (call.body !== undefined) {
       headers['content-type'] = 'application/json';
       init.body = JSON.stringify(call.body);
+    }
+    if (session.kind === 'cookie') {
+      headers[CLIENT_HEADER] = 'web';
+      const csrf = session.getCsrfToken?.();
+      if (csrf) headers[CSRF_HEADER] = csrf;
+      init.credentials = 'include';
     }
 
     try {
@@ -160,22 +215,26 @@ export function createTransport(config: TransportConfig): Transport {
     }
   }
 
-  async function renew(refreshToken: string): Promise<boolean> {
+  async function renew(): Promise<boolean> {
+    const credentials = await refreshCredentials();
+    if (!credentials) return false;
     // A network failure or timeout propagates and keeps the session: the refresh token may
-    // still be valid. Only the API rejecting it (400/401) ends the session.
+    // still be valid. Only the API rejecting it (400/401) ends the session; a 403 (CSRF) is
+    // not a verdict on the session either.
     const response = await fetchOnce(
-      { method: 'POST', path: '/auth/refresh', body: { refreshToken } },
-      undefined,
+      { method: 'POST', path: '/auth/refresh', body: credentials.body },
+      null,
     );
     if (response.status === 400 || response.status === 401) {
-      await tokenStore.clear();
+      await session.store.clear();
       config.onSessionExpired?.();
       return false;
     }
     if (response.status < 200 || response.status >= 300) {
       throw errorFromResponse(response.status, response.body);
     }
-    await tokenStore.set(parseWith(tokenPairSchema, response));
+    if (session.kind === 'token') await session.store.set(parseWith(tokenPairSchema, response));
+    else await session.store.set(parseWith(cookieTokensSchema, response));
     return true;
   }
 
@@ -188,11 +247,11 @@ export function createTransport(config: TransportConfig): Transport {
    */
   function refreshSession(staleAccessToken: string): Promise<boolean> {
     const run = async () => {
-      // Read inside the lock: another tab may have rotated the refresh token meanwhile.
-      const current = await tokenStore.get();
-      if (!current) return false;
-      if (current.accessToken !== staleAccessToken) return true;
-      return renew(current.refreshToken);
+      // Read inside the lock: another tab may have rotated the session meanwhile.
+      const current = await currentAccessToken();
+      if (current === null) return false;
+      if (current !== staleAccessToken) return true;
+      return renew();
     };
     inFlight ??= (config.refreshLock ? config.refreshLock(run) : run()).finally(() => {
       inFlight = null;
@@ -200,7 +259,7 @@ export function createTransport(config: TransportConfig): Transport {
     return inFlight;
   }
 
-  async function renewOrExpire(staleAccessToken: string): Promise<string | undefined> {
+  async function renewOrExpire(staleAccessToken: string): Promise<string | null> {
     if (!(await refreshSession(staleAccessToken))) {
       throw new ApiError({
         status: 401,
@@ -208,20 +267,20 @@ export function createTransport(config: TransportConfig): Transport {
         message: CLIENT_ERROR_MESSAGES.sessionExpired,
       });
     }
-    return (await tokenStore.get())?.accessToken;
+    return currentAccessToken();
   }
 
   async function send(call: Call): Promise<HttpResponse> {
     const useAuth = call.auth ?? true;
-    const tokens: TokenPair | null = useAuth ? await tokenStore.get() : null;
-    // A store that kept only the refresh token (`accessToken: ''`, the web after a reload)
-    // renews before calling instead of spending a request on a certain 401.
-    const renewFirst = tokens !== null && tokens.accessToken === '';
-    const accessToken = renewFirst ? await renewOrExpire('') : tokens?.accessToken;
+    const stored = useAuth ? await currentAccessToken() : null;
+    // No access token yet (a store that kept only the refresh token, or the cookie session
+    // after a reload) renews before calling instead of spending a request on a certain 401.
+    const renewFirst = stored === '';
+    const accessToken = renewFirst ? await renewOrExpire('') : stored;
     let response = await fetchOnce(call, accessToken);
 
-    if (response.status === 401 && tokens && !renewFirst) {
-      response = await fetchOnce(call, await renewOrExpire(tokens.accessToken));
+    if (response.status === 401 && stored && !renewFirst) {
+      response = await fetchOnce(call, await renewOrExpire(stored));
     }
 
     if (response.status < 200 || response.status >= 300) {
@@ -230,12 +289,39 @@ export function createTransport(config: TransportConfig): Transport {
     return response;
   }
 
+  async function startSession(path: string, body: unknown): Promise<User> {
+    const response = await send({ method: 'POST', path, body, auth: false });
+    if (session.kind === 'token') {
+      const { user, tokens } = parseWith(authResponseSchema, response);
+      await session.store.set(tokens);
+      return user;
+    }
+    const { user, tokens } = parseWith(cookieAuthResponseSchema, response);
+    await session.store.set(tokens);
+    return user;
+  }
+
+  async function endSession(): Promise<void> {
+    try {
+      const credentials = await refreshCredentials();
+      if (credentials) {
+        await send({ method: 'POST', path: '/auth/logout', body: credentials.body, auth: false });
+      }
+    } catch {
+      // Offline or already revoked: the local session goes away regardless.
+    } finally {
+      await session.store.clear();
+    }
+  }
+
   return {
     send,
     request: async (call, schema) => parseWith(schema, await send(call)),
     requestEmpty: async (call) => {
       await send(call);
     },
+    startSession,
+    endSession,
   };
 }
 

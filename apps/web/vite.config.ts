@@ -41,6 +41,9 @@ export default defineConfig({
         target: API_TARGET,
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
+        // The API scopes the refresh cookie to Path=/auth; behind the proxy the browser calls
+        // /api/auth/*, so the cookie path follows the prefix (ADR-034).
+        cookiePathRewrite: { '/auth': '/api/auth' },
       },
     },
   },

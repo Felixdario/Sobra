@@ -1,4 +1,4 @@
-import { REFRESH_KEY, type ServicesOptions } from '../lib/services';
+import { CSRF_COOKIE, type CookieAccess, type ServicesOptions } from '../lib/services';
 import { BASE_URL, createFakeApi } from '../test/fakeApi';
 import { SCENARIOS, scenarioHandler, type Scenario } from './scenarios';
 
@@ -15,13 +15,12 @@ function readScenario(): Scenario | null {
   return stored && (SCENARIOS as readonly string[]).includes(stored) ? (stored as Scenario) : null;
 }
 
-/** In-memory storage with a session already in it: a scenario never touches the real session. */
-function scenarioStorage() {
-  const values = new Map<string, string>([[REFRESH_KEY, 'dev-refresh']]);
+/** In-memory cookies with a session already in them: a scenario never touches the real session. */
+function scenarioCookies(): CookieAccess {
+  const values = new Map<string, string>([[CSRF_COOKIE, 'dev-csrf']]);
   return {
-    getItem: (key: string) => values.get(key) ?? null,
-    setItem: (key: string, value: string) => void values.set(key, value),
-    removeItem: (key: string) => void values.delete(key),
+    get: (name) => values.get(name) ?? null,
+    remove: (name) => void values.delete(name),
   };
 }
 
@@ -35,7 +34,7 @@ export function devServicesOptions(): { scenario: Scenario | null; options: Serv
   const api = createFakeApi(scenarioHandler(scenario));
   return {
     scenario,
-    options: { baseUrl: BASE_URL, fetch: api.fetch, storage: scenarioStorage(), retry: false },
+    options: { baseUrl: BASE_URL, fetch: api.fetch, cookies: scenarioCookies(), retry: false },
   };
 }
 

@@ -53,7 +53,7 @@ const user = (name: string) => ({
   email: 'aleksandra.wisniewska-kowalczyk@northwind-industries-holdings.example.com',
   createdAt: '2026-05-01T12:00:00.000Z',
 });
-const tokens = { accessToken: 'dev-access', refreshToken: 'dev-refresh', expiresIn: 900 };
+const tokens = { accessToken: 'dev-access', expiresIn: 900 };
 
 type AccountType = 'checking' | 'savings' | 'credit_card' | 'cash';
 const account = (
