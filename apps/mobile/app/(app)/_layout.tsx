@@ -1,4 +1,5 @@
 import { Tabs } from 'expo-router/js-tabs';
+import { useI18n } from '../../src/i18n/I18nProvider';
 import { LaunchSheetProvider, useLaunch } from '../../src/features/launch/LaunchSheetProvider';
 import { useTheme } from '../../src/theme/ThemeProvider';
 import { TabBar } from '../../src/ui/TabBar';
@@ -7,6 +8,7 @@ import { ToastProvider } from '../../src/ui/Toast';
 function AppTabs() {
   const theme = useTheme();
   const launch = useLaunch();
+  const { t } = useI18n();
   return (
     <Tabs
       tabBar={(props) => <TabBar {...props} onLaunch={() => launch.open()} />}
@@ -16,9 +18,9 @@ function AppTabs() {
         sceneStyle: { backgroundColor: theme.colors.bg.canvas },
       }}
     >
-      <Tabs.Screen name="index" options={{ title: 'Resumo' }} />
-      <Tabs.Screen name="transacoes" options={{ title: 'Transações' }} />
-      <Tabs.Screen name="ajustes" options={{ title: 'Ajustes' }} />
+      <Tabs.Screen name="index" options={{ title: t('nav.summary') }} />
+      <Tabs.Screen name="transacoes" options={{ title: t('nav.transactions') }} />
+      <Tabs.Screen name="ajustes" options={{ title: t('nav.settings') }} />
     </Tabs>
   );
 }

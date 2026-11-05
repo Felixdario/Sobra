@@ -1,9 +1,10 @@
 import { cents, type Transaction } from '@sobra/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { createContext, use, useCallback, useMemo, useState, type ReactNode } from 'react';
+import { translateError } from '@sobra/i18n';
 import { useServices } from '../../api/ServicesProvider';
+import { useI18n } from '../../i18n/I18nProvider';
 import { haptics } from '../../lib/haptics';
-import { formatMoney } from '../../lib/money';
 import { storage } from '../../lib/storage';
 import { BottomSheet } from '../../ui/BottomSheet';
 import { useToast } from '../../ui/Toast';
@@ -75,6 +76,8 @@ type SheetProps = {
 function LaunchSheet({ open, onClose, draft, onChange, lastAccountId }: SheetProps) {
   const { queries, mutations } = useServices();
   const toast = useToast();
+  const i18n = useI18n();
+  const { t } = i18n;
   const enabled = open;
   const accounts = useQuery({ ...queries.accounts.list(), enabled });
   const categories = useQuery({ ...queries.categories.list(), enabled });
@@ -88,16 +91,16 @@ function LaunchSheet({ open, onClose, draft, onChange, lastAccountId }: SheetPro
     [accounts.data],
   );
   const ranked = useMemo(
-    () => rankCategories(categories.data ?? [], recent.data?.items ?? [], draft.type),
-    [categories.data, recent.data, draft.type],
+    () => rankCategories(categories.data ?? [], recent.data?.items ?? [], draft.type, i18n),
+    [categories.data, recent.data, draft.type, i18n],
   );
   const accountId =
     draft.accountId ??
     pickDefaultAccount(activeAccounts, recent.data?.items ?? [], lastAccountId)?.id ??
     null;
   const effective = { ...draft, accountId };
-  const payload = editing ? null : buildPayload(effective, ranked);
-  const updateBody = editing ? buildUpdate(effective, ranked) : null;
+  const payload = editing ? null : buildPayload(effective, ranked, i18n);
+  const updateBody = editing ? buildUpdate(effective, ranked, i18n) : null;
 
   const saveEdit = () => {
     if (!editing || !updateBody) return;
@@ -106,12 +109,12 @@ function LaunchSheet({ open, onClose, draft, onChange, lastAccountId }: SheetPro
     update.mutate(
       { id: editing.id, body: updateBody },
       {
-        onSuccess: () => toast.show({ message: 'Transação atualizada.' }),
+        onSuccess: () => toast.show({ message: t('mobile.launch.toast.updated') }),
         onError: (error) => {
           haptics.error();
           toast.show({
             tone: 'error',
-            message: `Não deu para salvar a alteração. ${error.message}`,
+            message: t('mobile.launch.toast.updateFailed', { error: translateError(t, error) }),
           });
         },
       },
@@ -122,7 +125,8 @@ function LaunchSheet({ open, onClose, draft, onChange, lastAccountId }: SheetPro
     if (editing) return saveEdit();
     if (!payload) return;
     const category = ranked.find((item) => item.id === draft.categoryId);
-    const summary = `${formatMoney(cents(payload.amount), 'never')} em ${category?.name ?? 'categoria'}`;
+    const amount = i18n.money(cents(payload.amount), 'never');
+    const categoryLabel = category ? i18n.category(category) : t('mobile.launch.categoryFallback');
     haptics.success();
     onClose();
     storage.set(LAST_ACCOUNT_KEY, payload.accountId).catch(() => {});
@@ -132,17 +136,23 @@ function LaunchSheet({ open, onClose, draft, onChange, lastAccountId }: SheetPro
           haptics.error();
           toast.show({
             tone: 'error',
-            message: `Não deu para salvar ${summary}. ${error.message}`,
-            action: { label: 'Tentar de novo', onPress: submit },
+            message: t('mobile.launch.toast.saveFailed', {
+              amount,
+              category: categoryLabel,
+              error: translateError(t, error),
+            }),
+            action: { label: t('common.actions.retry'), onPress: submit },
           });
         },
       });
     submit();
     toast.show({
-      message:
+      message: t(
         payload.type === 'expense'
-          ? `Gasto de ${summary} lançado.`
-          : `Receita de ${summary} lançada.`,
+          ? 'mobile.launch.toast.expenseSaved'
+          : 'mobile.launch.toast.incomeSaved',
+        { amount, category: categoryLabel },
+      ),
     });
   };
 
@@ -151,7 +161,13 @@ function LaunchSheet({ open, onClose, draft, onChange, lastAccountId }: SheetPro
       open={open}
       onClose={onClose}
       label={
-        editing ? 'Editar transação' : draft.type === 'expense' ? 'Lançar gasto' : 'Lançar receita'
+        editing
+          ? t('mobile.launch.title.edit')
+          : t(
+              draft.type === 'expense'
+                ? 'mobile.launch.title.expense'
+                : 'mobile.launch.title.income',
+            )
       }
       header={<LaunchHeader draft={effective} onChange={onChange} />}
       footer={
@@ -186,6 +202,6 @@ function LaunchSheet({ open, onClose, draft, onChange, lastAccountId }: SheetPro
 
 export function useLaunch(): LaunchApi {
   const value = use(LaunchContext);
-  if (!value) throw new Error('useLaunch precisa de <LaunchSheetProvider>');
+  if (!value) throw new Error('useLaunch needs <LaunchSheetProvider>');
   return value;
 }

@@ -1,5 +1,6 @@
 import { Delete } from 'lucide-react-native';
 import { View } from 'react-native';
+import { useI18n } from '../../i18n/I18nProvider';
 import { CONTROL_MAX_FONT_SCALE } from '../../theme/fontScale';
 import { makeStyles } from '../../theme/makeStyles';
 import { useTheme } from '../../theme/ThemeProvider';
@@ -33,15 +34,20 @@ export function Keypad({ onKey }: { onKey: (key: KeypadKey) => void }) {
 function Key({ value, onKey }: { value: KeypadKey; onKey: (key: KeypadKey) => void }) {
   const theme = useTheme();
   const styles = useStyles();
+  const { t } = useI18n();
   const isBackspace = value === 'backspace';
   return (
     <PressableScale
       testID={`key-${value}`}
       accessibilityRole="button"
       accessibilityLabel={
-        isBackspace ? 'Apagar último dígito' : value === '00' ? 'Dois zeros' : value
+        isBackspace
+          ? t('mobile.launch.keypad.backspace')
+          : value === '00'
+            ? t('mobile.launch.keypad.doubleZero')
+            : value
       }
-      accessibilityHint={isBackspace ? 'Toque e segure para zerar' : undefined}
+      accessibilityHint={isBackspace ? t('mobile.launch.keypad.backspaceHint') : undefined}
       onPress={() => onKey(value)}
       onLongPress={isBackspace ? () => onKey('clear') : undefined}
       containerStyle={styles.keyArea}

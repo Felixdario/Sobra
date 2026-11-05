@@ -2,7 +2,7 @@ import { cents } from '@sobra/shared';
 import { useId, useState } from 'react';
 import { View } from 'react-native';
 import Svg, { Rect } from 'react-native-svg';
-import { formatMoney } from '../../lib/money';
+import { useI18n } from '../../i18n/I18nProvider';
 import { makeStyles } from '../../theme/makeStyles';
 import { useTheme } from '../../theme/ThemeProvider';
 import { AppText } from '../../ui/AppText';
@@ -23,6 +23,8 @@ type Props = { ruler: Ruler; partial: boolean };
 export function MonthRuler({ ruler, partial }: Props) {
   const theme = useTheme();
   const styles = useStyles();
+  const i18n = useI18n();
+  const { t } = i18n;
   const [width, setWidth] = useState(0);
   const hatchId = `hatch-${svgId(useId())}`;
   const gap = theme.space[0.5];
@@ -43,12 +45,22 @@ export function MonthRuler({ ruler, partial }: Props) {
   const incomeX = x(ruler.income);
   const sobraLabel =
     ruler.over > 0
-      ? `${partial ? 'Além do recebido' : 'Faltaram'} ${formatMoney(ruler.over, 'never')}`
-      : `Sobra ${formatMoney(ruler.sobra, 'never')}`;
+      ? t(partial ? 'mobile.summary.ruler.beyond' : 'mobile.summary.ruler.short', {
+          amount: i18n.money(ruler.over, 'never'),
+        })
+      : t('mobile.summary.ruler.left', { amount: i18n.money(ruler.sobra, 'never') });
+  const receivedLabel = t('mobile.summary.ruler.received', {
+    amount: i18n.money(ruler.income, 'never'),
+  });
 
   const description = [
-    `Recebido ${formatMoney(ruler.income, 'never')}.`,
-    ...planes.map((plane) => `${plane.name} ${formatMoney(plane.amount, 'never')}.`),
+    `${receivedLabel}.`,
+    ...planes.map((plane) =>
+      t('mobile.summary.ruler.segment', {
+        name: plane.name,
+        amount: i18n.money(plane.amount, 'never'),
+      }),
+    ),
     `${sobraLabel}.`,
   ].join(' ');
 
@@ -60,7 +72,7 @@ export function MonthRuler({ ruler, partial }: Props) {
         accessibilityElementsHidden
       >
         <AppText variant="caption" tone="secondary">
-          Recebido {formatMoney(ruler.income, 'never')}
+          {receivedLabel}
         </AppText>
         <AppText
           variant="label"
@@ -72,7 +84,7 @@ export function MonthRuler({ ruler, partial }: Props) {
       <View
         accessible
         accessibilityRole="image"
-        accessibilityLabel={`Régua do mês. ${description}`}
+        accessibilityLabel={t('mobile.summary.ruler.a11y', { description })}
         onLayout={(event) => setWidth(event.nativeEvent.layout.width)}
         style={[styles.bar, { height }]}
       >
@@ -126,7 +138,7 @@ export function MonthRuler({ ruler, partial }: Props) {
             key={plane.key}
             color={plane.color}
             name={plane.name}
-            amount={formatMoney(cents(-plane.amount))}
+            amount={i18n.money(cents(-plane.amount))}
           />
         ))}
       </View>

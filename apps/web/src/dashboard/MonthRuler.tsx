@@ -1,4 +1,6 @@
-import { money, spokenMoney } from '../lib/format';
+import type { Translator } from '@sobra/i18n';
+import type { Format } from '../i18n/format';
+import { useI18n } from '../i18n/i18nContext';
 import type { Ruler } from './model';
 import styles from './MonthRuler.module.css';
 
@@ -6,13 +8,22 @@ type MonthRulerProps = { ruler: Ruler; monthLabel: string; partial: boolean };
 
 const pct = (value: number, scale: number) => `${((value / scale) * 100).toFixed(3)}%`;
 
-function describe({ ruler, monthLabel }: MonthRulerProps): string {
-  const parts = ruler.planes.map((plane) => `${plane.name} ${spokenMoney(plane.amount)}`);
+function describe({ ruler, monthLabel }: MonthRulerProps, t: Translator, fmt: Format): string {
+  const planes = ruler.planes
+    .map((plane) =>
+      t('web.dashboard.ruler.plane', { name: plane.name, amount: fmt.spokenMoney(plane.amount) }),
+    )
+    .join(', ');
   const result =
     ruler.left >= 0
-      ? `sobra de ${spokenMoney(ruler.left)}`
-      : `faltaram ${spokenMoney(-ruler.left)}`;
-  return `Receitas de ${monthLabel}: ${spokenMoney(ruler.income)}. Despesas: ${parts.join(', ')}. Resultado: ${result}.`;
+      ? t('web.dashboard.ruler.left', { amount: fmt.spokenMoney(ruler.left) })
+      : t('web.dashboard.ruler.short', { amount: fmt.spokenMoney(-ruler.left) });
+  return t('web.dashboard.ruler.a11y', {
+    month: monthLabel,
+    income: fmt.spokenMoney(ruler.income),
+    planes,
+    result,
+  });
 }
 
 /**
@@ -22,13 +33,14 @@ function describe({ ruler, monthLabel }: MonthRulerProps): string {
  */
 export function MonthRuler(props: MonthRulerProps) {
   const { ruler, partial } = props;
+  const { t, fmt } = useI18n();
   const { scale, planes, income, left } = ruler;
   if (scale <= 0) return null;
   const spent = planes.reduce((sum, plane) => sum + plane.amount, 0);
   const over = left < 0;
   return (
     <div className={styles.wrap}>
-      <div className={styles.bar} role="img" aria-label={describe(props)}>
+      <div className={styles.bar} role="img" aria-label={describe(props, t, fmt)}>
         {planes.map((plane, index) => {
           return (
             <span
@@ -59,17 +71,21 @@ export function MonthRuler(props: MonthRulerProps) {
         ) : null}
       </div>
       <div className={styles.scale}>
-        <span className="num">{money(0)}</span>
+        <span className="num">{fmt.money(0)}</span>
         {over ? (
           <span
             className={`${styles.result} ${partial ? styles.resultPartial : styles.resultOver} num`}
           >
-            {partial ? 'Gastos passam o recebido em' : 'Faltaram'} {money(-left)}
+            {partial
+              ? t('web.dashboard.ruler.overPartial', { amount: fmt.money(-left) })
+              : t('web.dashboard.ruler.overClosed', { amount: fmt.money(-left) })}
           </span>
         ) : (
-          <span className={`${styles.result} num`}>Sobra {money(left)}</span>
+          <span className={`${styles.result} num`}>
+            {t('web.dashboard.ruler.leftLabel', { amount: fmt.money(left) })}
+          </span>
         )}
-        <span className="num">{money(scale)}</span>
+        <span className="num">{fmt.money(scale)}</span>
       </div>
       <ul className={styles.legend}>
         {planes.map((plane, index) => (
@@ -82,7 +98,7 @@ export function MonthRuler(props: MonthRulerProps) {
             <span className={styles.legendName} title={plane.name}>
               {plane.name}
             </span>
-            <span className={`${styles.legendValue} num`}>{money(plane.amount)}</span>
+            <span className={`${styles.legendValue} num`}>{fmt.money(plane.amount)}</span>
           </li>
         ))}
       </ul>

@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import { View } from 'react-native';
 import { useServices } from '../api/ServicesProvider';
+import { useI18n } from '../i18n/I18nProvider';
 import { storage } from '../lib/storage';
 import { simulatedFontScale } from '../theme/fontScale';
 import { makeStyles } from '../theme/makeStyles';
@@ -18,7 +19,8 @@ export async function restoreDevSettings() {
     storage.get(SCENARIO_KEY),
     storage.get(FONT_SCALE_KEY),
   ]);
-  if (SCENARIOS.some((item) => item.value === scenario)) scenarioStore.set(scenario as Scenario);
+  if ((SCENARIOS as readonly string[]).includes(scenario ?? ''))
+    scenarioStore.set(scenario as Scenario);
   const parsed = Number(scale);
   if ((FONT_SCALES as readonly number[]).includes(parsed)) simulatedFontScale.set(parsed);
 }
@@ -30,40 +32,50 @@ export async function restoreDevSettings() {
 export function DevSettings() {
   const styles = useStyles();
   const { queryClient } = useServices();
+  const i18n = useI18n();
+  const { t } = i18n;
   const scenario = useSyncExternalStore(scenarioStore.subscribe, scenarioStore.get);
   const scale = useSyncExternalStore(simulatedFontScale.subscribe, simulatedFontScale.get);
 
   return (
     <View style={styles.card} testID="dev-settings">
       <AppText variant="label" tone="secondary">
-        Desenvolvimento · dados
+        {t('mobile.dev.data')}
       </AppText>
-      <View style={styles.chips} accessibilityRole="radiogroup" accessibilityLabel="Cenário">
+      <View
+        style={styles.chips}
+        accessibilityRole="radiogroup"
+        accessibilityLabel={t('mobile.dev.scenario')}
+      >
         {SCENARIOS.map((item) => (
           <Chip
-            key={item.value}
+            key={item}
             accessibilityRole="radio"
-            testID={`scenario-${item.value}`}
-            label={item.label}
-            selected={item.value === scenario}
+            testID={`scenario-${item}`}
+            label={t(`mobile.dev.scenarios.${item}`)}
+            selected={item === scenario}
             onPress={() => {
-              scenarioStore.set(item.value);
-              storage.set(SCENARIO_KEY, item.value).catch(() => {});
+              scenarioStore.set(item);
+              storage.set(SCENARIO_KEY, item).catch(() => {});
               queryClient.resetQueries().catch(() => {});
             }}
           />
         ))}
       </View>
       <AppText variant="label" tone="secondary">
-        Tamanho do texto (simulado na web)
+        {t('mobile.dev.fontScale')}
       </AppText>
-      <View style={styles.chips} accessibilityRole="radiogroup" accessibilityLabel="Tamanho">
+      <View
+        style={styles.chips}
+        accessibilityRole="radiogroup"
+        accessibilityLabel={t('mobile.dev.fontScaleLabel')}
+      >
         {FONT_SCALES.map((value) => (
           <Chip
             key={value}
             accessibilityRole="radio"
             testID={`font-scale-${value}`}
-            label={`${String(value).replace('.', ',')}×`}
+            label={`${new Intl.NumberFormat(i18n.locale).format(value)}×`}
             selected={value === scale}
             onPress={() => {
               simulatedFontScale.set(value);

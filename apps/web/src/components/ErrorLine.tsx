@@ -1,5 +1,6 @@
 import { isApiError } from '@sobra/client';
 import { CircleAlert, WifiOff } from 'lucide-react';
+import { useI18n } from '../i18n/i18nContext';
 import { Button } from './Button';
 import styles from './ErrorLine.module.css';
 
@@ -17,16 +18,17 @@ function isOffline(error: unknown): boolean {
 
 /** DESIGN.md "Erro": one line saying what failed and the way out, in place of the block. */
 export function ErrorLine({ what, error, onRetry, retrying = false }: ErrorLineProps) {
+  const { t } = useI18n();
   const offline = isOffline(error);
   const Icon = offline ? WifiOff : CircleAlert;
   return (
     <div className={styles.line} role="alert">
       <p className={styles.message}>
         <Icon size={16} strokeWidth={1.75} aria-hidden="true" />
-        {offline ? `${what}: sem conexão com o servidor.` : `${what}.`}
+        {offline ? t('common.states.failedOffline', { what }) : t('web.states.failed', { what })}
       </p>
       <Button variant="secondary" onClick={onRetry} loading={retrying}>
-        Tentar de novo
+        {t('common.actions.retry')}
       </Button>
     </div>
   );

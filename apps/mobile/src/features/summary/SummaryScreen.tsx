@@ -1,5 +1,5 @@
 import { isApiError } from '@sobra/client';
-import { nextMonth, previousMonth, TIME_ZONE, toMonthKey, type MonthKey } from '@sobra/shared';
+import { nextMonth, previousMonth, toMonthKey, type MonthKey } from '@sobra/shared';
 import { useQuery } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
 import { RefreshControl, ScrollView, useWindowDimensions, View } from 'react-native';
@@ -19,7 +19,8 @@ import { useIsOnline } from '../../api/network';
 import { useServices } from '../../api/ServicesProvider';
 import { project, rubberband } from '../../lib/gesture';
 import { haptics } from '../../lib/haptics';
-import { monthName, monthProgress } from '../../lib/month';
+import { useI18n } from '../../i18n/I18nProvider';
+import { monthProgress } from '../../lib/month';
 import { makeStyles } from '../../theme/makeStyles';
 import { useTheme } from '../../theme/ThemeProvider';
 import { AppText } from '../../ui/AppText';
@@ -31,12 +32,6 @@ import { HeadlineCard } from './HeadlineCard';
 import { MonthRuler } from './MonthRuler';
 import { MonthSwitcher } from './MonthSwitcher';
 import { buildHeadline, buildRuler, emptyMonthText } from './summaryModel';
-
-const time = new Intl.DateTimeFormat('pt-BR', {
-  hour: '2-digit',
-  minute: '2-digit',
-  timeZone: TIME_ZONE,
-});
 
 /** Horizontal swipe that changes month: needs clear horizontal intent so vertical scroll wins. */
 const SWIPE_ACTIVATE = 24;
@@ -59,6 +54,8 @@ export function SummaryScreen({ initialMonth }: { initialMonth?: MonthKey }) {
   const insets = useSafeAreaInsets();
   const online = useIsOnline();
   const launch = useLaunch();
+  const i18n = useI18n();
+  const { t } = i18n;
 
   const summary = useQuery(queries.summary.month({ month }));
   const spending = useQuery(queries.summary.spendingByCategory({ month }));
@@ -101,12 +98,14 @@ export function SummaryScreen({ initialMonth }: { initialMonth?: MonthKey }) {
   };
   const offline = !online || (isApiError(summary.error) && summary.error.code === 'NETWORK_ERROR');
   const isEmpty = summary.data && summary.data.income === 0 && summary.data.expense === 0;
+  const offlineAware = (message: string) =>
+    offline ? t('mobile.states.offlinePrefix', { message }) : message;
 
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>
       {offline && summary.data ? (
         <OfflineBanner
-          message={`Sem conexão — mostrando os dados de ${time.format(summary.dataUpdatedAt)}`}
+          message={t('mobile.states.offlineSince', { time: i18n.time(summary.dataUpdatedAt) })}
         />
       ) : null}
       <GestureDetector gesture={swipe}>
@@ -127,7 +126,9 @@ export function SummaryScreen({ initialMonth }: { initialMonth?: MonthKey }) {
               {summary.isPending && !summary.isError ? <SummarySkeleton /> : null}
               {summary.isError && !summary.data ? (
                 <ErrorLine
-                  message={`${offline ? 'Sem conexão. ' : ''}Não deu para carregar o resumo de ${monthName(month)}.`}
+                  message={offlineAware(
+                    t('mobile.summary.loadError', { month: i18n.monthName(month) }),
+                  )}
                   onRetry={refresh}
                 />
               ) : null}
@@ -135,8 +136,13 @@ export function SummaryScreen({ initialMonth }: { initialMonth?: MonthKey }) {
               {summary.data && isEmpty ? (
                 <Section>
                   <EmptyState
-                    message={emptyMonthText(month)}
-                    action={<Button label="Lançar gasto" onPress={() => launch.open()} />}
+                    message={emptyMonthText(month, i18n)}
+                    action={
+                      <Button
+                        label={t('mobile.launch.title.expense')}
+                        onPress={() => launch.open()}
+                      />
+                    }
                   />
                 </Section>
               ) : null}
@@ -144,18 +150,18 @@ export function SummaryScreen({ initialMonth }: { initialMonth?: MonthKey }) {
               {summary.data && !isEmpty ? (
                 <>
                   <HeadlineCard
-                    headline={buildHeadline(summary.data, progress)}
+                    headline={buildHeadline(summary.data, progress, i18n)}
                     summary={summary.data}
                   />
-                  <Section title="Para onde foi">
+                  <Section title={t('mobile.summary.whereItWent')}>
                     {spending.data ? (
                       <MonthRuler
-                        ruler={buildRuler(summary.data.income, spending.data.items)}
+                        ruler={buildRuler(summary.data.income, spending.data.items, i18n)}
                         partial={progress.kind !== 'closed'}
                       />
                     ) : spending.isError ? (
                       <ErrorLine
-                        message="Não deu para carregar os gastos por categoria."
+                        message={t('mobile.summary.spendingError')}
                         onRetry={() => spending.refetch()}
                       />
                     ) : (
@@ -166,18 +172,18 @@ export function SummaryScreen({ initialMonth }: { initialMonth?: MonthKey }) {
               ) : null}
 
               {summary.data ? (
-                <Section title="Orçamentos">
+                <Section title={t('mobile.summary.budgets')}>
                   {budgets.data ? (
                     budgets.data.items.length > 0 ? (
                       <BudgetList items={budgets.data.items} />
                     ) : (
                       <EmptyState
-                        message={`Sem orçamentos em ${monthName(month)}. Defina orçamentos no painel web.`}
+                        message={t('mobile.summary.budgetsEmpty', { month: i18n.monthName(month) })}
                       />
                     )
                   ) : budgets.isError ? (
                     <ErrorLine
-                      message="Não deu para carregar os orçamentos."
+                      message={t('mobile.summary.budgetsError')}
                       onRetry={() => budgets.refetch()}
                     />
                   ) : (
@@ -210,8 +216,9 @@ function Section({ title, children }: { title?: string; children: ReactNode }) {
 function SummarySkeleton() {
   const theme = useTheme();
   const styles = useStyles();
+  const { t } = useI18n();
   return (
-    <View style={styles.skeleton} accessibilityLabel="Carregando o resumo">
+    <View style={styles.skeleton} accessibilityLabel={t('mobile.summary.loading')}>
       <View style={styles.card}>
         <Skeleton height={theme.text.label.lineHeight} width="30%" />
         <Skeleton height={theme.text.figureXl.lineHeight} width="70%" />

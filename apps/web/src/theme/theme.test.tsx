@@ -1,6 +1,8 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
+import { createI18n } from '../i18n/createI18n';
+import { I18nContext } from '../i18n/i18nContext';
 import { ThemeSwitch } from '../layout/ThemeSwitch';
 import { readThemePreference, THEME_STORAGE_KEY } from './theme';
 import themeInitScript from '../../public/theme-init.js?raw';
@@ -9,9 +11,11 @@ import { buildTokensCss } from './tokensCss';
 
 const renderSwitch = () =>
   render(
-    <ThemeProvider>
-      <ThemeSwitch />
-    </ThemeProvider>,
+    <I18nContext value={createI18n('pt-BR', 'BRL')}>
+      <ThemeProvider>
+        <ThemeSwitch />
+      </ThemeProvider>
+    </I18nContext>,
   );
 
 describe('tema', () => {

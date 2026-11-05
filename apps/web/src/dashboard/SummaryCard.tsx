@@ -3,8 +3,8 @@ import { Link } from 'react-router';
 import { ErrorLine } from '../components/ErrorLine';
 import { Skeleton } from '../components/Skeleton';
 import { fitChars } from '../lib/fit';
-import { money, percent, signedMoney } from '../lib/format';
-import { monthName, monthTitle, type MonthProgress } from '../lib/month';
+import { useI18n } from '../i18n/i18nContext';
+import type { MonthProgress } from '../lib/month';
 import { Delta } from './Delta';
 import { KpiStrip } from './KpiStrip';
 import { buildRuler, isEmptyMonth } from './model';
@@ -20,28 +20,36 @@ type SummaryCardProps = {
 };
 
 function Status({ progress }: { progress: MonthProgress }) {
+  const { t } = useI18n();
   return (
     <span className={styles.status}>
-      {progress.partial ? `parcial · dia ${progress.day} de ${progress.days}` : 'mês fechado'}
+      {progress.partial
+        ? t('web.dashboard.summary.partial', { day: progress.day, days: progress.days })
+        : t('web.dashboard.summary.closed')}
     </span>
   );
 }
 
 function Headline({ summary, progress }: { summary: MonthSummary; progress: MonthProgress }) {
+  const { t, rich, fmt } = useI18n();
+  const num = (value: number) => <span className="num">{fmt.money(value)}</span>;
   const left = summary.income - summary.expense;
   const previousLeft = summary.previous.income - summary.previous.expense;
-  const base = monthName(summary.previous.month);
+  const base = fmt.monthName(summary.previous.month);
   if (progress.partial) {
     return (
       <>
-        <p className={styles.caption}>Sobra até agora</p>
-        <p className={`${styles.figure} num`} style={fitChars(money(left))}>
-          {money(left)}
+        <p className={styles.caption}>{t('web.dashboard.summary.soFarCaption')}</p>
+        <p className={`${styles.figure} num`} style={fitChars(fmt.money(left))}>
+          {fmt.money(left)}
         </p>
         <p className={styles.line}>
-          Até agora: <span className="num">{money(summary.income)}</span> recebidos,{' '}
-          <span className="num">{money(summary.expense)}</span> gastos · parcial, dia {progress.day}{' '}
-          de {progress.days}
+          {rich('web.dashboard.summary.soFarLine', {
+            income: num(summary.income),
+            expense: num(summary.expense),
+            day: progress.day,
+            days: progress.days,
+          })}
         </p>
       </>
     );
@@ -49,28 +57,40 @@ function Headline({ summary, progress }: { summary: MonthSummary; progress: Mont
   const change = left - previousLeft;
   return (
     <>
-      <p className={styles.caption}>{left >= 0 ? 'Sobra do mês' : 'Faltou no mês'}</p>
+      <p className={styles.caption}>
+        {left >= 0
+          ? t('web.dashboard.summary.leftCaption')
+          : t('web.dashboard.summary.shortCaption')}
+      </p>
       <p
         className={`${styles.figure} ${left < 0 ? styles.debt : ''} num`}
-        style={fitChars(money(left))}
+        style={fitChars(fmt.money(left))}
       >
-        {money(left)}
+        {fmt.money(left)}
       </p>
       <p className={styles.line}>
-        {left >= 0 ? 'sobraram de' : 'gastos acima de'}{' '}
-        <span className="num">{money(summary.income)}</span> recebidos
-        {summary.savingsRate === null ? null : (
-          <>
-            {' '}
-            · taxa de poupança <strong className="num">{percent(summary.savingsRate)}</strong>
-          </>
-        )}
+        {summary.savingsRate === null
+          ? rich(left >= 0 ? 'web.dashboard.summary.leftLine' : 'web.dashboard.summary.shortLine', {
+              income: num(summary.income),
+            })
+          : rich(
+              left >= 0
+                ? 'web.dashboard.summary.leftLineWithRate'
+                : 'web.dashboard.summary.shortLineWithRate',
+              {
+                income: num(summary.income),
+                rate: <strong className="num">{fmt.percent(summary.savingsRate)}</strong>,
+              },
+            )}
       </p>
       <Delta
         change={change}
         upIsGood
-        value={signedMoney(change)}
-        base={`${change >= 0 ? 'a mais' : 'a menos'} que em ${base} (${money(previousLeft)})`}
+        value={fmt.signedMoney(change)}
+        base={t(change >= 0 ? 'web.dashboard.summary.moreThan' : 'web.dashboard.summary.lessThan', {
+          month: base,
+          amount: fmt.money(previousLeft),
+        })}
       />
     </>
   );
@@ -87,14 +107,18 @@ function Body({
   summary: MonthSummary;
   spending: SpendingByCategory | undefined;
 }) {
+  const { t, rich, fmt } = useI18n();
   if (isEmptyMonth(summary)) {
     return (
       <>
         <div className={styles.empty}>
-          <p className={styles.emptyTitle}>Nenhum lançamento em {monthName(month)}.</p>
+          <p className={styles.emptyTitle}>
+            {t('web.dashboard.summary.emptyTitle', { month: fmt.monthName(month) })}
+          </p>
           <p>
-            Receitas e despesas deste mês aparecem aqui.{' '}
-            <Link to="/transacoes">Lance o primeiro gasto</Link>.
+            {rich('web.dashboard.summary.emptyBody', {
+              link: <Link to="/transacoes">{t('web.dashboard.summary.emptyLink')}</Link>,
+            })}
           </p>
         </div>
         <KpiStrip summary={summary} progress={progress} />
@@ -108,8 +132,8 @@ function Body({
       </div>
       {spending ? (
         <MonthRuler
-          ruler={buildRuler(summary, spending)}
-          monthLabel={monthName(month)}
+          ruler={buildRuler(summary, spending, t)}
+          monthLabel={fmt.monthName(month)}
           partial={progress.partial}
         />
       ) : (
@@ -133,6 +157,7 @@ export function SummarySkeleton() {
 }
 
 export function SummaryCard({ month, progress, summary, spending }: SummaryCardProps) {
+  const { t, fmt } = useI18n();
   const stale = summary.isPlaceholderData || spending.isPlaceholderData;
   return (
     <section
@@ -142,13 +167,13 @@ export function SummaryCard({ month, progress, summary, spending }: SummaryCardP
     >
       <header className={styles.head}>
         <h2 id="resumo-titulo" className={styles.title}>
-          {monthTitle(month)}
+          {fmt.monthTitle(month)}
         </h2>
         <Status progress={progress} />
       </header>
       {summary.isError ? (
         <ErrorLine
-          what="Não deu para carregar o resumo do mês"
+          what={t('web.dashboard.summary.failed')}
           error={summary.error}
           onRetry={() => void summary.refetch()}
           retrying={summary.isFetching}

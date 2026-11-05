@@ -1,3 +1,4 @@
+import { categoryName } from '@sobra/i18n';
 import { previousMonth, type Budget, type Category, type MonthKey } from '@sobra/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Copy, Pencil, Trash } from 'lucide-react';
@@ -11,8 +12,8 @@ import { ErrorLine } from '../components/ErrorLine';
 import { EmptyState, Page, Panel } from '../components/Page';
 import { Skeleton } from '../components/Skeleton';
 import { MonthPicker } from '../dashboard/MonthPicker';
-import { money } from '../lib/format';
-import { currentMonth, monthName, parseMonthParam } from '../lib/month';
+import { useI18n } from '../i18n/i18nContext';
+import { currentMonth, parseMonthParam } from '../lib/month';
 import { useServices } from '../lib/servicesContext';
 import styles from './BudgetsPage.module.css';
 import { InlineAmount } from './InlineAmount';
@@ -36,22 +37,25 @@ function BudgetRow({
   const upsert = useMutation(mutations.budgets.upsert);
   const remove = useMutation(mutations.budgets.remove);
   const { category, budget } = row;
+  const { t, fmt, errorText } = useI18n();
+  const name = categoryName(t, category);
 
   const save = (amount: number) =>
     upsert.mutate(
       { categoryId: category.id, month, amount },
       {
         onSuccess: () => {
-          toast.success(`Orçamento de ${category.name}: ${money(amount)}.`);
+          toast.success(t('web.budgets.toasts.saved', { name, amount: fmt.money(amount) }));
           onDone();
         },
-        onError: (error) => toast.error(`Não deu para salvar: ${error.message}`),
+        onError: (error) =>
+          toast.error(t('web.budgets.toasts.saveFailed', { reason: errorText(error) })),
       },
     );
 
   const editor = editing ? (
     <InlineAmount
-      label={`Orçamento de ${category.name} em ${monthName(month)}`}
+      label={t('web.budgets.inputLabel', { name, month: fmt.monthName(month) })}
       initial={budget?.amount ?? null}
       saving={upsert.isPending}
       onSave={save}
@@ -68,17 +72,17 @@ function BudgetRow({
             style={{ background: category.color }}
             aria-hidden="true"
           />
-          {category.name}
+          {name}
         </span>
         {editor ?? (
           <span className={styles.unsetActions}>
-            <span className={styles.muted}>Sem orçamento</span>
+            <span className={styles.muted}>{t('web.budgets.unset')}</span>
             <Button
               variant="secondary"
               onClick={onEdit}
-              aria-label={`Definir orçamento de ${category.name}`}
+              aria-label={t('web.budgets.setA11y', { name })}
             >
-              Definir
+              {t('web.budgets.set')}
             </Button>
           </span>
         )}
@@ -88,7 +92,7 @@ function BudgetRow({
 
   return (
     <BudgetMeter
-      name={category.name}
+      name={name}
       color={category.color}
       budgeted={budget.amount}
       actual={budget.spent}
@@ -99,21 +103,22 @@ function BudgetRow({
             <Button
               variant="ghost"
               onClick={onEdit}
-              aria-label={`Editar orçamento de ${category.name}`}
+              aria-label={t('web.budgets.editA11y', { name })}
             >
               <Pencil size={16} strokeWidth={1.75} aria-hidden="true" />
-              Editar
+              {t('common.actions.edit')}
             </Button>
             <Button
               variant="ghost"
               iconOnly
-              title="Remover"
-              aria-label={`Remover orçamento de ${category.name}`}
+              title={t('web.budgets.remove')}
+              aria-label={t('web.budgets.removeA11y', { name })}
               loading={remove.isPending}
               onClick={() =>
                 remove.mutate(budget.id, {
-                  onSuccess: () => toast(`Orçamento de ${category.name} removido.`),
-                  onError: (error) => toast.error(`Não deu para remover: ${error.message}`),
+                  onSuccess: () => toast(t('web.budgets.toasts.removed', { name })),
+                  onError: (error) =>
+                    toast.error(t('web.budgets.toasts.removeFailed', { reason: errorText(error) })),
                 })
               }
             >
@@ -128,6 +133,7 @@ function BudgetRow({
 
 export function BudgetsPage() {
   const { queries, mutations } = useServices();
+  const { t, fmt, errorText } = useI18n();
   const [params, setParams] = useSearchParams();
   const month = parseMonthParam(params.get('mes'));
   const current = currentMonth();
@@ -159,11 +165,15 @@ export function BudgetsPage() {
           const added = result.length - before;
           toast.success(
             added > 0
-              ? `${added} ${added === 1 ? 'orçamento copiado' : 'orçamentos copiados'} de ${monthName(from)}.`
-              : `Nada a copiar: ${monthName(month)} já tem os orçamentos de ${monthName(from)}.`,
+              ? t('web.budgets.toasts.copied', { count: added, month: fmt.monthName(from) })
+              : t('web.budgets.toasts.nothingToCopy', {
+                  month: fmt.monthName(month),
+                  from: fmt.monthName(from),
+                }),
           );
         },
-        onError: (error) => toast.error(`Não deu para copiar: ${error.message}`),
+        onError: (error) =>
+          toast.error(t('web.budgets.toasts.copyFailed', { reason: errorText(error) })),
       },
     );
   };
@@ -172,11 +182,11 @@ export function BudgetsPage() {
 
   return (
     <Page
-      title="Orçamentos"
+      title={t('nav.budgets')}
       actions={
         <Button variant="secondary" onClick={copyPrevious} loading={copy.isPending}>
           {copy.isPending ? null : <Copy size={16} strokeWidth={1.75} aria-hidden="true" />}
-          Copiar de {monthName(from)}
+          {t('web.budgets.copyFrom', { month: fmt.monthName(from) })}
         </Button>
       }
     >
@@ -186,19 +196,22 @@ export function BudgetsPage() {
         onChange={(next) => setParams(next === current ? {} : { mes: next })}
       />
       <Panel
-        title={`Despesas de ${monthName(month)}`}
+        title={t('web.budgets.panel', { month: fmt.monthName(month) })}
         titleId="orcamentos-titulo"
         aside={
           withBudget.length > 0 ? (
             <span className={`${styles.muted} num`}>
-              {money(totals.spent)} de {money(totals.budgeted)} orçados
+              {t('web.budgets.totals', {
+                spent: fmt.money(totals.spent),
+                budgeted: fmt.money(totals.budgeted),
+              })}
             </span>
           ) : null
         }
       >
         {failed ? (
           <ErrorLine
-            what="Não deu para carregar os orçamentos"
+            what={t('web.budgets.failed')}
             error={failed.error}
             onRetry={() => {
               void budgets.refetch();
@@ -213,15 +226,17 @@ export function BudgetsPage() {
             ))}
           </div>
         ) : rows.length === 0 ? (
-          <EmptyState title="Sem categorias de despesa.">
-            <p>Crie categorias para poder orçar.</p>
+          <EmptyState title={t('web.budgets.noCategories')}>
+            <p>{t('web.budgets.noCategoriesHint')}</p>
           </EmptyState>
         ) : (
           <>
             {withBudget.length === 0 ? (
               <p className={styles.muted}>
-                Nenhum orçamento em {monthName(month)}. Defina por categoria ou copie de{' '}
-                {monthName(from)}.
+                {t('web.budgets.none', {
+                  month: fmt.monthName(month),
+                  from: fmt.monthName(from),
+                })}
               </p>
             ) : null}
             <ul className={meterStyles.list}>

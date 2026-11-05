@@ -1,6 +1,6 @@
 import { isApiError } from '@sobra/client';
 import { isOptimisticId } from '@sobra/client/query';
-import { TIME_ZONE, type Transaction } from '@sobra/shared';
+import type { Transaction } from '@sobra/shared';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { Search, SlidersHorizontal, X } from 'lucide-react-native';
 import { useMemo, useState } from 'react';
@@ -10,7 +10,7 @@ import Animated, { Easing, LinearTransition } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useIsOnline } from '../../api/network';
 import { useServices } from '../../api/ServicesProvider';
-import { monthTitle } from '../../lib/month';
+import { useI18n } from '../../i18n/I18nProvider';
 import { useDebounced } from '../../lib/useDebounced';
 import { makeStyles } from '../../theme/makeStyles';
 import { useTheme } from '../../theme/ThemeProvider';
@@ -36,11 +36,6 @@ const SEARCH_DEBOUNCE_MS = 300;
  * Transform-based, on the UI thread; Reanimated skips it with Reduce Motion on.
  */
 const REFLOW = LinearTransition.duration(durations.base).easing(Easing.bezier(...easings.standard));
-const time = new Intl.DateTimeFormat('pt-BR', {
-  hour: '2-digit',
-  minute: '2-digit',
-  timeZone: TIME_ZONE,
-});
 
 export function TransactionsScreen() {
   return (
@@ -59,6 +54,8 @@ function TransactionsList() {
   const launch = useLaunch();
   const swipe = useSwipeCoordinator();
   const actions = useRowActions();
+  const i18n = useI18n();
+  const { t } = i18n;
 
   const [filters, setFilters] = useState<Filters>({});
   const [searchText, setSearchText] = useState('');
@@ -76,7 +73,7 @@ function TransactionsList() {
   const categories = useQuery(queries.categories.list());
 
   const items = useMemo(() => list.data?.pages.flatMap((page) => page.items) ?? [], [list.data]);
-  const rows = useMemo(() => groupByDay(items), [items]);
+  const rows = useMemo(() => groupByDay(items, i18n), [items, i18n]);
   const filtered = hasFilters(effective);
   const offline = !online || (isApiError(list.error) && list.error.code === 'NETWORK_ERROR');
 
@@ -91,7 +88,7 @@ function TransactionsList() {
     return (
       <SwipeableRow
         id={tx.id}
-        label={describeTransaction(tx)}
+        label={describeTransaction(tx, i18n)}
         disabled={isOptimisticId(tx.id)}
         onEdit={() => actions.edit(tx)}
         onDelete={() => actions.remove(tx)}
@@ -103,21 +100,20 @@ function TransactionsList() {
   };
 
   const accountName = accounts.data?.find((account) => account.id === filters.accountId)?.name;
-  const categoryName = categories.data?.find(
-    (category) => category.id === filters.categoryId,
-  )?.name;
+  const filterCategory = categories.data?.find((category) => category.id === filters.categoryId);
+  const categoryName = filterCategory ? i18n.category(filterCategory) : undefined;
   const activeCount = [filters.month, filters.accountId, filters.categoryId].filter(Boolean).length;
 
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>
       {offline && list.data ? (
         <OfflineBanner
-          message={`Sem conexão — mostrando os dados de ${time.format(list.dataUpdatedAt)}`}
+          message={t('mobile.states.offlineSince', { time: i18n.time(list.dataUpdatedAt) })}
         />
       ) : null}
       <View style={styles.header}>
         <AppText variant="title" accessibilityRole="header">
-          Transações
+          {t('nav.transactions')}
         </AppText>
         <View style={styles.searchRow}>
           <View style={styles.search}>
@@ -130,9 +126,9 @@ function TransactionsList() {
               testID="search"
               value={searchText}
               onChangeText={setSearchText}
-              placeholder="Buscar na descrição"
+              placeholder={t('mobile.transactions.searchPlaceholder')}
               placeholderTextColor={theme.colors.text.tertiary}
-              accessibilityLabel="Buscar transações"
+              accessibilityLabel={t('mobile.transactions.searchA11y')}
               returnKeyType="search"
               autoCorrect={false}
               style={styles.searchInput}
@@ -143,8 +139,8 @@ function TransactionsList() {
             accessibilityRole="button"
             accessibilityLabel={
               activeCount > 0
-                ? `Filtros, ${activeCount} ${activeCount === 1 ? 'ativo' : 'ativos'}`
-                : 'Filtros'
+                ? t('mobile.transactions.filtersActive', { count: activeCount })
+                : t('mobile.transactions.filters')
             }
             onPress={() => setFiltersOpen(true)}
             style={[styles.filterButton, activeCount > 0 && styles.filterActive]}
@@ -161,23 +157,23 @@ function TransactionsList() {
           <View style={styles.activeChips}>
             {filters.month ? (
               <RemovableChip
-                label={monthTitle(filters.month)}
+                label={i18n.monthTitle(filters.month)}
                 onRemove={() => setFilters({ ...filters, month: undefined })}
               />
             ) : null}
             {filters.accountId ? (
               <RemovableChip
-                label={accountName ?? 'Conta'}
+                label={accountName ?? t('mobile.transactions.filter.account')}
                 onRemove={() => setFilters({ ...filters, accountId: undefined })}
               />
             ) : null}
             {filters.categoryId ? (
               <RemovableChip
-                label={categoryName ?? 'Categoria'}
+                label={categoryName ?? t('mobile.transactions.filter.category')}
                 onRemove={() => setFilters({ ...filters, categoryId: undefined })}
               />
             ) : null}
-            <Button variant="ghost" label="Limpar" onPress={clearAll} />
+            <Button variant="ghost" label={t('mobile.transactions.clear')} onPress={clearAll} />
           </View>
         ) : null}
       </View>
@@ -186,7 +182,13 @@ function TransactionsList() {
       {list.isError && !list.data ? (
         <View style={styles.padded}>
           <ErrorLine
-            message={`${offline ? 'Sem conexão. ' : ''}Não deu para carregar as transações.`}
+            message={
+              offline
+                ? t('mobile.states.offlinePrefix', {
+                    message: t('mobile.transactions.loadError'),
+                  })
+                : t('mobile.transactions.loadError')
+            }
             onRetry={() => {
               list.refetch();
             }}
@@ -225,13 +227,24 @@ function TransactionsList() {
             <View style={styles.padded}>
               {filtered ? (
                 <EmptyState
-                  message="Nada encontrado com esses filtros."
-                  action={<Button variant="secondary" label="Limpar filtros" onPress={clearAll} />}
+                  message={t('common.states.emptyFiltered')}
+                  action={
+                    <Button
+                      variant="secondary"
+                      label={t('common.actions.clearFilters')}
+                      onPress={clearAll}
+                    />
+                  }
                 />
               ) : (
                 <EmptyState
-                  message="Nenhum lançamento ainda. Lance o primeiro gasto."
-                  action={<Button label="Lançar gasto" onPress={() => launch.open()} />}
+                  message={t('mobile.transactions.empty')}
+                  action={
+                    <Button
+                      label={t('mobile.launch.title.expense')}
+                      onPress={() => launch.open()}
+                    />
+                  }
                 />
               )}
             </View>
@@ -260,11 +273,12 @@ function TransactionsList() {
 
 function RemovableChip({ label, onRemove }: { label: string; onRemove: () => void }) {
   const theme = useTheme();
+  const { t } = useI18n();
   return (
     <Chip
       label={label}
       selected
-      accessibilityLabel={`Remover filtro ${label}`}
+      accessibilityLabel={t('mobile.transactions.removeFilter', { label })}
       onPress={onRemove}
       icon={<X size={ICON_SIZE.inline} color={theme.colors.text.link} strokeWidth={ICON_STROKE} />}
     />
@@ -274,8 +288,9 @@ function RemovableChip({ label, onRemove }: { label: string; onRemove: () => voi
 function ListSkeleton({ rows = 6 }: { rows?: number }) {
   const theme = useTheme();
   const styles = useStyles();
+  const { t } = useI18n();
   return (
-    <View style={styles.padded} accessibilityLabel="Carregando transações">
+    <View style={styles.padded} accessibilityLabel={t('mobile.transactions.loading')}>
       <Skeleton height={theme.layout.rowCompact} width="40%" />
       {Array.from({ length: rows }, (_, index) => (
         <Skeleton key={index} height={theme.layout.rowTall} />

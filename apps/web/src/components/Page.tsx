@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { useDocumentTitle } from '../i18n/useDocumentTitle';
 import styles from './Page.module.css';
 
 export function Page({
@@ -10,6 +11,7 @@ export function Page({
   actions?: ReactNode;
   children: ReactNode;
 }) {
+  useDocumentTitle(title);
   return (
     <div className={styles.page}>
       <header className={styles.header}>

@@ -2,6 +2,7 @@ import type { BottomTabBarProps } from 'expo-router/js-tabs';
 import { LayoutDashboard, List, Plus, Settings, type LucideIcon } from 'lucide-react-native';
 import { Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useI18n } from '../i18n/I18nProvider';
 import { CONTROL_MAX_FONT_SCALE } from '../theme/fontScale';
 import { makeStyles } from '../theme/makeStyles';
 import { useTheme } from '../theme/ThemeProvider';
@@ -72,13 +73,14 @@ export function TabBar({
 
 function LaunchButton({ onPress }: { onPress: () => void }) {
   const theme = useTheme();
+  const { t } = useI18n();
   const styles = useStyles();
   return (
     <View style={styles.tab}>
       <PressableScale
         testID="launch"
         accessibilityRole="button"
-        accessibilityLabel="Lançar gasto"
+        accessibilityLabel={t('mobile.launch.title.expense')}
         onPress={onPress}
         style={styles.launch}
         pressedStyle={styles.launchPressed}
@@ -94,7 +96,7 @@ function LaunchButton({ onPress }: { onPress: () => void }) {
           numberOfLines={1}
           maxFontSizeMultiplier={CONTROL_MAX_FONT_SCALE}
         >
-          Lançar
+          {t('mobile.tabs.launch')}
         </AppText>
       </PressableScale>
     </View>

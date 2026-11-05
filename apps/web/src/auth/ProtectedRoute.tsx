@@ -1,7 +1,9 @@
+import { APP_NAME } from '@sobra/shared';
 import { isApiError } from '@sobra/client';
 import { useQuery } from '@tanstack/react-query';
 import { Navigate, Outlet, useLocation } from 'react-router';
 import { ErrorLine } from '../components/ErrorLine';
+import { useI18n } from '../i18n/i18nContext';
 import { useServices } from '../lib/servicesContext';
 import styles from './ProtectedRoute.module.css';
 
@@ -11,6 +13,7 @@ const isSessionError = (error: unknown) =>
 export function ProtectedRoute() {
   const { queries, hasStoredSession } = useServices();
   const location = useLocation();
+  const { t } = useI18n();
   const stored = hasStoredSession();
   const me = useQuery({ ...queries.me(), enabled: stored, staleTime: Infinity });
 
@@ -20,9 +23,9 @@ export function ProtectedRoute() {
   if (me.isError) {
     return (
       <main className={styles.blocked}>
-        <h1 className="visually-hidden">Sobra</h1>
+        <h1 className="visually-hidden">{APP_NAME}</h1>
         <ErrorLine
-          what="Não deu para abrir sua sessão"
+          what={t('web.auth.session.failed')}
           error={me.error}
           onRetry={() => void me.refetch()}
           retrying={me.isFetching}
@@ -33,7 +36,7 @@ export function ProtectedRoute() {
   if (me.isPending) {
     return (
       <main className={styles.blocked} aria-busy="true">
-        <h1 className="visually-hidden">Abrindo sua sessão</h1>
+        <h1 className="visually-hidden">{t('web.auth.session.opening')}</h1>
       </main>
     );
   }

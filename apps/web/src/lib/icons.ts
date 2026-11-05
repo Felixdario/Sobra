@@ -1,4 +1,6 @@
+import type { MessageKey } from '@sobra/i18n';
 import type { IconName } from '@sobra/shared';
+import type { IdentityColorName } from '@sobra/tokens';
 import {
   Baby,
   Briefcase,
@@ -67,36 +69,56 @@ export const ICONS: Record<IconName, LucideIcon> = {
   'circle-dollar': CircleDollarSign,
 };
 
-/** Portuguese names for the icon picker (screen readers and tooltips). */
-export const ICON_LABELS: Record<IconName, string> = {
-  cart: 'Carrinho',
-  home: 'Casa',
-  car: 'Carro',
-  bus: 'Ônibus',
-  utensils: 'Talheres',
-  film: 'Filme',
-  'heart-pulse': 'Saúde',
-  'graduation-cap': 'Formatura',
-  briefcase: 'Maleta',
-  gift: 'Presente',
-  plane: 'Avião',
-  shirt: 'Camisa',
-  smartphone: 'Celular',
-  wifi: 'Wi-Fi',
-  zap: 'Energia',
-  droplet: 'Água',
-  'piggy-bank': 'Cofrinho',
-  'trending-up': 'Rendimento',
-  wallet: 'Carteira',
-  'credit-card': 'Cartão',
-  receipt: 'Recibo',
-  paw: 'Pet',
-  dumbbell: 'Academia',
-  music: 'Música',
-  coffee: 'Café',
-  baby: 'Bebê',
-  wrench: 'Manutenção',
-  landmark: 'Banco',
-  sparkles: 'Outros',
-  'circle-dollar': 'Dinheiro',
+/** Catalog key of each icon's name (picker labels for screen readers and tooltips). */
+type IconLabel = Extract<MessageKey, `web.pickers.icons.${string}`>;
+type ColorLabel = Extract<MessageKey, `web.pickers.colors.${string}`>;
+
+export const ICON_LABELS: Record<IconName, IconLabel> = {
+  cart: 'web.pickers.icons.cart',
+  home: 'web.pickers.icons.home',
+  car: 'web.pickers.icons.car',
+  bus: 'web.pickers.icons.bus',
+  utensils: 'web.pickers.icons.utensils',
+  film: 'web.pickers.icons.film',
+  'heart-pulse': 'web.pickers.icons.heartPulse',
+  'graduation-cap': 'web.pickers.icons.graduationCap',
+  briefcase: 'web.pickers.icons.briefcase',
+  gift: 'web.pickers.icons.gift',
+  plane: 'web.pickers.icons.plane',
+  shirt: 'web.pickers.icons.shirt',
+  smartphone: 'web.pickers.icons.smartphone',
+  wifi: 'web.pickers.icons.wifi',
+  zap: 'web.pickers.icons.zap',
+  droplet: 'web.pickers.icons.droplet',
+  'piggy-bank': 'web.pickers.icons.piggyBank',
+  'trending-up': 'web.pickers.icons.trendingUp',
+  wallet: 'web.pickers.icons.wallet',
+  'credit-card': 'web.pickers.icons.creditCard',
+  receipt: 'web.pickers.icons.receipt',
+  paw: 'web.pickers.icons.paw',
+  dumbbell: 'web.pickers.icons.dumbbell',
+  music: 'web.pickers.icons.music',
+  coffee: 'web.pickers.icons.coffee',
+  baby: 'web.pickers.icons.baby',
+  wrench: 'web.pickers.icons.wrench',
+  landmark: 'web.pickers.icons.landmark',
+  sparkles: 'web.pickers.icons.sparkles',
+  'circle-dollar': 'web.pickers.icons.circleDollar',
+};
+
+/** Catalog key of each identity color's name (the palette's own names are pt-BR). */
+export const COLOR_LABELS: Record<IdentityColorName, ColorLabel> = {
+  Cobalto: 'web.pickers.colors.cobalt',
+  Laranja: 'web.pickers.colors.orange',
+  Verde: 'web.pickers.colors.green',
+  Rosa: 'web.pickers.colors.pink',
+  Lilás: 'web.pickers.colors.lilac',
+  Céu: 'web.pickers.colors.sky',
+  Grafite: 'web.pickers.colors.graphite',
+  Argila: 'web.pickers.colors.clay',
+  Terracota: 'web.pickers.colors.terracotta',
+  Ameixa: 'web.pickers.colors.plum',
+  Mostarda: 'web.pickers.colors.mustard',
+  Oliva: 'web.pickers.colors.olive',
+  Petróleo: 'web.pickers.colors.petrol',
 };

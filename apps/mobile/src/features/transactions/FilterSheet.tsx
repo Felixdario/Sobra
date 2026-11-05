@@ -1,6 +1,6 @@
 import { lastNMonths, type Account, type Category, type MonthKey } from '@sobra/shared';
 import { View } from 'react-native';
-import { monthTitle } from '../../lib/month';
+import { useI18n } from '../../i18n/I18nProvider';
 import { makeStyles } from '../../theme/makeStyles';
 import { AppText } from '../../ui/AppText';
 import { BottomSheet } from '../../ui/BottomSheet';
@@ -22,30 +22,34 @@ type Props = {
 /** Month, account and category. Each chip applies at once; the list behind updates live. */
 export function FilterSheet({ open, onClose, filters, onChange, accounts, categories }: Props) {
   const styles = useStyles();
+  const i18n = useI18n();
+  const { t, monthTitle } = i18n;
   const months = lastNMonths(MONTHS_BACK).reverse();
-  const sortedCategories = [...categories].sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+  const sortedCategories = categories
+    .map((category) => ({ ...category, label: i18n.category(category) }))
+    .sort((a, b) => i18n.compare(a.label, b.label));
   return (
     <BottomSheet
       open={open}
       onClose={onClose}
-      label="Filtros"
+      label={t('mobile.transactions.filters')}
       header={
         <AppText variant="titleSm" accessibilityRole="header" style={styles.title}>
-          Filtros
+          {t('mobile.transactions.filters')}
         </AppText>
       }
       footer={
         <View style={styles.footer}>
           <Button
             variant="secondary"
-            label="Limpar filtros"
+            label={t('common.actions.clearFilters')}
             disabled={!hasFilters(filters)}
             onPress={() => onChange({ search: filters.search })}
             containerStyle={styles.flex}
           />
           <Button
             testID="filters-done"
-            label="Ver transações"
+            label={t('mobile.transactions.filter.done')}
             onPress={onClose}
             containerStyle={styles.flex}
           />
@@ -53,10 +57,10 @@ export function FilterSheet({ open, onClose, filters, onChange, accounts, catego
       }
     >
       <View style={styles.content}>
-        <Group label="Mês">
+        <Group label={t('mobile.transactions.filter.month')}>
           <Chip
             accessibilityRole="radio"
-            label="Todos"
+            label={t('mobile.transactions.filter.allMonths')}
             selected={!filters.month}
             onPress={() => onChange({ ...filters, month: undefined })}
           />
@@ -71,10 +75,10 @@ export function FilterSheet({ open, onClose, filters, onChange, accounts, catego
             />
           ))}
         </Group>
-        <Group label="Conta">
+        <Group label={t('mobile.transactions.filter.account')}>
           <Chip
             accessibilityRole="radio"
-            label="Todas"
+            label={t('mobile.transactions.filter.all')}
             selected={!filters.accountId}
             onPress={() => onChange({ ...filters, accountId: undefined })}
           />
@@ -89,10 +93,10 @@ export function FilterSheet({ open, onClose, filters, onChange, accounts, catego
             />
           ))}
         </Group>
-        <Group label="Categoria">
+        <Group label={t('mobile.transactions.filter.category')}>
           <Chip
             accessibilityRole="radio"
-            label="Todas"
+            label={t('mobile.transactions.filter.all')}
             selected={!filters.categoryId}
             onPress={() => onChange({ ...filters, categoryId: undefined })}
           />
@@ -100,8 +104,8 @@ export function FilterSheet({ open, onClose, filters, onChange, accounts, catego
             <Chip
               accessibilityRole="radio"
               key={category.id}
-              testID={`filter-category-${category.name}`}
-              label={category.name}
+              testID={`filter-category-${category.label}`}
+              label={category.label}
               selected={filters.categoryId === category.id}
               onPress={() => onChange({ ...filters, categoryId: category.id })}
             />

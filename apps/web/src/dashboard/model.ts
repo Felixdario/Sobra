@@ -1,3 +1,4 @@
+import { categoryName, type Translator } from '@sobra/i18n';
 import type { MonthSummary, SpendingByCategory } from '@sobra/shared';
 import type { MonthProgress } from '../lib/month';
 import { PLANE_COUNT } from '../theme/tokensCss';
@@ -21,7 +22,7 @@ export type Ruler = {
 };
 
 /** Expense planes for the ruler: the largest categories, the tail folded into "Outras". */
-export function rulerPlanes(spending: SpendingByCategory, expense: number): Plane[] {
+export function rulerPlanes(spending: SpendingByCategory, expense: number, t: Translator): Plane[] {
   const sorted = [...spending.items].sort((a, b) => b.amount - a.amount);
   const shown = sorted.length > PLANE_COUNT ? sorted.slice(0, PLANE_COUNT - 1) : sorted;
   const planes: Plane[] = [];
@@ -29,7 +30,7 @@ export function rulerPlanes(spending: SpendingByCategory, expense: number): Plan
   for (const item of shown) {
     planes.push({
       key: item.categoryId,
-      name: item.name,
+      name: categoryName(t, item),
       amount: item.amount,
       color: item.color,
       start,
@@ -37,14 +38,26 @@ export function rulerPlanes(spending: SpendingByCategory, expense: number): Plan
     start += item.amount;
   }
   const rest = expense - start;
-  if (rest > 0) planes.push({ key: 'outras', name: 'Outras', amount: rest, color: null, start });
+  if (rest > 0) {
+    planes.push({
+      key: 'outras',
+      name: t('web.dashboard.ruler.others'),
+      amount: rest,
+      color: null,
+      start,
+    });
+  }
   return planes;
 }
 
-export function buildRuler(summary: MonthSummary, spending: SpendingByCategory): Ruler {
+export function buildRuler(
+  summary: MonthSummary,
+  spending: SpendingByCategory,
+  t: Translator,
+): Ruler {
   return {
     scale: Math.max(summary.income, summary.expense),
-    planes: rulerPlanes(spending, summary.expense),
+    planes: rulerPlanes(spending, summary.expense, t),
     income: summary.income,
     left: summary.income - summary.expense,
   };

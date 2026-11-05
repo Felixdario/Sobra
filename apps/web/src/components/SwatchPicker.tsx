@@ -2,7 +2,8 @@ import type { IconName } from '@sobra/shared';
 import { ICON_NAMES } from '@sobra/shared';
 import { identityColors } from '@sobra/tokens';
 import { useId } from 'react';
-import { ICON_LABELS, ICONS } from '../lib/icons';
+import { useI18n } from '../i18n/i18nContext';
+import { COLOR_LABELS, ICON_LABELS, ICONS } from '../lib/icons';
 import styles from './SwatchPicker.module.css';
 
 type ColorPickerProps = {
@@ -17,15 +18,21 @@ type ColorPickerProps = {
  */
 export function ColorPicker({ value, onChange, error }: ColorPickerProps) {
   const name = useId();
+  const { t } = useI18n();
   const known = identityColors.some((c) => c.hex.toLowerCase() === value.toLowerCase());
   const options =
-    known || !value ? identityColors : [{ name: 'Atual', hex: value }, ...identityColors];
+    known || !value
+      ? identityColors.map((c) => ({ label: t(COLOR_LABELS[c.name]), hex: c.hex }))
+      : [
+          { label: t('web.pickers.currentColor'), hex: value },
+          ...identityColors.map((c) => ({ label: t(COLOR_LABELS[c.name]), hex: c.hex })),
+        ];
   return (
     <fieldset className={styles.group}>
-      <legend className={styles.legend}>Cor</legend>
+      <legend className={styles.legend}>{t('web.pickers.color')}</legend>
       <div className={styles.grid}>
         {options.map((color) => (
-          <label key={color.hex} className={styles.swatch} title={color.name}>
+          <label key={color.hex} className={styles.swatch} title={color.label}>
             <input
               type="radio"
               name={name}
@@ -35,7 +42,7 @@ export function ColorPicker({ value, onChange, error }: ColorPickerProps) {
               className={styles.input}
             />
             <span className={styles.chip} style={{ background: color.hex }} aria-hidden="true" />
-            <span className="visually-hidden">{color.name}</span>
+            <span className="visually-hidden">{color.label}</span>
           </label>
         ))}
       </div>
@@ -48,9 +55,10 @@ type IconPickerProps = { value: IconName; onChange: (icon: IconName) => void };
 
 export function IconPicker({ value, onChange }: IconPickerProps) {
   const name = useId();
+  const { t } = useI18n();
   return (
     <fieldset className={styles.group}>
-      <legend className={styles.legend}>Ícone</legend>
+      <legend className={styles.legend}>{t('web.pickers.icon')}</legend>
       <div className={styles.grid}>
         {ICON_NAMES.map((icon) => {
           const Icon = ICONS[icon];
@@ -58,7 +66,7 @@ export function IconPicker({ value, onChange }: IconPickerProps) {
             <label
               key={icon}
               className={`${styles.swatch} ${styles.icon}`}
-              title={ICON_LABELS[icon]}
+              title={t(ICON_LABELS[icon])}
             >
               <input
                 type="radio"
@@ -69,7 +77,7 @@ export function IconPicker({ value, onChange }: IconPickerProps) {
                 className={styles.input}
               />
               <Icon size={20} strokeWidth={1.75} aria-hidden="true" />
-              <span className="visually-hidden">{ICON_LABELS[icon]}</span>
+              <span className="visually-hidden">{t(ICON_LABELS[icon])}</span>
             </label>
           );
         })}

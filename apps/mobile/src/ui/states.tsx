@@ -1,6 +1,7 @@
 import { CircleAlert, WifiOff } from 'lucide-react-native';
 import type { ReactNode } from 'react';
 import { View, type DimensionValue, type StyleProp, type ViewStyle } from 'react-native';
+import { useI18n } from '../i18n/I18nProvider';
 import { makeStyles } from '../theme/makeStyles';
 import { useTheme } from '../theme/ThemeProvider';
 import { AppText } from './AppText';
@@ -24,6 +25,7 @@ export function Skeleton({
 /** In place of a block that failed: what went wrong and the way out. */
 export function ErrorLine({ message, onRetry }: { message: string; onRetry: () => void }) {
   const theme = useTheme();
+  const { t } = useI18n();
   const styles = useStyles();
   return (
     <View style={styles.row} accessibilityRole="alert">
@@ -35,7 +37,7 @@ export function ErrorLine({ message, onRetry }: { message: string; onRetry: () =
       <AppText variant="bodySm" color={theme.colors.status.danger} style={styles.flex}>
         {message}
       </AppText>
-      <Button variant="ghost" label="Tentar de novo" onPress={onRetry} />
+      <Button variant="ghost" label={t('common.actions.retry')} onPress={onRetry} />
     </View>
   );
 }

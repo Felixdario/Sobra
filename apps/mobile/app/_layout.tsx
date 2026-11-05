@@ -18,6 +18,7 @@ import { AuthProvider, useAuth } from '../src/api/AuthProvider';
 import { connectOnlineManager } from '../src/api/network';
 import { createServices, DEFAULT_API_URL } from '../src/api/services';
 import { ServicesProvider } from '../src/api/ServicesProvider';
+import { I18nProvider } from '../src/i18n/I18nProvider';
 import { storage } from '../src/lib/storage';
 import { createTokenStore } from '../src/lib/tokenStore';
 import { ThemeProvider, useTheme } from '../src/theme/ThemeProvider';
@@ -100,7 +101,9 @@ export default function RootLayout() {
         <ThemeProvider>
           <ServicesProvider services={services}>
             <AuthProvider>
-              <RootNavigator fontsReady={loaded || error !== null} />
+              <I18nProvider>
+                <RootNavigator fontsReady={loaded || error !== null} />
+              </I18nProvider>
             </AuthProvider>
           </ServicesProvider>
         </ThemeProvider>

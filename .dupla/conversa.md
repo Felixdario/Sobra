@@ -102,3 +102,10 @@ Commit 104dc0c.
 🧭 Validação própria: raiz verde. 🔁 REVISAR (I): tradução de issues Zod na base (translateIssue + helper de formulário + teste de cobertura).
 🔧 → 🧭 (I) FEITO revisão: VALIDATION_MESSAGES no shared + translateIssue/translateFieldError, 6 buracos fechados, varredura de cobertura; 1050 testes.
 🧭 Validação própria: raiz verde, builds ok. ✅ APROVADO base i18n (2 rodadas). Planejador dividiu o catálogo em base + web.* + mobile.* (arquivos separados) para o trabalho em paralelo. → commit
+Commit 8c39aeb.
+🧭 → 🔧 (W2) traduzir web (web.*), moeda de exibição, preferências na UI, teste de literais, capturas en-*.
+🧭 → 🔧 (M2) traduzir mobile (mobile.*), teclado/valores por locale, a11y traduzida, Ajustes, teste de literais, capturas en-*.
+🔧 → 🧭 (M2) FEITO: useI18n (me → preferência local → aparelho), todas as telas e a11y traduzidas, Ajustes com idioma/moeda otimista, grade de categorias adaptativa, teste de literais por AST, expo-localization, 162 testes, capturas en-*.
+🧭 Validação própria: captura en-resumo conferida (Left over $769.90, categorias traduzidas, sem R$). ✅ APROVADO M2. Lacunas para a base listadas (Hoje/Ontem no catálogo, leitura por extenso, ações comuns). Aguardando W2.
+🔧 → 🧭 (W2) FEITO: I18nProvider via QueryCache, ~330 chaves web.*, todas as telas/aria/gráficos, diálogo Idioma e moeda otimista, errorText por code, rowError da prévia, teste de literais, 100 testes web, capturas en-*. Achado: catálogo carrega strings do outro app (+20 KB gzip).
+🧭 Validação própria: captura en-dashboard conferida; raiz verde (1087 testes), builds ok. ✅ APROVADO W2 → commit

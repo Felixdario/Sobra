@@ -9,16 +9,10 @@ import { newUser, oneTransaction, worstCase, type ScenarioData } from './scenari
  * (app/_layout.tsx), so the toggle and its data have no effect outside development.
  */
 
-export const SCENARIOS = [
-  { value: 'demo', label: 'Demo' },
-  { value: 'worst', label: 'Pior caso' },
-  { value: 'empty', label: 'Vazio' },
-  { value: 'one', label: 'Uma' },
-  { value: 'error', label: 'Erro 500' },
-  { value: 'offline', label: 'Sem rede' },
-] as const;
+/** Labels: `mobile.dev.scenarios.<value>` in @sobra/i18n. */
+export const SCENARIOS = ['demo', 'worst', 'empty', 'one', 'error', 'offline'] as const;
 
-export type Scenario = (typeof SCENARIOS)[number]['value'];
+export type Scenario = (typeof SCENARIOS)[number];
 
 const DATA: Partial<Record<Scenario, ScenarioData>> = {
   worst: worstCase,

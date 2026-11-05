@@ -11,6 +11,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
+import { useI18n } from '../../i18n/I18nProvider';
 import { project, rubberband } from '../../lib/gesture';
 import { haptics } from '../../lib/haptics';
 import { makeStyles } from '../../theme/makeStyles';
@@ -51,7 +52,7 @@ export function SwipeProvider({ children }: { children: ReactNode }) {
 
 export function useSwipeCoordinator(): SwipeCoordinator {
   const value = use(SwipeContext);
-  if (!value) throw new Error('useSwipeCoordinator precisa de <SwipeProvider>');
+  if (!value) throw new Error('useSwipeCoordinator needs <SwipeProvider>');
   return value;
 }
 
@@ -83,6 +84,7 @@ export function SwipeableRow({
 }: Props) {
   const theme = useTheme();
   const styles = useStyles();
+  const { t } = useI18n();
   const coordinator = useSwipeCoordinator();
   const reduced = useReducedMotion();
   const action = theme.space[20];
@@ -160,14 +162,16 @@ export function SwipeableRow({
       onLayout={(event) => width.set(event.nativeEvent.layout.width)}
       accessible
       accessibilityLabel={label}
-      accessibilityHint={disabled ? 'Ainda salvando.' : 'Tem ações: editar e apagar.'}
+      accessibilityHint={t(
+        disabled ? 'mobile.transactions.row.savingHint' : 'mobile.transactions.row.hint',
+      )}
       accessibilityActions={
         disabled
           ? []
           : [
-              { name: 'edit', label: 'Editar' },
-              { name: 'delete', label: 'Apagar' },
-              { name: 'longpress', label: 'Mais ações' },
+              { name: 'edit', label: t('common.actions.edit') },
+              { name: 'delete', label: t('mobile.transactions.row.delete') },
+              { name: 'longpress', label: t('mobile.transactions.row.more') },
             ]
       }
       onAccessibilityAction={(event) => {
@@ -189,7 +193,7 @@ export function SwipeableRow({
               strokeWidth={ICON_STROKE}
             />
             <AppText variant="caption" color={theme.colors.action.onSecondary}>
-              Editar
+              {t('common.actions.edit')}
             </AppText>
           </Pressable>
           <View style={[styles.fill, styles.edit]} />
@@ -205,7 +209,7 @@ export function SwipeableRow({
               strokeWidth={ICON_STROKE}
             />
             <AppText variant="caption" color={theme.colors.action.onDestructive}>
-              Apagar
+              {t('mobile.transactions.row.delete')}
             </AppText>
           </Pressable>
         </View>

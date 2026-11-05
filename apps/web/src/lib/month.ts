@@ -1,12 +1,4 @@
-import {
-  formatMonth,
-  isMonthKey,
-  monthRange,
-  toLocalDateKey,
-  toMonthKey,
-  type MonthKey,
-} from '@sobra/shared';
-import { capitalize } from './format';
+import { isMonthKey, monthRange, toLocalDateKey, toMonthKey, type MonthKey } from '@sobra/shared';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -33,14 +25,4 @@ export function monthProgress(key: MonthKey, now: Date = new Date()): MonthProgr
     day: Number.parseInt(toLocalDateKey(now).slice(8), 10),
     days: daysInMonth(key),
   };
-}
-
-/** "Outubro de 2026". */
-export function monthTitle(key: MonthKey): string {
-  return capitalize(formatMonth(key));
-}
-
-/** "outubro" (the base named in comparisons: "vs setembro"). */
-export function monthName(key: MonthKey): string {
-  return formatMonth(key).replace(/ de \d{4}$/, '');
 }

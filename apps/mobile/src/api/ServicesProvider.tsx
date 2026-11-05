@@ -20,6 +20,6 @@ export function ServicesProvider({
 
 export function useServices(): Services {
   const value = use(ServicesContext);
-  if (!value) throw new Error('useServices precisa de <ServicesProvider>');
+  if (!value) throw new Error('useServices needs <ServicesProvider>');
   return value;
 }

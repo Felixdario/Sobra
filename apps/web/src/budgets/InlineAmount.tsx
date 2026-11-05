@@ -1,6 +1,7 @@
-import { centsToReais, parseBRL, type Cents } from '@sobra/shared';
+import type { Cents } from '@sobra/shared';
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { Button } from '../components/Button';
+import { useI18n } from '../i18n/i18nContext';
 import styles from './BudgetsPage.module.css';
 
 type Props = {
@@ -13,7 +14,8 @@ type Props = {
 
 /** Edits a value in place: Enter saves, Esc cancels, focus lands in the field. */
 export function InlineAmount({ label, initial, onSave, onCancel, saving = false }: Props) {
-  const [value, setValue] = useState(initial === null ? '' : centsToReais(initial));
+  const { t, fmt } = useI18n();
+  const [value, setValue] = useState(initial === null ? '' : fmt.moneyInput(initial));
   const [error, setError] = useState<string | null>(null);
   const input = useRef<HTMLInputElement>(null);
   const errorId = useId();
@@ -25,9 +27,9 @@ export function InlineAmount({ label, initial, onSave, onCancel, saving = false 
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
-    const amount = parseBRL(value);
+    const amount = fmt.parseMoney(value);
     if (amount === null || amount <= 0) {
-      setError('Informe um valor maior que zero, como 450,00');
+      setError(t('web.budgets.amountInvalid', { example: fmt.moneyInput(45_000) }));
       return;
     }
     onSave(amount);
@@ -39,7 +41,7 @@ export function InlineAmount({ label, initial, onSave, onCancel, saving = false 
         {label}
       </label>
       <span className={styles.prefix} aria-hidden="true">
-        R$
+        {fmt.currencySymbol}
       </span>
       <input
         ref={input}
@@ -62,10 +64,10 @@ export function InlineAmount({ label, initial, onSave, onCancel, saving = false 
         }}
       />
       <Button type="submit" variant="primary" loading={saving}>
-        Salvar
+        {t('common.actions.save')}
       </Button>
       <Button variant="ghost" onClick={onCancel}>
-        Cancelar
+        {t('common.actions.cancel')}
       </Button>
       {error ? (
         <p id={errorId} className={styles.inlineError} role="alert">

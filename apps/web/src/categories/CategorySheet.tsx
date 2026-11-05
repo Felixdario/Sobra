@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { categoryName, translateFieldError } from '@sobra/i18n';
 import { categoryCreateSchema, type Category, type CategoryKind } from '@sobra/shared';
 import { identityColors } from '@sobra/tokens';
 import { useMutation } from '@tanstack/react-query';
@@ -12,6 +13,7 @@ import { SelectField } from '../components/SelectField';
 import { Sheet } from '../components/Sheet';
 import { ColorPicker, IconPicker } from '../components/SwatchPicker';
 import { TextField } from '../components/TextField';
+import { useI18n } from '../i18n/i18nContext';
 import { useServices } from '../lib/servicesContext';
 import formStyles from '../transactions/TransactionSheet.module.css';
 
@@ -30,30 +32,52 @@ function CategoryForm({
   const create = useMutation(mutations.categories.create);
   const update = useMutation(mutations.categories.update);
   const remove = useMutation(mutations.categories.remove);
+  const { t, errorText } = useI18n();
+  // A default category shows its translated name; it is only sent if the person changes it,
+  // because renaming clears the `systemKey` (ADR-035).
+  const shownName = category ? categoryName(t, category) : '';
   const form = useForm<FormValues, unknown, z.output<typeof categoryCreateSchema>>({
     resolver: zodResolver(categoryCreateSchema),
     defaultValues: category
-      ? { name: category.name, kind: category.kind, color: category.color, icon: category.icon }
+      ? { name: shownName, kind: category.kind, color: category.color, icon: category.icon }
       : { name: '', kind, color: identityColors[0].hex, icon: 'sparkles' },
   });
   const { errors } = form.formState;
-  // 409 in use, 400 validation: the API's own pt-BR message, shown where the user is looking.
-  const fail = (error: Error) => form.setError('root', { message: error.message });
+  // 409 in use or duplicate, 400 validation: shown where the person is looking.
+  const failSave = (error: Error) =>
+    form.setError('root', {
+      message: errorText(error, { CONFLICT: 'web.categories.errors.duplicate' }),
+    });
+  const failRemove = (error: Error) =>
+    form.setError('root', {
+      message: errorText(error, { CONFLICT: 'web.categories.errors.inUse' }),
+    });
 
   const submit = form.handleSubmit((values) => {
     if (category) {
-      const body = { name: values.name, color: values.color, icon: values.icon };
+      const renamed = values.name.trim() !== shownName.trim();
+      const body = {
+        ...(renamed ? { name: values.name } : {}),
+        color: values.color,
+        icon: values.icon,
+      };
       update.mutate(
         { id: category.id, body },
         {
-          onSuccess: () => (toast.success(`Categoria ${values.name} atualizada.`), onClose()),
-          onError: fail,
+          onSuccess: () => (
+            toast.success(t('web.categories.toasts.updated', { name: values.name })),
+            onClose()
+          ),
+          onError: failSave,
         },
       );
     } else {
       create.mutate(values, {
-        onSuccess: () => (toast.success(`Categoria ${values.name} criada.`), onClose()),
-        onError: fail,
+        onSuccess: () => (
+          toast.success(t('web.categories.toasts.created', { name: values.name })),
+          onClose()
+        ),
+        onError: failSave,
       });
     }
   });
@@ -62,17 +86,17 @@ function CategoryForm({
     <form className={formStyles.form} onSubmit={submit} noValidate>
       <TextField
         data-autofocus
-        label="Nome"
+        label={t('web.categories.form.name')}
         autoComplete="off"
-        error={errors.name?.message}
+        error={translateFieldError(t, errors.name)}
         {...form.register('name')}
       />
       <SelectField
-        label="Tipo"
+        label={t('web.categories.form.type')}
         disabled={Boolean(category)}
         options={[
-          { value: 'expense', label: 'Despesa' },
-          { value: 'income', label: 'Receita' },
+          { value: 'expense', label: t('categoryKinds.expense') },
+          { value: 'income', label: t('categoryKinds.income') },
         ]}
         {...form.register('kind')}
       />
@@ -83,7 +107,7 @@ function CategoryForm({
           <ColorPicker
             value={field.value}
             onChange={field.onChange}
-            error={errors.color?.message}
+            error={translateFieldError(t, errors.color)}
           />
         )}
       />
@@ -101,20 +125,23 @@ function CategoryForm({
             loading={remove.isPending}
             onClick={() =>
               remove.mutate(category.id, {
-                onSuccess: () => (toast.success(`Categoria ${category.name} excluída.`), onClose()),
-                onError: fail,
+                onSuccess: () => (
+                  toast.success(t('web.categories.toasts.deleted', { name: shownName })),
+                  onClose()
+                ),
+                onError: failRemove,
               })
             }
           >
             {remove.isPending ? null : <Trash size={16} strokeWidth={1.75} aria-hidden="true" />}
-            Excluir
+            {t('common.actions.delete')}
           </Button>
         ) : null}
         <Button variant="secondary" onClick={onClose}>
-          Cancelar
+          {t('common.actions.cancel')}
         </Button>
         <Button type="submit" variant="primary" loading={create.isPending || update.isPending}>
-          {category ? 'Salvar' : 'Criar categoria'}
+          {category ? t('common.actions.save') : t('web.categories.form.create')}
         </Button>
       </div>
     </form>
@@ -130,6 +157,7 @@ export function CategorySheet({
   target: CategoryTarget;
   onClose: () => void;
 }) {
+  const { t } = useI18n();
   const category = target && 'category' in target ? target.category : null;
   const kind = target && 'kind' in target ? target.kind : (category?.kind ?? 'expense');
   return (
@@ -137,10 +165,10 @@ export function CategorySheet({
       open={target !== null}
       title={
         category
-          ? `Editar ${category.name}`
+          ? t('web.categories.edit', { name: categoryName(t, category) })
           : kind === 'income'
-            ? 'Nova categoria de receita'
-            : 'Nova categoria de despesa'
+            ? t('web.categories.newIncome')
+            : t('web.categories.newExpense')
       }
       onClose={onClose}
     >

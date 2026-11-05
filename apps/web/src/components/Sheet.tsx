@@ -1,5 +1,6 @@
 import { X } from 'lucide-react';
 import { useEffect, useId, useRef, type ReactNode } from 'react';
+import { useI18n } from '../i18n/i18nContext';
 import { Button } from './Button';
 import styles from './Sheet.module.css';
 
@@ -28,6 +29,7 @@ export function Sheet({
   footer,
   variant = 'side',
 }: SheetProps) {
+  const { t } = useI18n();
   const ref = useRef<HTMLDialogElement>(null);
   const opener = useRef<HTMLElement | null>(null);
   const titleId = useId();
@@ -70,7 +72,12 @@ export function Sheet({
             <h2 id={titleId} className={styles.title}>
               {title}
             </h2>
-            <Button variant="ghost" iconOnly aria-label="Fechar" onClick={onClose}>
+            <Button
+              variant="ghost"
+              iconOnly
+              aria-label={t('common.actions.close')}
+              onClick={onClose}
+            >
               <X size={20} strokeWidth={1.75} aria-hidden="true" />
             </Button>
           </header>

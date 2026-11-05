@@ -1,6 +1,7 @@
 import type { Transaction } from '@sobra/shared';
 import { IdentityMark } from '../components/IdentityMark';
-import { accountLabel, amountOf, categoryLabel, formatShortDate } from './display';
+import { useI18n } from '../i18n/i18nContext';
+import { accountLabel, amountOf, categoryLabel } from './display';
 import styles from './TransactionList.module.css';
 
 type Props = {
@@ -11,12 +12,13 @@ type Props = {
 
 /** Below 768px the table becomes the 56px two-line row of DESIGN.md: no horizontal scroll. */
 export function TransactionList({ rows, onEdit, pendingIds }: Props) {
+  const { t, fmt } = useI18n();
   return (
     <ul className={styles.list}>
       {rows.map((tx) => {
-        const amount = amountOf(tx);
-        const meta = `${formatShortDate(tx.date)} · ${
-          tx.type === 'transfer' ? accountLabel(tx) : `${categoryLabel(tx)} · ${tx.account.name}`
+        const amount = amountOf(tx, t, fmt);
+        const meta = `${fmt.shortDate(tx.date)} · ${
+          tx.type === 'transfer' ? accountLabel(tx) : `${categoryLabel(tx, t)} · ${tx.account.name}`
         }`;
         return (
           <li key={tx.id}>
@@ -25,7 +27,11 @@ export function TransactionList({ rows, onEdit, pendingIds }: Props) {
               className={styles.row}
               onClick={() => onEdit(tx)}
               disabled={pendingIds.has(tx.id)}
-              aria-label={`${tx.description}, ${amount.spoken}, ${formatShortDate(tx.date)}. Editar`}
+              aria-label={t('web.transactions.list.rowA11y', {
+                description: tx.description,
+                amount: amount.spoken,
+                date: fmt.shortDate(tx.date),
+              })}
             >
               <IdentityMark
                 color={tx.category?.color ?? null}

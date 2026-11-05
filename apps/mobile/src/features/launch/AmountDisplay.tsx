@@ -9,7 +9,7 @@ import Animated, {
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
-import { formatMoney, speakMoney } from '../../lib/money';
+import { useI18n } from '../../i18n/I18nProvider';
 import { makeStyles } from '../../theme/makeStyles';
 import { useTheme } from '../../theme/ThemeProvider';
 import { useFigureStyle } from '../../ui/useFigureStyle';
@@ -28,17 +28,19 @@ type Props = {
 /**
  * The amount being typed. Digits swap in place with no motion: typing is the most frequent
  * action in the app, and an animation per key only flickers (improve-animations, ADR-032). A
- * refused key (at R$ 99.999.999,99) nudges the figure sideways; with Reduce Motion it dims for
+ * refused key (at 99,999,999.99 in any currency) nudges the figure sideways; with Reduce Motion it dims for
  * a moment instead, so the refusal never rests on the haptic alone.
  */
 export function AmountDisplay({ value, type, rejections }: Props) {
   const theme = useTheme();
   const styles = useStyles();
+  const i18n = useI18n();
   const reduced = useReducedMotion();
   const nudge = useSharedValue(0);
   const dim = useSharedValue(1);
   const amount = cents(type === 'expense' ? -value : value);
-  const shown = value === 0 ? formatMoney(cents(0)) : formatMoney(amount, 'always');
+  // Cents in every locale: "1", "2", "5", "0" reads R$ 12,50 in pt-BR and $12.50 in en-US.
+  const shown = value === 0 ? i18n.money(cents(0)) : i18n.money(amount, 'always');
   const fit = useFigureStyle(shown, STEPS);
 
   useEffect(() => {
@@ -63,7 +65,9 @@ export function AmountDisplay({ value, type, rejections }: Props) {
     <Animated.Text
       testID="amount"
       accessibilityRole="text"
-      accessibilityLabel={`Valor: ${speakMoney(cents(value))}`}
+      accessibilityLabel={i18n.t('mobile.launch.amountA11y', {
+        amount: i18n.speakMoney(cents(value)),
+      })}
       onLayout={fit.onLayout}
       maxFontSizeMultiplier={fit.maxFontSizeMultiplier}
       allowFontScaling={fit.allowFontScaling}

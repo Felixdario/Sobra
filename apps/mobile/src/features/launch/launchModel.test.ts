@@ -1,4 +1,5 @@
 import { accountSchema, categorySchema, transactionSchema } from '@sobra/shared';
+import { createI18n } from '../../i18n/format';
 import { accounts, categories, expense, ids, recent, transfer } from '../../test/fixtures';
 import {
   buildPayload,
@@ -11,10 +12,11 @@ import {
 const parsedAccounts = accounts.map((item) => accountSchema.parse(item));
 const parsedCategories = categories.map((item) => categorySchema.parse(item));
 const parsedRecent = recent.map((item) => transactionSchema.parse(item));
+const pt = createI18n('pt-BR', 'BRL');
 
 describe('modelo do lançamento', () => {
   it('ordena as categorias do tipo pelas mais usadas', () => {
-    const ranked = rankCategories(parsedCategories, parsedRecent, 'expense').map(
+    const ranked = rankCategories(parsedCategories, parsedRecent, 'expense', pt).map(
       (item) => item.name,
     );
     expect(ranked).toEqual(['Transporte', 'Mercado', 'Lazer']);
@@ -37,7 +39,7 @@ describe('modelo do lançamento', () => {
       notes: '',
       editing: null,
     };
-    expect(buildPayload(draft, parsedCategories)).toEqual({
+    expect(buildPayload(draft, parsedCategories, pt)).toEqual({
       type: 'expense',
       accountId: ids.checking,
       categoryId: ids.mercado,
@@ -45,8 +47,8 @@ describe('modelo do lançamento', () => {
       description: 'Mercado',
       date: '2026-11-04',
     });
-    expect(buildPayload({ ...draft, categoryId: null }, parsedCategories)).toBeNull();
-    expect(buildPayload({ ...draft, amount: 0 }, parsedCategories)).toBeNull();
+    expect(buildPayload({ ...draft, categoryId: null }, parsedCategories, pt)).toBeNull();
+    expect(buildPayload({ ...draft, amount: 0 }, parsedCategories, pt)).toBeNull();
   });
 });
 
@@ -62,6 +64,7 @@ describe('modo edição', () => {
       buildUpdate(
         { ...draft, amount: 5_000, categoryId: ids.lazer, description: '' },
         parsedCategories,
+        pt,
       ),
     ).toEqual({
       type: 'expense',
@@ -79,7 +82,7 @@ describe('modo edição', () => {
       transfer(ids.tx2, ids.checking, ids.wallet, 50_000, '2026-10-15'),
     );
     const draft = { ...draftFromTransaction(move), amount: 40_000, notes: 'Saque' };
-    expect(buildUpdate(draft, parsedCategories)).toEqual({
+    expect(buildUpdate(draft, parsedCategories, pt)).toEqual({
       amount: 40_000,
       date: '2026-10-15',
       description: 'Transferência',

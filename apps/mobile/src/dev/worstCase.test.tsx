@@ -117,6 +117,13 @@ describe('texto do sistema a 2× (Dynamic Type / fonte do Android)', () => {
   });
 
   it('a grade de categorias perde colunas para os nomes caberem', () => {
-    expect([1, 1.3, 1.5, 2, 3].map(gridColumns)).toEqual([4, 4, 3, 2, 2]);
+    expect([1, 1.3, 1.5, 2, 3].map((scale) => gridColumns(scale))).toEqual([4, 4, 3, 2, 2]);
+  });
+
+  it('uma palavra longa demais para o bloco ("Subscriptions") tira uma coluna em vez de quebrar a palavra', () => {
+    const fit = { width: 358, gap: 8, padding: 10, fontSize: 13 };
+    expect(gridColumns(1, { ...fit, longestWord: 12 })).toBe(4); // "Restaurantes"
+    expect(gridColumns(1, { ...fit, longestWord: 13 })).toBe(3); // "Subscriptions"
+    expect(gridColumns(2, { ...fit, longestWord: 40 })).toBe(2);
   });
 });

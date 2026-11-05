@@ -1,7 +1,8 @@
 import { cents, type Transaction } from '@sobra/shared';
 import { ArrowLeftRight } from 'lucide-react-native';
 import { View } from 'react-native';
-import { formatMoney, speakMoney } from '../../lib/money';
+import type { I18n } from '../../i18n/format';
+import { useI18n } from '../../i18n/I18nProvider';
 import { STACK_FONT_SCALE } from '../../theme/fontScale';
 import { makeStyles } from '../../theme/makeStyles';
 import { useFontScale, useTheme } from '../../theme/ThemeProvider';
@@ -9,32 +10,47 @@ import { AppText } from '../../ui/AppText';
 import { CategoryIcon, ColorSquare, ICON_SIZE, ICON_STROKE } from '../../ui/icons';
 
 /** Income "+R$", expense "−R$" in ink (never red), transfer unsigned and neutral (ADR-015). */
-export function amountOf(tx: Transaction) {
-  if (tx.type === 'transfer') return { text: formatMoney(tx.amount, 'never'), value: tx.amount };
+export function amountOf(tx: Transaction, { money }: Pick<I18n, 'money'>) {
+  if (tx.type === 'transfer') return { text: money(tx.amount, 'never'), value: tx.amount };
   const value = cents(tx.type === 'income' ? tx.amount : -tx.amount);
-  return { text: formatMoney(value, 'always'), value };
+  return { text: money(value, 'always'), value };
 }
 
 export function titleOf(tx: Transaction): string {
   return tx.type === 'transfer' ? `${tx.account.name} → ${tx.toAccount.name}` : tx.description;
 }
 
+function categoryOf(tx: Transaction, i18n: Pick<I18n, 't' | 'category'>): string {
+  return tx.category ? i18n.category(tx.category) : i18n.t('categories.uncategorized');
+}
+
 /** "Mercado · Nubank", or for a transfer its description. */
-export function metaOf(tx: Transaction): string {
-  if (tx.type === 'transfer') return `Transferência · ${tx.description}`;
-  return [tx.category?.name ?? 'Sem categoria', tx.account.name].join(' · ');
+export function metaOf(tx: Transaction, i18n: Pick<I18n, 't' | 'category'>): string {
+  if (tx.type === 'transfer') {
+    return i18n.t('mobile.transactions.transferMeta', { description: tx.description });
+  }
+  return [categoryOf(tx, i18n), tx.account.name].join(' · ');
 }
 
 /**
  * The whole row as one sentence for screen readers, with commas where the screen has "·":
  * "Feira livre, Mercado, Nubank, menos 25 reais e 23 centavos".
  */
-export function describeTransaction(tx: Transaction): string {
+export function describeTransaction(tx: Transaction, i18n: I18n): string {
   if (tx.type === 'transfer') {
-    return `${tx.description}, transferência de ${tx.account.name} para ${tx.toAccount.name}, ${speakMoney(tx.amount)}`;
+    return i18n.t('mobile.transactions.transferA11y', {
+      description: tx.description,
+      from: tx.account.name,
+      to: tx.toAccount.name,
+      amount: i18n.speakMoney(tx.amount),
+    });
   }
-  const category = tx.category?.name ?? 'Sem categoria';
-  return `${tx.description}, ${category}, ${tx.account.name}, ${speakMoney(amountOf(tx).value)}`;
+  return i18n.t('mobile.transactions.rowA11y', {
+    description: tx.description,
+    category: categoryOf(tx, i18n),
+    account: tx.account.name,
+    amount: i18n.speakMoney(amountOf(tx, i18n).value),
+  });
 }
 
 /**
@@ -44,6 +60,7 @@ export function describeTransaction(tx: Transaction): string {
 export function TransactionRow({ tx }: { tx: Transaction }) {
   const theme = useTheme();
   const styles = useStyles();
+  const i18n = useI18n();
   const stacked = useFontScale() >= STACK_FONT_SCALE;
   const color =
     tx.type === 'income'
@@ -75,12 +92,12 @@ export function TransactionRow({ tx }: { tx: Transaction }) {
   );
   const meta = (
     <AppText variant="bodySm" tone="tertiary" numberOfLines={stacked ? 2 : 1} style={styles.start}>
-      {metaOf(tx)}
+      {metaOf(tx, i18n)}
     </AppText>
   );
   const amount = (
     <AppText variant="label" color={color} style={styles.amount} testID="row-amount">
-      {amountOf(tx).text}
+      {amountOf(tx, i18n).text}
     </AppText>
   );
 

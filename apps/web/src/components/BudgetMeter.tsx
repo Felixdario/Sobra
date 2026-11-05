@@ -1,7 +1,7 @@
 import { Check, TriangleAlert } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { budgetState, type BudgetState } from '../lib/budget';
-import { money, spokenMoney } from '../lib/format';
+import { useI18n } from '../i18n/i18nContext';
 import styles from './BudgetMeter.module.css';
 
 type BudgetMeterProps = {
@@ -23,11 +23,13 @@ function Status({
   actual: number;
   state: BudgetState;
 }) {
+  const { rich, fmt } = useI18n();
+  const amount = (value: number) => <span className="num">{fmt.money(value)}</span>;
   if (state === 'over') {
     return (
       <p className={`${styles.status} ${styles.danger}`}>
         <TriangleAlert size={16} strokeWidth={1.75} aria-hidden="true" />
-        <span className="num">{money(actual - budgeted)}</span> acima
+        {rich('web.budgetMeter.over', { amount: amount(actual - budgeted) })}
       </p>
     );
   }
@@ -35,26 +37,32 @@ function Status({
     return (
       <p className={`${styles.status} ${styles.warning}`}>
         <TriangleAlert size={16} strokeWidth={1.75} aria-hidden="true" />
-        Perto do limite · restam <span className="num">{money(budgeted - actual)}</span>
+        {rich('web.budgetMeter.near', { amount: amount(budgeted - actual) })}
       </p>
     );
   }
   return (
     <p className={styles.status}>
       <Check size={16} strokeWidth={1.75} aria-hidden="true" />
-      Restam <span className="num">{money(budgeted - actual)}</span>
+      {rich('web.budgetMeter.remaining', { amount: amount(budgeted - actual) })}
     </p>
   );
 }
 
 /** DESIGN.md, "Barra de orçamento": track, fill to the spending, hatched excess past a mark. */
 export function BudgetMeter({ name, color, budgeted, actual, values, actions }: BudgetMeterProps) {
+  const { t, rich, fmt } = useI18n();
   const state = budgetState({ actual, budgeted });
   const scale = Math.max(actual, budgeted, 1);
   const within = (Math.min(actual, budgeted) / scale) * 100;
   const excess = state === 'over' ? ((actual - budgeted) / scale) * 100 : 0;
   const share = budgeted > 0 ? Math.round((actual / budgeted) * 100) : 0;
-  const spoken = `${spokenMoney(actual)} de ${spokenMoney(budgeted)}, ${share}% do orçamento`;
+  const spoken = t('web.budgetMeter.a11y', {
+    actual: fmt.spokenMoney(actual),
+    budgeted: fmt.spokenMoney(budgeted),
+    // Unformatted, like the API's percentUsed: "1000%", not "1.000%".
+    share: String(share),
+  });
   return (
     <li className={`${styles.budget} ${styles[state]}`}>
       <div className={styles.head}>
@@ -64,7 +72,10 @@ export function BudgetMeter({ name, color, budgeted, actual, values, actions }: 
         </span>
         {values ?? (
           <span className={`${styles.values} num`}>
-            <strong>{money(actual)}</strong> de {money(budgeted)}
+            {rich('web.budgetMeter.values', {
+              actual: <strong>{fmt.money(actual)}</strong>,
+              budgeted: fmt.money(budgeted),
+            })}
           </span>
         )}
       </div>

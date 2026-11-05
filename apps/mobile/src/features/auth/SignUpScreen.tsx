@@ -1,4 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { isApiError } from '@sobra/client';
+import { translateError, translateFieldError } from '@sobra/i18n';
 import { PASSWORD_MIN, registerSchema } from '@sobra/shared';
 import { useMutation } from '@tanstack/react-query';
 import { Link } from 'expo-router';
@@ -8,6 +10,7 @@ import { TextInput, View } from 'react-native';
 import type { z } from 'zod';
 import { useAuth } from '../../api/AuthProvider';
 import { useServices } from '../../api/ServicesProvider';
+import { useI18n } from '../../i18n/I18nProvider';
 import { makeStyles } from '../../theme/makeStyles';
 import { AppText } from '../../ui/AppText';
 import { Button } from '../../ui/Button';
@@ -21,6 +24,7 @@ export function SignUpScreen() {
   const styles = useStyles();
   const { mutations } = useServices();
   const auth = useAuth();
+  const { t, locale } = useI18n();
   const register = useMutation(mutations.auth.register);
   const emailRef = useRef<ComponentRef<typeof TextInput>>(null);
   const passwordRef = useRef<ComponentRef<typeof TextInput>>(null);
@@ -30,25 +34,34 @@ export function SignUpScreen() {
   });
 
   const submit = () =>
-    handleSubmit((values) => register.mutate(values, { onSuccess: () => auth.markSignedIn() }))();
+    handleSubmit((values) =>
+      // The account starts in the language the app is showing (the device's, before sign-in).
+      register.mutate({ ...values, locale }, { onSuccess: () => auth.markSignedIn() }),
+    )();
 
   return (
-    <AuthLayout
-      title="Criar conta"
-      subtitle="Leva meio minuto. Categorias e uma carteira já vêm prontas."
-    >
-      {register.error ? <Notice tone="danger" message={register.error.message} /> : null}
+    <AuthLayout title={t('common.actions.signUp')} subtitle={t('mobile.auth.signUp.subtitle')}>
+      {register.error ? (
+        <Notice
+          tone="danger"
+          message={
+            isApiError(register.error) && register.error.status === 409
+              ? t('mobile.auth.signUp.emailTaken')
+              : translateError(t, register.error)
+          }
+        />
+      ) : null}
       <View style={styles.form}>
         <Controller
           control={control}
           name="name"
           render={({ field }) => (
             <TextField
-              label="Nome"
+              label={t('mobile.auth.fields.name')}
               value={field.value}
               onChangeText={field.onChange}
               onBlur={field.onBlur}
-              error={formState.errors.name?.message}
+              error={translateFieldError(t, formState.errors.name)}
               autoCapitalize="words"
               autoComplete="name"
               textContentType="name"
@@ -63,11 +76,11 @@ export function SignUpScreen() {
           render={({ field }) => (
             <TextField
               ref={emailRef}
-              label="E-mail"
+              label={t('mobile.auth.fields.email')}
               value={field.value}
               onChangeText={field.onChange}
               onBlur={field.onBlur}
-              error={formState.errors.email?.message}
+              error={translateFieldError(t, formState.errors.email)}
               keyboardType="email-address"
               inputMode="email"
               autoCapitalize="none"
@@ -85,12 +98,12 @@ export function SignUpScreen() {
           render={({ field }) => (
             <TextField
               ref={passwordRef}
-              label="Senha"
-              placeholder={`Mínimo de ${PASSWORD_MIN} caracteres`}
+              label={t('mobile.auth.fields.password')}
+              placeholder={t('mobile.auth.fields.passwordPlaceholder', { min: PASSWORD_MIN })}
               value={field.value}
               onChangeText={field.onChange}
               onBlur={field.onBlur}
-              error={formState.errors.password?.message}
+              error={translateFieldError(t, formState.errors.password)}
               secureTextEntry
               autoCapitalize="none"
               autoComplete="new-password"
@@ -102,17 +115,17 @@ export function SignUpScreen() {
         />
         <Button
           testID="sign-up"
-          label="Criar conta"
+          label={t('common.actions.signUp')}
           loading={register.isPending}
           onPress={submit}
         />
       </View>
       <View style={styles.footer}>
         <AppText variant="bodySm" tone="secondary">
-          Já tem conta?
+          {t('mobile.auth.signUp.hasAccount')}
         </AppText>
         <Link href="/entrar" replace asChild>
-          <Button variant="ghost" label="Entrar" />
+          <Button variant="ghost" label={t('common.actions.signIn')} />
         </Link>
       </View>
     </AuthLayout>

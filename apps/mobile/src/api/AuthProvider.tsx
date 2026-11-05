@@ -15,15 +15,16 @@ export type AuthStatus = 'checking' | 'signedIn' | 'signedOut';
 type AuthContextValue = {
   status: AuthStatus;
   /** Shown once on the sign-in screen, e.g. after the session expired. */
-  notice: string | null;
+  notice: AuthNotice | null;
   markSignedIn: () => void;
-  markSignedOut: (notice?: string) => void;
+  markSignedOut: (notice?: AuthNotice) => void;
   clearNotice: () => void;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-export const SESSION_EXPIRED_NOTICE = 'Sua sessão expirou. Entre de novo para continuar.';
+/** Why the person landed on sign-in; the screen says it in their language. */
+export type AuthNotice = 'sessionExpired';
 
 function endsSession(error: unknown): boolean {
   return isApiError(error) && (error.code === 'SESSION_EXPIRED' || error.status === 401);
@@ -32,15 +33,15 @@ function endsSession(error: unknown): boolean {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const services = useServices();
   const [status, setStatus] = useState<AuthStatus>('checking');
-  const [notice, setNotice] = useState<string | null>(null);
+  const [notice, setNotice] = useState<AuthNotice | null>(null);
 
-  const markSignedOut = useCallback((message?: string) => {
-    setNotice(message ?? null);
+  const markSignedOut = useCallback((next?: AuthNotice) => {
+    setNotice(next ?? null);
     setStatus('signedOut');
   }, []);
 
   useEffect(
-    () => services.onSessionExpired(() => markSignedOut(SESSION_EXPIRED_NOTICE)),
+    () => services.onSessionExpired(() => markSignedOut('sessionExpired')),
     [services, markSignedOut],
   );
 
@@ -89,6 +90,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth(): AuthContextValue {
   const value = use(AuthContext);
-  if (!value) throw new Error('useAuth precisa de <AuthProvider>');
+  if (!value) throw new Error('useAuth needs <AuthProvider>');
   return value;
 }

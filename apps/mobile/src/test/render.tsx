@@ -8,6 +8,7 @@ import { AuthProvider } from '../api/AuthProvider';
 import { createServices, type Services } from '../api/services';
 import { ServicesProvider } from '../api/ServicesProvider';
 import { LaunchSheetProvider } from '../features/launch/LaunchSheetProvider';
+import { I18nProvider } from '../i18n/I18nProvider';
 import { ThemeProvider } from '../theme/ThemeProvider';
 import { ToastProvider } from '../ui/Toast';
 
@@ -89,9 +90,11 @@ export function Providers({
         <ThemeProvider fontScale={fontScale ?? 1}>
           <ServicesProvider services={services}>
             <AuthProvider>
-              <ToastProvider>
-                <LaunchSheetProvider>{children}</LaunchSheetProvider>
-              </ToastProvider>
+              <I18nProvider>
+                <ToastProvider>
+                  <LaunchSheetProvider>{children}</LaunchSheetProvider>
+                </ToastProvider>
+              </I18nProvider>
             </AuthProvider>
           </ServicesProvider>
         </ThemeProvider>

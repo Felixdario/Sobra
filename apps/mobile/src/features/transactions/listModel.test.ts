@@ -1,8 +1,11 @@
 import { monthKey, transactionSchema } from '@sobra/shared';
 import { expense, ids, income, transfer } from '../../test/fixtures';
+import { createI18n } from '../../i18n/format';
 import { groupByDay, hasFilters, PAGE_SIZE, toParams } from './listModel';
 
 const now = new Date('2026-11-04T15:00:00Z');
+const pt = createI18n('pt-BR', 'BRL');
+const en = createI18n('en-US', 'USD');
 const parse = (items: unknown[]) => items.map((item) => transactionSchema.parse(item));
 
 describe('lista agrupada por dia', () => {
@@ -13,12 +16,30 @@ describe('lista agrupada por dia', () => {
         expense(ids.tx2, ids.transporte, ids.checking, 1_000, '2026-11-03'),
         expense(ids.tx3, ids.lazer, ids.checking, 2_000, '2026-11-02'),
       ]),
+      pt,
       now,
     );
     expect(
       rows.filter((row) => row.kind === 'day').map((row) => row.kind === 'day' && row.label),
     ).toEqual(['Hoje', 'Ontem', 'seg., 2 de nov.']);
     expect(rows.map((row) => row.kind)).toEqual(['day', 'tx', 'day', 'tx', 'day', 'tx']);
+  });
+
+  it('em en-US: Today, Yesterday e a data curta em inglês', () => {
+    const rows = groupByDay(
+      parse([
+        expense(ids.tx1, ids.mercado, ids.checking, 4_590, '2026-11-04'),
+        expense(ids.tx2, ids.transporte, ids.checking, 1_000, '2026-11-03'),
+        expense(ids.tx3, ids.lazer, ids.checking, 2_000, '2026-11-02'),
+      ]),
+      en,
+      now,
+    );
+    expect(rows.flatMap((row) => (row.kind === 'day' ? [row.label] : []))).toEqual([
+      'Today',
+      'Yesterday',
+      'Mon, Nov 2',
+    ]);
   });
 
   it('o total do dia soma receitas e despesas e ignora transferências', () => {
@@ -28,6 +49,7 @@ describe('lista agrupada por dia', () => {
         income(ids.tx2, ids.salario, ids.checking, 10_000, '2026-11-04'),
         transfer(ids.tx3, ids.checking, ids.wallet, 50_000, '2026-11-04'),
       ]),
+      pt,
       now,
     );
     expect(day).toMatchObject({ kind: 'day', label: 'Hoje', total: 5_410 });

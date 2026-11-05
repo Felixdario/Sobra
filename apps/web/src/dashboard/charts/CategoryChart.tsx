@@ -1,5 +1,5 @@
 import type { SpendingByCategory } from '@sobra/shared';
-import { money, percent } from '../../lib/format';
+import { useI18n } from '../../i18n/i18nContext';
 import styles from './CategoryChart.module.css';
 import { categoryRows } from './data';
 
@@ -9,7 +9,8 @@ import { categoryRows } from './data';
  * proportional to the largest category, with no minimum width to disguise small values.
  */
 export function CategoryChart({ spending }: { spending: SpendingByCategory }) {
-  const rows = categoryRows(spending);
+  const { t, fmt } = useI18n();
+  const rows = categoryRows(spending, t);
   const max = Math.max(...rows.map((row) => row.amount), 1);
   return (
     <div className={styles.wrap}>
@@ -30,8 +31,8 @@ export function CategoryChart({ spending }: { spending: SpendingByCategory }) {
               <span className={styles.bar} style={{ width: `${(row.amount / max) * 100}%` }} />
             </span>
             <span className={`${styles.value} num`}>
-              {money(row.amount)}
-              <span className={styles.share}>{percent(row.percent)}</span>
+              {fmt.money(row.amount)}
+              <span className={styles.share}>{fmt.percent(row.percent)}</span>
             </span>
           </li>
         ))}

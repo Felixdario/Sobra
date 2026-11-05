@@ -2,6 +2,8 @@ import type { BudgetVsActual } from '@sobra/shared';
 import { Link } from 'react-router';
 import { BudgetMeter } from '../../components/BudgetMeter';
 import meterStyles from '../../components/BudgetMeter.module.css';
+import { categoryName } from '@sobra/i18n';
+import { useI18n } from '../../i18n/i18nContext';
 import { budgetState, type BudgetState } from '../../lib/budget';
 import styles from './ChartCard.module.css';
 
@@ -12,6 +14,7 @@ export const DASHBOARD_BUDGETS = 6;
 
 /** Overspent first, then near the limit, then the rest; each group by share used. */
 export function BudgetChart({ budgets, href }: { budgets: BudgetVsActual; href: string }) {
+  const { t } = useI18n();
   const items = [...budgets.items].sort(
     (a, b) => ORDER[budgetState(a)] - ORDER[budgetState(b)] || b.percentUsed - a.percentUsed,
   );
@@ -23,7 +26,7 @@ export function BudgetChart({ budgets, href }: { budgets: BudgetVsActual; href: 
         {shown.map((item) => (
           <BudgetMeter
             key={item.categoryId}
-            name={item.name}
+            name={categoryName(t, item)}
             color={item.color}
             budgeted={item.budgeted}
             actual={item.actual}
@@ -32,7 +35,7 @@ export function BudgetChart({ budgets, href }: { budgets: BudgetVsActual; href: 
       </ul>
       {hidden > 0 ? (
         <p className={styles.more}>
-          <Link to={href}>Ver todos os {items.length} orçamentos</Link>
+          <Link to={href}>{t('web.dashboard.charts.budget.seeAll', { count: items.length })}</Link>
         </p>
       ) : null}
     </>

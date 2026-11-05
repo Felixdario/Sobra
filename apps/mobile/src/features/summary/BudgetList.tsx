@@ -3,7 +3,7 @@ import { Check, TriangleAlert } from 'lucide-react-native';
 import { useId, useState } from 'react';
 import { View } from 'react-native';
 import Svg, { Rect } from 'react-native-svg';
-import { formatMoney, formatPercent, speakMoney } from '../../lib/money';
+import { useI18n } from '../../i18n/I18nProvider';
 import { makeStyles } from '../../theme/makeStyles';
 import { useTheme } from '../../theme/ThemeProvider';
 import { AppText } from '../../ui/AppText';
@@ -29,6 +29,8 @@ export function BudgetList({ items }: { items: readonly BudgetVsActualItem[] }) 
 function BudgetRow({ item }: { item: BudgetVsActualItem }) {
   const theme = useTheme();
   const styles = useStyles();
+  const i18n = useI18n();
+  const { t } = i18n;
   const status = budgetStatus(item);
   const statusColor =
     status === 'over'
@@ -37,19 +39,28 @@ function BudgetRow({ item }: { item: BudgetVsActualItem }) {
         ? theme.colors.status.warning
         : theme.colors.text.secondary;
   const Icon = status === 'ok' ? Check : TriangleAlert;
-  const text = budgetText(item);
-  const spoken = `${item.name}: ${speakMoney(item.actual)} de ${speakMoney(item.budgeted)}. ${
+  const text = budgetText(item, i18n);
+  const name = i18n.category(item);
+  const spoken = t(
     status === 'over'
-      ? `${speakMoney(cents(-item.remaining))} acima do orçamento`
-      : `${status === 'near' ? 'Perto do limite, restam' : 'Restam'} ${speakMoney(item.remaining)}`
-  }.`;
+      ? 'mobile.summary.budget.a11yOver'
+      : status === 'near'
+        ? 'mobile.summary.budget.a11yNear'
+        : 'mobile.summary.budget.a11yOk',
+    {
+      name,
+      actual: i18n.speakMoney(item.actual),
+      budgeted: i18n.speakMoney(item.budgeted),
+      amount: i18n.speakMoney(cents(Math.abs(item.remaining))),
+    },
+  );
 
   return (
     <View
       style={styles.row}
       accessible
       accessibilityRole="progressbar"
-      accessibilityLabel={item.name}
+      accessibilityLabel={name}
       accessibilityValue={{
         min: 0,
         max: 100,
@@ -61,11 +72,14 @@ function BudgetRow({ item }: { item: BudgetVsActualItem }) {
         <View style={styles.nameGroup}>
           <ColorSquare color={item.color} />
           <AppText variant="label" style={styles.name} numberOfLines={2}>
-            {item.name}
+            {name}
           </AppText>
         </View>
         <AppText variant="bodySm" tone="secondary" style={styles.figures}>
-          {formatMoney(item.actual, 'never')} de {formatMoney(item.budgeted, 'never')}
+          {t('mobile.summary.budget.figures', {
+            actual: i18n.money(item.actual, 'never'),
+            budgeted: i18n.money(item.budgeted, 'never'),
+          })}
         </AppText>
       </View>
       <BudgetBar item={item} />
@@ -75,7 +89,7 @@ function BudgetRow({ item }: { item: BudgetVsActualItem }) {
           {text}
         </AppText>
         <AppText variant="caption" tone="tertiary" style={styles.percent}>
-          {formatPercent(item.percentUsed)}
+          {i18n.percent(item.percentUsed)}
         </AppText>
       </View>
     </View>

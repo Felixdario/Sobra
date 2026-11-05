@@ -9,7 +9,7 @@ import { Button } from '../components/Button';
 import { ErrorLine } from '../components/ErrorLine';
 import { EmptyState, Page, Panel } from '../components/Page';
 import { Skeleton } from '../components/Skeleton';
-import { monthName } from '../lib/month';
+import { useI18n } from '../i18n/i18nContext';
 import { useServices } from '../lib/servicesContext';
 import { useWide } from '../lib/useWide';
 import { nextSort, readListState, toApiParams, writeListState, type ListState } from './listState';
@@ -37,6 +37,7 @@ function LoadingRows() {
 
 export function TransactionsPage() {
   const { queries } = useServices();
+  const { t, fmt } = useI18n();
   const [params, setParams] = useSearchParams();
   const state = useMemo(() => readListState(params), [params]);
   const wide = useWide();
@@ -77,11 +78,11 @@ export function TransactionsPage() {
 
   return (
     <Page
-      title="Transações"
+      title={t('nav.transactions')}
       actions={
         <Button variant="primary" onClick={() => setEditing('new')} disabled={!accounts.data}>
           <Plus size={16} strokeWidth={1.75} aria-hidden="true" />
-          Nova transação
+          {t('web.transactions.new')}
         </Button>
       }
     >
@@ -94,7 +95,7 @@ export function TransactionsPage() {
       <Panel>
         {list.isError ? (
           <ErrorLine
-            what="Não deu para carregar as transações"
+            what={t('web.transactions.failed')}
             error={list.error}
             onRetry={() => void list.refetch()}
             retrying={list.isFetching}
@@ -103,7 +104,7 @@ export function TransactionsPage() {
           <LoadingRows />
         ) : page.items.length === 0 ? (
           hasFilters(state) ? (
-            <EmptyState title="Nada encontrado com esses filtros.">
+            <EmptyState title={t('common.states.emptyFiltered')}>
               <Button
                 variant="secondary"
                 onClick={() =>
@@ -115,13 +116,15 @@ export function TransactionsPage() {
                   })
                 }
               >
-                Limpar filtros
+                {t('common.actions.clearFilters')}
               </Button>
             </EmptyState>
           ) : (
-            <EmptyState title={`Nenhum lançamento em ${monthName(state.month)}.`}>
+            <EmptyState
+              title={t('web.transactions.emptyMonth', { month: fmt.monthName(state.month) })}
+            >
               <Button variant="secondary" onClick={() => setEditing('new')}>
-                Lançar o primeiro gasto
+                {t('web.transactions.firstExpense')}
               </Button>
             </EmptyState>
           )

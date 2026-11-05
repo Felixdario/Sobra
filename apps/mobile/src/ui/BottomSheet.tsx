@@ -22,6 +22,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { scheduleOnRN } from 'react-native-worklets';
+import { useI18n } from '../i18n/I18nProvider';
 import { announce } from '../lib/a11y';
 import { project, rubberband } from '../lib/gesture';
 import { makeStyles } from '../theme/makeStyles';
@@ -50,6 +51,7 @@ type Props = {
  */
 export function BottomSheet({ open, onClose, onClosed, label, header, footer, children }: Props) {
   const theme = useTheme();
+  const { t } = useI18n();
   const styles = useStyles();
   const insets = useSafeAreaInsets();
   const { height: windowHeight } = useWindowDimensions();
@@ -169,7 +171,7 @@ export function BottomSheet({ open, onClose, onClosed, label, header, footer, ch
           style={StyleSheet.absoluteFill}
           onPress={onClose}
           accessibilityRole="button"
-          accessibilityLabel="Fechar"
+          accessibilityLabel={t('mobile.a11y.close')}
         />
       </Animated.View>
       <Animated.View

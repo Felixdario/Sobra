@@ -2,9 +2,10 @@ import { cents, DESCRIPTION_MAX, NOTES_MAX, type Account, type Category } from '
 import { ArrowLeftRight, Calendar, Pencil, StickyNote, Wallet } from 'lucide-react-native';
 import { useState } from 'react';
 import { TextInput, View } from 'react-native';
+import type { I18n } from '../../i18n/format';
+import { useI18n } from '../../i18n/I18nProvider';
 import { announce } from '../../lib/a11y';
 import { haptics } from '../../lib/haptics';
-import { speakMoney } from '../../lib/money';
 import { makeStyles } from '../../theme/makeStyles';
 import { useTheme } from '../../theme/ThemeProvider';
 import { AppText } from '../../ui/AppText';
@@ -16,16 +17,11 @@ import { ErrorLine, Skeleton } from '../../ui/states';
 import { AmountDisplay } from './AmountDisplay';
 import { applyKey, MAX_CENTS, type KeypadKey } from './centsKeypad';
 import { CategoryGrid } from './CategoryGrid';
-import { dayLabel, recentDays } from './dates';
+import { recentDays } from './dates';
 import { Keypad } from './Keypad';
 import type { LaunchDraft, LaunchType } from './launchModel';
 
 type Panel = 'categories' | 'accounts' | 'date' | 'description' | 'notes';
-
-const TYPE_OPTIONS = [
-  { value: 'expense', label: 'Despesa' },
-  { value: 'income', label: 'Receita' },
-] as const;
 
 const DAYS_BACK = 7;
 
@@ -42,11 +38,12 @@ type Props = {
 
 export function LaunchHeader({ draft, onChange }: Pick<Props, 'draft' | 'onChange'>) {
   const styles = useStyles();
+  const { t } = useI18n();
   if (draft.editing?.type === 'transfer') {
     return (
       <View style={styles.header}>
         <AppText variant="titleSm" accessibilityRole="header">
-          Editar transferência
+          {t('mobile.launch.title.editTransfer')}
         </AppText>
       </View>
     );
@@ -54,8 +51,11 @@ export function LaunchHeader({ draft, onChange }: Pick<Props, 'draft' | 'onChang
   return (
     <View style={styles.header}>
       <Segmented
-        label="Tipo do lançamento"
-        options={TYPE_OPTIONS}
+        label={t('mobile.launch.typeLabel')}
+        options={[
+          { value: 'expense', label: t('transactionTypes.expense') },
+          { value: 'income', label: t('transactionTypes.income') },
+        ]}
         value={draft.type}
         onChange={(type: LaunchType) => {
           haptics.selection();
@@ -76,6 +76,8 @@ export function LaunchForm({
 }: Omit<Props, 'canSave' | 'onSave'>) {
   const theme = useTheme();
   const styles = useStyles();
+  const i18n = useI18n();
+  const { t, dayLabel } = i18n;
   const [panel, setPanel] = useState<Panel>('categories');
   const [rejections, setRejections] = useState(0);
   const account = accounts.find((item) => item.id === draft.accountId);
@@ -94,13 +96,13 @@ export function LaunchForm({
       if (key !== 'backspace' && key !== 'clear') {
         haptics.warning();
         setRejections((count) => count + 1);
-        announce(`Valor máximo: ${speakMoney(cents(MAX_CENTS))}.`);
+        announce(t('mobile.launch.maxAmount', { amount: i18n.speakMoney(cents(MAX_CENTS)) }));
       }
       return;
     }
     onChange({ ...draft, amount: result.value });
     // The keypad is read key by key; after each one the new amount is spoken.
-    announce(speakMoney(cents(result.value)));
+    announce(i18n.speakMoney(cents(result.value)));
   };
 
   return (
@@ -118,8 +120,10 @@ export function LaunchForm({
         ) : (
           <Chip
             testID="chip-account"
-            label={account?.name ?? 'Conta'}
-            accessibilityLabel={`Conta: ${account?.name ?? 'nenhuma'}. Trocar conta`}
+            label={account?.name ?? t('mobile.launch.account')}
+            accessibilityLabel={t('mobile.launch.accountA11y', {
+              name: account?.name ?? t('mobile.launch.noAccount'),
+            })}
             selected={panel === 'accounts'}
             onPress={() => toggle('accounts')}
             icon={<Wallet size={ICON_SIZE.inline} color={iconColor} strokeWidth={ICON_STROKE} />}
@@ -128,15 +132,15 @@ export function LaunchForm({
         <Chip
           testID="chip-date"
           label={dayLabel(draft.date)}
-          accessibilityLabel={`Data: ${dayLabel(draft.date)}. Trocar data`}
+          accessibilityLabel={t('mobile.launch.dateA11y', { date: dayLabel(draft.date) })}
           selected={panel === 'date'}
           onPress={() => toggle('date')}
           icon={<Calendar size={ICON_SIZE.inline} color={iconColor} strokeWidth={ICON_STROKE} />}
         />
         <Chip
           testID="chip-description"
-          label={draft.description.trim() || 'Descrição'}
-          accessibilityLabel="Descrição (opcional)"
+          label={draft.description.trim() || t('mobile.launch.description')}
+          accessibilityLabel={t('mobile.launch.descriptionA11y')}
           selected={panel === 'description'}
           onPress={() => toggle('description')}
           icon={<Pencil size={ICON_SIZE.inline} color={iconColor} strokeWidth={ICON_STROKE} />}
@@ -144,8 +148,8 @@ export function LaunchForm({
         {editing ? (
           <Chip
             testID="chip-notes"
-            label={draft.notes.trim() || 'Observações'}
-            accessibilityLabel="Observações (opcional)"
+            label={draft.notes.trim() || t('mobile.launch.notes')}
+            accessibilityLabel={t('mobile.launch.notesA11y')}
             selected={panel === 'notes'}
             onPress={() => toggle('notes')}
             icon={
@@ -158,14 +162,14 @@ export function LaunchForm({
       <View style={styles.panel}>
         {panel === 'categories' && transfer ? (
           <AppText variant="bodySm" tone="secondary">
-            Transferência entre contas: não tem categoria e não entra em receitas nem despesas.
+            {t('mobile.launch.transferNote')}
           </AppText>
         ) : null}
         {panel === 'categories' && !transfer && categoriesState === 'loading' ? (
           <CategoriesSkeleton />
         ) : null}
         {panel === 'categories' && !transfer && categoriesState === 'error' ? (
-          <ErrorLine message="Não deu para carregar as categorias." onRetry={onRetry} />
+          <ErrorLine message={t('mobile.launch.categoriesError')} onRetry={onRetry} />
         ) : null}
         {panel === 'categories' && !transfer && categoriesState === 'ready' ? (
           <CategoryGrid
@@ -176,7 +180,7 @@ export function LaunchForm({
         ) : null}
         {panel === 'accounts' ? (
           <Options
-            label="Conta"
+            label={t('mobile.launch.account')}
             items={accounts.map((item) => ({ id: item.id, label: item.name }))}
             selectedId={draft.accountId}
             onSelect={(accountId) => {
@@ -187,7 +191,7 @@ export function LaunchForm({
         ) : null}
         {panel === 'date' ? (
           <Options
-            label="Data"
+            label={t('mobile.launch.date')}
             items={days.map((day) => ({ id: day, label: dayLabel(day) }))}
             selectedId={draft.date}
             onSelect={(date) => {
@@ -202,11 +206,15 @@ export function LaunchForm({
             value={draft.description}
             onChangeText={(description) => onChange({ ...draft, description })}
             onSubmitEditing={() => setPanel('categories')}
-            placeholder={category ? `Padrão: ${category.name}` : 'Padrão: nome da categoria'}
+            placeholder={
+              category
+                ? t('mobile.launch.descriptionDefault', { name: i18n.category(category) })
+                : t('mobile.launch.descriptionDefaultEmpty')
+            }
             placeholderTextColor={theme.colors.text.tertiary}
             returnKeyType="done"
             maxLength={DESCRIPTION_MAX}
-            accessibilityLabel="Descrição"
+            accessibilityLabel={t('mobile.launch.description')}
             style={styles.input}
           />
         ) : null}
@@ -216,10 +224,10 @@ export function LaunchForm({
             multiline
             value={draft.notes}
             onChangeText={(notes) => onChange({ ...draft, notes })}
-            placeholder="Observações"
+            placeholder={t('mobile.launch.notes')}
             placeholderTextColor={theme.colors.text.tertiary}
             maxLength={NOTES_MAX}
-            accessibilityLabel="Observações"
+            accessibilityLabel={t('mobile.launch.notes')}
             style={[styles.input, styles.notes]}
           />
         ) : null}
@@ -232,10 +240,16 @@ export function LaunchForm({
 }
 
 /** What is still missing before saving, in words (said by screen readers as the button hint). */
-export function missingForSave(draft: LaunchDraft, accountsCount: number): string | null {
-  if (!draft.editing && accountsCount === 0) return 'Crie uma conta no painel web para lançar.';
-  if (draft.amount === 0) return 'Digite o valor.';
-  if (draft.editing?.type !== 'transfer' && !draft.categoryId) return 'Escolha a categoria.';
+export function missingForSave(
+  draft: LaunchDraft,
+  accountsCount: number,
+  { t }: Pick<I18n, 't'>,
+): string | null {
+  if (!draft.editing && accountsCount === 0) return t('mobile.launch.missing.account');
+  if (draft.amount === 0) return t('mobile.launch.missing.amount');
+  if (draft.editing?.type !== 'transfer' && !draft.categoryId) {
+    return t('mobile.launch.missing.category');
+  }
   return null;
 }
 
@@ -247,19 +261,20 @@ export function LaunchFooter({
   onSave,
 }: Pick<Props, 'draft' | 'canSave' | 'onSave'> & { accountsCount: number }) {
   const styles = useStyles();
-  const missing = canSave ? null : missingForSave(draft, accountsCount);
+  const i18n = useI18n();
+  const missing = canSave ? null : missingForSave(draft, accountsCount, i18n);
   const noAccount = !draft.editing && accountsCount === 0;
   return (
     <>
       <Button
         testID="save"
-        label={
+        label={i18n.t(
           draft.editing
-            ? 'Salvar alterações'
+            ? 'mobile.launch.save.edit'
             : draft.type === 'expense'
-              ? 'Salvar despesa'
-              : 'Salvar receita'
-        }
+              ? 'mobile.launch.save.expense'
+              : 'mobile.launch.save.income',
+        )}
         disabled={!canSave}
         onPress={onSave}
         accessibilityHint={missing ?? undefined}
@@ -276,8 +291,9 @@ export function LaunchFooter({
 function CategoriesSkeleton() {
   const theme = useTheme();
   const styles = useStyles();
+  const { t } = useI18n();
   return (
-    <View style={styles.options} accessibilityLabel="Carregando categorias">
+    <View style={styles.options} accessibilityLabel={t('mobile.launch.categoriesLoading')}>
       {Array.from({ length: 8 }, (_, index) => (
         <Skeleton key={index} width="23%" height={theme.layout.rowTall + theme.space[2]} />
       ))}

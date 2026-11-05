@@ -3,8 +3,10 @@ import { loginSchema } from '@sobra/shared';
 import { useMutation } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router';
+import { translateFieldError } from '@sobra/i18n';
 import { Button } from '../components/Button';
 import { TextField } from '../components/TextField';
+import { useI18n } from '../i18n/i18nContext';
 import { useServices } from '../lib/servicesContext';
 import { AuthLayout } from './AuthLayout';
 import styles from './Form.module.css';
@@ -15,6 +17,7 @@ export function LoginPage() {
   const { mutations, hasStoredSession } = useServices();
   const navigate = useNavigate();
   const location = useLocation();
+  const { t, rich, errorText } = useI18n();
   const login = useMutation(mutations.auth.login);
   const form = useForm({
     resolver: zodResolver(loginSchema),
@@ -29,7 +32,13 @@ export function LoginPage() {
   const submit = form.handleSubmit((values) => {
     login.mutate(values, {
       onSuccess: () => navigate(redirectTarget(location.state), { replace: true }),
-      onError: (error) => form.setError('root', { message: error.message }),
+      onError: (error) =>
+        form.setError('root', {
+          message: errorText(error, {
+            UNAUTHORIZED: 'web.auth.login.invalidCredentials',
+            INVALID_CREDENTIALS: 'web.auth.login.invalidCredentials',
+          }),
+        }),
     });
   });
 
@@ -41,42 +50,38 @@ export function LoginPage() {
 
   return (
     <AuthLayout
-      title="Entrar no Sobra"
-      lead="Quanto você tem, para onde foi o dinheiro e quanto sobra no mês."
-      footer={
-        <>
-          Ainda não tem conta? <Link to="/criar-conta">Criar conta</Link>
-        </>
-      }
+      title={t('web.auth.login.title')}
+      lead={t('web.auth.login.lead')}
+      footer={rich('web.auth.login.noAccount', {
+        link: <Link to="/criar-conta">{t('common.actions.signUp')}</Link>,
+      })}
     >
       <form className={styles.form} onSubmit={submit} noValidate>
         <TextField
-          label="E-mail"
+          label={t('web.auth.fields.email')}
           type="email"
           autoComplete="email"
           inputMode="email"
-          error={errors.email?.message}
+          error={translateFieldError(t, errors.email)}
           {...form.register('email')}
         />
         <TextField
-          label="Senha"
+          label={t('web.auth.fields.password')}
           type="password"
           autoComplete="current-password"
-          error={errors.password?.message}
+          error={translateFieldError(t, errors.password)}
           {...form.register('password')}
         />
         <FormError message={errors.root?.message} />
         <Button type="submit" variant="primary" block loading={login.isPending}>
-          Entrar
+          {t('common.actions.signIn')}
         </Button>
       </form>
-      <p className={styles.divider}>ou</p>
+      <p className={styles.divider}>{t('web.auth.login.or')}</p>
       <Button variant="secondary" block onClick={fillDemo}>
-        Entrar com a conta de demonstração
+        {t('web.auth.login.demo')}
       </Button>
-      <p className={styles.note}>
-        Preenche o e-mail e a senha da Ana Demo: seis meses de dados sintéticos.
-      </p>
+      <p className={styles.note}>{t('web.auth.login.demoNote')}</p>
     </AuthLayout>
   );
 }

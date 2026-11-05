@@ -1,7 +1,7 @@
 import type { MonthSummary } from '@sobra/shared';
+import { useI18n } from '../i18n/i18nContext';
 import { fitChars } from '../lib/fit';
-import { money, percent, percentagePoints, signedMoney } from '../lib/format';
-import { monthName, type MonthProgress } from '../lib/month';
+import type { MonthProgress } from '../lib/month';
 import { Delta } from './Delta';
 import styles from './KpiStrip.module.css';
 import { savingsHeadline } from './model';
@@ -9,36 +9,37 @@ import { savingsHeadline } from './model';
 type KpiStripProps = { summary: MonthSummary; progress: MonthProgress };
 
 function SavingsCell({ summary, progress, base }: KpiStripProps & { base: string }) {
+  const { t, fmt } = useI18n();
   const headline = savingsHeadline(summary, progress);
   return (
     <div className={styles.cell}>
-      <dt className={styles.label}>Taxa de poupança</dt>
+      <dt className={styles.label}>{t('web.dashboard.kpi.savingsRate')}</dt>
       {headline.kind === 'rate' ? (
         <>
-          <dd className={`${styles.value} num`}>{percent(headline.rate)}</dd>
+          <dd className={`${styles.value} num`}>{fmt.percent(headline.rate)}</dd>
           {headline.previous === null ? null : (
             <dd>
               <Delta
                 size="small"
                 change={headline.rate - headline.previous}
                 upIsGood
-                value={percentagePoints(headline.rate - headline.previous)}
-                base={`vs ${base}`}
+                value={fmt.percentagePoints(headline.rate - headline.previous)}
+                base={t('web.dashboard.kpi.vs', { month: base })}
               />
             </dd>
           )}
         </>
       ) : headline.kind === 'partial' ? (
         <>
-          <dd className={styles.pending}>Em aberto</dd>
+          <dd className={styles.pending}>{t('web.dashboard.kpi.open')}</dd>
           <dd className={styles.note}>
-            Fecha no fim do mês · parcial, dia {headline.day} de {headline.days}
+            {t('web.dashboard.kpi.openNote', { day: headline.day, days: headline.days })}
           </dd>
         </>
       ) : (
         <>
-          <dd className={styles.pending}>—</dd>
-          <dd className={styles.note}>Sem receitas no mês</dd>
+          <dd className={styles.pending}>{t('common.labels.none')}</dd>
+          <dd className={styles.note}>{t('web.dashboard.kpi.noIncome')}</dd>
         </>
       )}
     </div>
@@ -56,14 +57,15 @@ type MoneyCellProps = {
 };
 
 function MoneyCell({ label, value, change, upIsGood, base, debt = false, note }: MoneyCellProps) {
+  const { t, fmt } = useI18n();
   return (
     <div className={styles.cell}>
       <dt className={styles.label}>{label}</dt>
       <dd
         className={`${styles.value} ${debt && value < 0 ? styles.debt : value === 0 ? styles.zero : ''} num`}
-        style={fitChars(money(value))}
+        style={fitChars(fmt.money(value))}
       >
-        {money(value)}
+        {fmt.money(value)}
       </dd>
       <dd>
         {note ? (
@@ -73,8 +75,8 @@ function MoneyCell({ label, value, change, upIsGood, base, debt = false, note }:
             size="small"
             change={change}
             upIsGood={upIsGood}
-            value={signedMoney(change)}
-            base={`vs ${base}`}
+            value={fmt.signedMoney(change)}
+            base={t('web.dashboard.kpi.vs', { month: base })}
           />
         )}
       </dd>
@@ -87,12 +89,15 @@ function MoneyCell({ label, value, change, upIsGood, base, debt = false, note }:
  * expense changes are not compared with a whole month: the cell says how far the month is.
  */
 export function KpiStrip({ summary, progress }: KpiStripProps) {
-  const base = monthName(summary.previous.month);
-  const partialNote = progress.partial ? `até o dia ${progress.day}` : null;
+  const { t, fmt } = useI18n();
+  const base = fmt.monthName(summary.previous.month);
+  const partialNote = progress.partial
+    ? t('web.dashboard.kpi.untilDay', { day: progress.day })
+    : null;
   return (
     <dl className={styles.strip}>
       <MoneyCell
-        label="Saldo total"
+        label={t('web.dashboard.kpi.balance')}
         value={summary.balance}
         change={summary.delta.balance.absolute}
         upIsGood
@@ -100,7 +105,7 @@ export function KpiStrip({ summary, progress }: KpiStripProps) {
         debt
       />
       <MoneyCell
-        label="Receitas"
+        label={t('web.dashboard.kpi.income')}
         value={summary.income}
         change={summary.delta.income.absolute}
         upIsGood
@@ -108,7 +113,7 @@ export function KpiStrip({ summary, progress }: KpiStripProps) {
         note={partialNote}
       />
       <MoneyCell
-        label="Despesas"
+        label={t('web.dashboard.kpi.expense')}
         value={summary.expense}
         change={summary.delta.expense.absolute}
         upIsGood={false}

@@ -2,7 +2,8 @@ import { nextMonth, previousMonth, type MonthKey } from '@sobra/shared';
 import { hitSlopFor } from '@sobra/tokens';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { View } from 'react-native';
-import { monthProgress, monthTitle, progressLabel } from '../../lib/month';
+import { useI18n } from '../../i18n/I18nProvider';
+import { monthProgress } from '../../lib/month';
 import { makeStyles } from '../../theme/makeStyles';
 import { useTheme } from '../../theme/ThemeProvider';
 import { AppText } from '../../ui/AppText';
@@ -14,13 +15,14 @@ type Props = { month: MonthKey; latest: MonthKey; onChange: (month: MonthKey) =>
 export function MonthSwitcher({ month, latest, onChange }: Props) {
   const theme = useTheme();
   const styles = useStyles();
+  const { t, monthTitle, progressLabel } = useI18n();
   const atLatest = month >= latest;
   const previous = previousMonth(month);
   const next = nextMonth(month);
   return (
     <View style={styles.row}>
       <Arrow
-        label={`Mês anterior: ${monthTitle(previous)}`}
+        label={t('mobile.month.previous', { month: monthTitle(previous) })}
         onPress={() => onChange(previous)}
         icon={
           <ChevronLeft
@@ -39,7 +41,7 @@ export function MonthSwitcher({ month, latest, onChange }: Props) {
         </AppText>
       </View>
       <Arrow
-        label={`Próximo mês: ${monthTitle(next)}`}
+        label={t('mobile.month.next', { month: monthTitle(next) })}
         disabled={atLatest}
         onPress={() => onChange(next)}
         icon={

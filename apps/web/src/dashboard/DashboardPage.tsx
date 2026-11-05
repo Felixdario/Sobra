@@ -1,7 +1,8 @@
-import { formatMonth, type MonthKey } from '@sobra/shared';
+import type { MonthKey } from '@sobra/shared';
 import { Link, useSearchParams } from 'react-router';
-import { money, signedMoney } from '../lib/format';
-import { currentMonth, monthName, monthProgress, parseMonthParam } from '../lib/month';
+import { useI18n } from '../i18n/i18nContext';
+import { useDocumentTitle } from '../i18n/useDocumentTitle';
+import { currentMonth, monthProgress, parseMonthParam } from '../lib/month';
 import { BalanceChart, BalanceTable, BALANCE_HEIGHT } from './charts/BalanceChart';
 import { BudgetChart } from './charts/BudgetChart';
 import { CategoryChart } from './charts/CategoryChart';
@@ -22,6 +23,7 @@ import { useDashboardData, type DashboardData } from './useDashboardData';
 const px = (value: number) => `${value}px`;
 
 function IncomeExpenseCard({ data, month }: { data: DashboardData['history']; month: MonthKey }) {
+  const { t, rich, fmt } = useI18n();
   const points = data.data?.points ?? [];
   const withData = points.filter((p) => p.income > 0 || p.expense > 0);
   const averageNet = withData.length
@@ -30,20 +32,21 @@ function IncomeExpenseCard({ data, month }: { data: DashboardData['history']; mo
   const current = points.at(-1);
   return (
     <ChartCard
-      title="Receitas × despesas"
-      aside="últimos 6 meses"
+      title={t('web.dashboard.charts.incomeExpense.title')}
+      aside={t('web.dashboard.charts.incomeExpense.aside')}
       query={data}
-      failure="Não deu para carregar receitas e despesas"
+      failure={t('web.dashboard.charts.incomeExpense.failed')}
       height={px(INCOME_EXPENSE_HEIGHT)}
-      empty={withData.length === 0 ? <p>Sem lançamentos nos últimos seis meses.</p> : null}
+      empty={withData.length === 0 ? <p>{t('web.dashboard.charts.incomeExpense.empty')}</p> : null}
       summary={
-        current ? (
-          <>
-            Em {monthName(month)} entraram <span className="num">{money(current.income)}</span> e
-            saíram <span className="num">{money(current.expense)}</span>. Resultado médio dos meses
-            com lançamentos: <span className="num">{signedMoney(averageNet)}</span>.
-          </>
-        ) : null
+        current
+          ? rich('web.dashboard.charts.incomeExpense.summary', {
+              month: fmt.monthName(month),
+              income: <span className="num">{fmt.money(current.income)}</span>,
+              expense: <span className="num">{fmt.money(current.expense)}</span>,
+              average: <span className="num">{fmt.signedMoney(averageNet)}</span>,
+            })
+          : null
       }
       table={<IncomeExpenseTable points={points} />}
     >
@@ -58,29 +61,34 @@ function IncomeExpenseCard({ data, month }: { data: DashboardData['history']; mo
 }
 
 function CategoryCard({ data, month }: { data: DashboardData['spending']; month: MonthKey }) {
+  const { t, rich, fmt } = useI18n();
   const spending = data.data;
-  const top = spending ? categoryRows(spending)[0] : undefined;
+  const top = spending ? categoryRows(spending, t)[0] : undefined;
   return (
     <ChartCard
-      title="Gastos por categoria"
-      aside={spending ? <span className="num">{money(spending.total)}</span> : null}
+      title={t('web.dashboard.charts.category.title')}
+      aside={spending ? <span className="num">{fmt.money(spending.total)}</span> : null}
       query={data}
-      failure="Não deu para carregar os gastos por categoria"
+      failure={t('web.dashboard.charts.category.failed')}
       height="calc(var(--layout-row-compact) * 6)"
       empty={
         spending && spending.items.length === 0 ? (
           <p>
-            Sem gastos em {monthName(month)}. <Link to="/transacoes">Lançar um gasto</Link>
+            {rich('web.dashboard.charts.category.empty', {
+              month: fmt.monthName(month),
+              link: <Link to="/transacoes">{t('web.dashboard.charts.category.emptyLink')}</Link>,
+            })}
           </p>
         ) : null
       }
       summary={
-        top ? (
-          <>
-            {top.name} levou a maior parte: <span className="num">{money(top.amount)}</span> em{' '}
-            {monthName(month)}.
-          </>
-        ) : null
+        top
+          ? rich('web.dashboard.charts.category.summary', {
+              name: top.name,
+              amount: <span className="num">{fmt.money(top.amount)}</span>,
+              month: fmt.monthName(month),
+            })
+          : null
       }
     >
       {() => (spending ? <CategoryChart spending={spending} /> : null)}
@@ -89,26 +97,27 @@ function CategoryCard({ data, month }: { data: DashboardData['spending']; month:
 }
 
 function BalanceCard({ data }: { data: DashboardData['balance'] }) {
+  const { t, rich, fmt } = useI18n();
   const points = data.data?.points ?? [];
   const first = points[0];
   const last = points.at(-1);
   return (
     <ChartCard
-      title="Evolução do saldo"
-      aside="saldo total, por dia"
+      title={t('web.dashboard.charts.balance.title')}
+      aside={t('web.dashboard.charts.balance.aside')}
       query={data}
-      failure="Não deu para carregar a evolução do saldo"
+      failure={t('web.dashboard.charts.balance.failed')}
       height={px(BALANCE_HEIGHT)}
-      empty={points.length === 0 ? <p>Sem histórico de saldo ainda.</p> : null}
+      empty={points.length === 0 ? <p>{t('web.dashboard.charts.balance.empty')}</p> : null}
       summary={
-        first && last ? (
-          <>
-            O saldo total foi de <span className="num">{money(first.balance)}</span> para{' '}
-            <span className="num">{money(last.balance)}</span> (
-            <span className="num">{signedMoney(last.balance - first.balance)}</span>) desde{' '}
-            {formatMonth(first.date.slice(0, 7) as MonthKey)}.
-          </>
-        ) : null
+        first && last
+          ? rich('web.dashboard.charts.balance.summary', {
+              from: <span className="num">{fmt.money(first.balance)}</span>,
+              to: <span className="num">{fmt.money(last.balance)}</span>,
+              change: <span className="num">{fmt.signedMoney(last.balance - first.balance)}</span>,
+              month: fmt.monthLong(first.date.slice(0, 7) as MonthKey),
+            })
+          : null
       }
       table={data.data ? <BalanceTable history={data.data} /> : null}
     >
@@ -118,34 +127,49 @@ function BalanceCard({ data }: { data: DashboardData['balance'] }) {
 }
 
 function BudgetCard({ data, month }: { data: DashboardData['budgets']; month: MonthKey }) {
+  const { t, rich, fmt } = useI18n();
   const budgets = data.data;
   const over = budgets?.items.filter((item) => item.actual > item.budgeted).length ?? 0;
   const href = month === currentMonth(new Date()) ? '/orcamentos' : `/orcamentos?mes=${month}`;
+  const monthName = fmt.monthName(month);
   return (
     <ChartCard
-      title="Orçado × realizado"
+      title={t('web.dashboard.charts.budget.title')}
       aside={
         budgets && budgets.items.length > 0 ? (
           <span className="num">
-            {money(budgets.totals.actual)} de {money(budgets.totals.budgeted)}
+            {t('web.dashboard.charts.budget.aside', {
+              actual: fmt.money(budgets.totals.actual),
+              budgeted: fmt.money(budgets.totals.budgeted),
+            })}
           </span>
         ) : null
       }
       query={data}
-      failure="Não deu para carregar os orçamentos"
+      failure={t('web.dashboard.charts.budget.failed')}
       height="calc(var(--space-16) * 3)"
       empty={
         budgets && budgets.items.length === 0 ? (
           <p>
-            Sem orçamento para {monthName(month)}. <Link to={href}>Definir orçamentos</Link>
+            {rich('web.dashboard.charts.budget.empty', {
+              month: monthName,
+              link: <Link to={href}>{t('web.dashboard.charts.budget.emptyLink')}</Link>,
+            })}
           </p>
         ) : null
       }
       summary={
         budgets && budgets.items.length > 0
           ? over > 0
-            ? `${over} de ${budgets.items.length} orçamentos passaram do limite em ${monthName(month)}.`
-            : `Todos os ${budgets.items.length} orçamentos dentro do limite em ${monthName(month)}.`
+            ? t('web.dashboard.charts.budget.over', {
+                over,
+                total: budgets.items.length,
+                month: monthName,
+              })
+            : t('web.dashboard.charts.budget.allWithin', {
+                count: budgets.items.length,
+                month: monthName,
+              })
           : null
       }
     >
@@ -155,12 +179,14 @@ function BudgetCard({ data, month }: { data: DashboardData['budgets']; month: Mo
 }
 
 export function DashboardPage() {
+  const { t } = useI18n();
   const [params, setParams] = useSearchParams();
   const now = new Date();
   const current = currentMonth(now);
   const month = parseMonthParam(params.get('mes'), now);
   const progress = monthProgress(month, now);
   const data = useDashboardData(month);
+  useDocumentTitle(t('nav.dashboard'));
 
   const changeMonth = (next: MonthKey) =>
     setParams(next === current ? {} : { mes: next }, { preventScrollReset: true });
@@ -168,7 +194,7 @@ export function DashboardPage() {
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <h1 className={styles.title}>Painel</h1>
+        <h1 className={styles.title}>{t('nav.dashboard')}</h1>
         <MonthPicker month={month} current={current} onChange={changeMonth} />
       </header>
       <OfflineBanner updatedAt={data.summary.dataUpdatedAt} />

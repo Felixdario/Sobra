@@ -130,7 +130,7 @@ export function ThemeProvider({
 
 export function useThemeContext(): ThemeContextValue {
   const value = use(ThemeContext);
-  if (!value) throw new Error('useTheme precisa de <ThemeProvider>');
+  if (!value) throw new Error('useTheme needs <ThemeProvider>');
   return value;
 }
 

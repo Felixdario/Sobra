@@ -1,17 +1,17 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { translateFieldError, type Translator } from '@sobra/i18n';
 import {
   ACCOUNT_TYPES,
   accountTypeSchema,
-  centsToReais,
   iconSchema,
   nameSchema,
-  parseBRL,
   type Account,
   type AccountType,
 } from '@sobra/shared';
 import { identityColors } from '@sobra/tokens';
 import { useMutation } from '@tanstack/react-query';
 import { Archive } from 'lucide-react';
+import { useMemo } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -21,45 +21,55 @@ import { SelectField } from '../components/SelectField';
 import { Sheet } from '../components/Sheet';
 import { ColorPicker, IconPicker } from '../components/SwatchPicker';
 import { TextField } from '../components/TextField';
+import type { Format } from '../i18n/format';
+import { useI18n } from '../i18n/i18nContext';
 import { useServices } from '../lib/servicesContext';
 import formStyles from '../transactions/TransactionSheet.module.css';
-import { ACCOUNT_TYPE_LABELS, DEFAULT_ICON } from './labels';
+import { DEFAULT_ICON } from './labels';
 
-const accountFormSchema = z
-  .object({
-    name: nameSchema(60),
-    type: accountTypeSchema,
-    initialBalance: z.string(),
-    color: z.string().min(1, { error: 'Escolha uma cor' }),
-    icon: iconSchema,
-  })
-  .transform((form, ctx) => {
-    const initialBalance = form.initialBalance.trim() ? parseBRL(form.initialBalance) : 0;
-    if (initialBalance === null) {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['initialBalance'],
-        message: 'Valor inválido: use 1.234,56 (ou −500,00 para um cartão com fatura)',
-      });
-      return z.NEVER;
-    }
-    return { ...form, initialBalance };
-  });
+/** The opening balance is typed in the person's locale ("1.234,56" / "1,234.56"). */
+const createAccountFormSchema = (t: Translator, fmt: Format) =>
+  z
+    .object({
+      name: nameSchema(60),
+      type: accountTypeSchema,
+      initialBalance: z.string(),
+      color: z.string().min(1, { error: t('web.accounts.form.colorRequired') }),
+      icon: iconSchema,
+    })
+    .transform((form, ctx) => {
+      const initialBalance = form.initialBalance.trim() ? fmt.parseMoney(form.initialBalance) : 0;
+      if (initialBalance === null) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['initialBalance'],
+          message: t('web.accounts.form.initialBalanceInvalid', {
+            example: fmt.moneyInput(123_456),
+            negative: `−${fmt.moneyInput(50_000)}`,
+          }),
+        });
+        return z.NEVER;
+      }
+      return { ...form, initialBalance };
+    });
 
-type AccountFormValues = z.input<typeof accountFormSchema>;
+type AccountFormSchema = ReturnType<typeof createAccountFormSchema>;
+type AccountFormValues = z.input<AccountFormSchema>;
 
 function AccountForm({ account, onClose }: { account: Account | null; onClose: () => void }) {
   const { mutations } = useServices();
   const create = useMutation(mutations.accounts.create);
   const update = useMutation(mutations.accounts.update);
   const remove = useMutation(mutations.accounts.remove);
-  const form = useForm<AccountFormValues, unknown, z.output<typeof accountFormSchema>>({
-    resolver: zodResolver(accountFormSchema),
+  const { t, fmt, errorText } = useI18n();
+  const schema = useMemo(() => createAccountFormSchema(t, fmt), [t, fmt]);
+  const form = useForm<AccountFormValues, unknown, z.output<AccountFormSchema>>({
+    resolver: zodResolver(schema),
     defaultValues: account
       ? {
           name: account.name,
           type: account.type,
-          initialBalance: centsToReais(account.initialBalance),
+          initialBalance: fmt.moneyInput(account.initialBalance),
           color: account.color,
           icon: account.icon,
         }
@@ -72,7 +82,7 @@ function AccountForm({ account, onClose }: { account: Account | null; onClose: (
         },
   });
   const { errors } = form.formState;
-  const fail = (error: Error) => form.setError('root', { message: error.message });
+  const fail = (error: Error) => form.setError('root', { message: errorText(error) });
 
   const submit = form.handleSubmit((values) => {
     if (account) {
@@ -82,7 +92,7 @@ function AccountForm({ account, onClose }: { account: Account | null; onClose: (
         { id: account.id, body },
         {
           onSuccess: () => {
-            toast.success(`Conta “${values.name}” atualizada.`);
+            toast.success(t('web.accounts.toasts.updated', { name: values.name }));
             onClose();
           },
           onError: fail,
@@ -91,7 +101,7 @@ function AccountForm({ account, onClose }: { account: Account | null; onClose: (
     } else {
       create.mutate(values, {
         onSuccess: () => {
-          toast.success(`Conta “${values.name}” criada.`);
+          toast.success(t('web.accounts.toasts.created', { name: values.name }));
           onClose();
         },
         onError: fail,
@@ -105,8 +115,8 @@ function AccountForm({ account, onClose }: { account: Account | null; onClose: (
       onSuccess: (result) => {
         toast.success(
           result.status === 'deleted'
-            ? `Conta “${target.name}” excluída: não tinha lançamentos.`
-            : `${target.name} tem lançamentos e foi arquivada: o histórico continua nos relatórios.`,
+            ? t('web.accounts.toasts.deleted', { name: target.name })
+            : t('web.accounts.toasts.archived', { name: target.name }),
         );
         onClose();
       },
@@ -117,16 +127,16 @@ function AccountForm({ account, onClose }: { account: Account | null; onClose: (
     <form className={formStyles.form} onSubmit={submit} noValidate>
       <TextField
         data-autofocus
-        label="Nome"
+        label={t('web.accounts.form.name')}
         autoComplete="off"
-        error={errors.name?.message}
+        error={translateFieldError(t, errors.name)}
         {...form.register('name')}
       />
       <SelectField
-        label="Tipo"
+        label={t('web.accounts.form.type')}
         disabled={Boolean(account)}
-        options={ACCOUNT_TYPES.map((type) => ({ value: type, label: ACCOUNT_TYPE_LABELS[type] }))}
-        error={errors.type?.message}
+        options={ACCOUNT_TYPES.map((type) => ({ value: type, label: t(`accountTypes.${type}`) }))}
+        error={translateFieldError(t, errors.type)}
         {...form.register('type', {
           onChange: (event) => {
             if (!form.getFieldState('icon').isDirty) {
@@ -136,11 +146,13 @@ function AccountForm({ account, onClose }: { account: Account | null; onClose: (
         })}
       />
       <TextField
-        label="Saldo inicial (R$)"
+        label={t('web.accounts.form.initialBalance', { symbol: fmt.currencySymbol })}
         inputMode="decimal"
         autoComplete="off"
-        placeholder="0,00"
-        hint="Cartão de crédito com fatura em aberto: valor negativo, como −1.250,00."
+        placeholder={fmt.moneyInput(0)}
+        hint={t('web.accounts.form.initialBalanceHint', {
+          example: `−${fmt.moneyInput(125_000)}`,
+        })}
         error={errors.initialBalance?.message}
         {...form.register('initialBalance')}
       />
@@ -151,7 +163,7 @@ function AccountForm({ account, onClose }: { account: Account | null; onClose: (
           <ColorPicker
             value={field.value}
             onChange={field.onChange}
-            error={errors.color?.message}
+            error={translateFieldError(t, errors.color)}
           />
         )}
       />
@@ -170,14 +182,14 @@ function AccountForm({ account, onClose }: { account: Account | null; onClose: (
             onClick={() => removeAccount(account)}
           >
             {remove.isPending ? null : <Archive size={16} strokeWidth={1.75} aria-hidden="true" />}
-            Excluir ou arquivar
+            {t('web.accounts.form.removeOrArchive')}
           </Button>
         ) : null}
         <Button variant="secondary" onClick={onClose}>
-          Cancelar
+          {t('common.actions.cancel')}
         </Button>
         <Button type="submit" variant="primary" loading={create.isPending || update.isPending}>
-          {account ? 'Salvar' : 'Criar conta'}
+          {account ? t('common.actions.save') : t('web.accounts.form.create')}
         </Button>
       </div>
     </form>
@@ -191,16 +203,13 @@ export function AccountSheet({
   target: Account | 'new' | null;
   onClose: () => void;
 }) {
+  const { t } = useI18n();
   const account = target === 'new' ? null : target;
   return (
     <Sheet
       open={target !== null}
-      title={account ? `Editar ${account.name}` : 'Nova conta'}
-      description={
-        account && !account.archived
-          ? 'Uma conta sem lançamentos é excluída; com lançamentos, é arquivada e o histórico fica.'
-          : undefined
-      }
+      title={account ? t('web.accounts.edit', { name: account.name }) : t('web.accounts.new')}
+      description={account && !account.archived ? t('web.accounts.sheetDescription') : undefined}
       onClose={onClose}
     >
       {target !== null ? (

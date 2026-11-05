@@ -8,25 +8,25 @@ import { ErrorLine } from '../components/ErrorLine';
 import { IdentityMark } from '../components/IdentityMark';
 import { EmptyState, Page, Panel } from '../components/Page';
 import { Skeleton } from '../components/Skeleton';
-import { money, spokenMoney } from '../lib/format';
+import { useI18n } from '../i18n/i18nContext';
 import { useServices } from '../lib/servicesContext';
 import { AccountSheet } from './AccountSheet';
-import { ACCOUNT_TYPE_LABELS } from './labels';
 import styles from './AccountsPage.module.css';
 
 /** A credit card's negative balance is a debt: red, with the minus and the word "fatura". */
 function Balance({ account }: { account: Account }) {
+  const { t, fmt } = useI18n();
   const debt = account.balance < 0;
   return (
     <span className={styles.balanceCell}>
       <span
         className={`${styles.balance} ${debt ? styles.debt : account.balance === 0 ? styles.zero : ''} num`}
-        aria-label={spokenMoney(account.balance)}
+        aria-label={fmt.spokenMoney(account.balance)}
       >
-        {money(account.balance)}
+        {fmt.money(account.balance)}
       </span>
       {debt && account.type === 'credit_card' ? (
-        <span className={styles.note}>fatura em aberto</span>
+        <span className={styles.note}>{t('web.accounts.openInvoice')}</span>
       ) : null}
     </span>
   );
@@ -35,13 +35,14 @@ function Balance({ account }: { account: Account }) {
 function AccountRow({ account, onEdit }: { account: Account; onEdit: (a: Account) => void }) {
   const { mutations } = useServices();
   const restore = useMutation(mutations.accounts.update);
+  const { t } = useI18n();
   return (
     <li className={styles.row} data-archived={account.archived || undefined}>
       <button
         type="button"
         className={styles.main}
         onClick={() => onEdit(account)}
-        aria-label={`Editar ${account.name}`}
+        aria-label={t('web.accounts.editRow', { name: account.name })}
       >
         <IdentityMark color={account.color} icon={account.icon} />
         <span className={styles.text}>
@@ -49,8 +50,9 @@ function AccountRow({ account, onEdit }: { account: Account; onEdit: (a: Account
             {account.name}
           </span>
           <span className={styles.meta}>
-            {ACCOUNT_TYPE_LABELS[account.type]}
-            {account.archived ? ' · arquivada' : ''}
+            {account.archived
+              ? t('web.accounts.archivedMeta', { type: t(`accountTypes.${account.type}`) })
+              : t(`accountTypes.${account.type}`)}
           </span>
         </span>
       </button>
@@ -61,11 +63,14 @@ function AccountRow({ account, onEdit }: { account: Account; onEdit: (a: Account
           onClick={() =>
             restore.mutate(
               { id: account.id, body: { archived: false } },
-              { onSuccess: () => toast.success(`${account.name} voltou para as contas ativas.`) },
+              {
+                onSuccess: () =>
+                  toast.success(t('web.accounts.reactivated', { name: account.name })),
+              },
             )
           }
         >
-          Reativar
+          {t('web.accounts.reactivate')}
         </Button>
       ) : null}
       <Balance account={account} />
@@ -75,6 +80,7 @@ function AccountRow({ account, onEdit }: { account: Account; onEdit: (a: Account
 
 export function AccountsPage() {
   const { queries } = useServices();
+  const { t, rich, fmt } = useI18n();
   const [showArchived, setShowArchived] = useState(false);
   const [editing, setEditing] = useState<Account | 'new' | null>(null);
   const accounts = useQuery(queries.accounts.list({ includeArchived: true }));
@@ -84,28 +90,28 @@ export function AccountsPage() {
 
   return (
     <Page
-      title="Contas"
+      title={t('nav.accounts')}
       actions={
         <Button variant="primary" onClick={() => setEditing('new')}>
           <Plus size={16} strokeWidth={1.75} aria-hidden="true" />
-          Nova conta
+          {t('web.accounts.new')}
         </Button>
       }
     >
       <Panel
-        title="Contas ativas"
+        title={t('web.accounts.active')}
         titleId="contas-ativas"
         aside={
           accounts.data ? (
             <span className={`${styles.total} num`}>
-              Saldo total <strong>{money(total)}</strong>
+              {rich('web.accounts.total', { amount: <strong>{fmt.money(total)}</strong> })}
             </span>
           ) : null
         }
       >
         {accounts.isError ? (
           <ErrorLine
-            what="Não deu para carregar as contas"
+            what={t('web.accounts.failed')}
             error={accounts.error}
             onRetry={() => void accounts.refetch()}
             retrying={accounts.isFetching}
@@ -117,9 +123,9 @@ export function AccountsPage() {
             ))}
           </div>
         ) : active.length === 0 ? (
-          <EmptyState title="Nenhuma conta ativa.">
+          <EmptyState title={t('web.accounts.emptyActive')}>
             <Button variant="secondary" onClick={() => setEditing('new')}>
-              Criar a primeira conta
+              {t('web.accounts.createFirst')}
             </Button>
           </EmptyState>
         ) : (
@@ -132,7 +138,7 @@ export function AccountsPage() {
       </Panel>
       {archived.length > 0 ? (
         <Panel
-          title={`Arquivadas (${archived.length})`}
+          title={t('web.accounts.archived', { count: archived.length })}
           titleId="contas-arquivadas"
           aside={
             <Button
@@ -140,7 +146,7 @@ export function AccountsPage() {
               aria-expanded={showArchived}
               onClick={() => setShowArchived((v) => !v)}
             >
-              {showArchived ? 'Ocultar' : 'Mostrar'}
+              {showArchived ? t('web.accounts.hide') : t('web.accounts.show')}
             </Button>
           }
         >

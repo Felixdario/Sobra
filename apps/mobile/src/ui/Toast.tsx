@@ -13,6 +13,7 @@ import {
 import { View } from 'react-native';
 import Animated, { Easing, FadeInDown, FadeOutDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useI18n } from '../i18n/I18nProvider';
 import { announce, useScreenReader } from '../lib/a11y';
 import { makeStyles } from '../theme/makeStyles';
 import { useTheme } from '../theme/ThemeProvider';
@@ -51,6 +52,7 @@ export function ToastProvider({
 }) {
   const [toast, setToast] = useState<ToastItem | null>(null);
   const counter = useRef(0);
+  const { t } = useI18n();
 
   const api = useMemo<ToastApi>(
     () => ({
@@ -60,12 +62,17 @@ export function ToastProvider({
         setToast((current) => ({ ...input, id, replaces: current !== null }));
         // iOS has no live regions: the message is spoken explicitly (Android also hears it once).
         announce(
-          input.action ? `${input.message} ${input.action.label} disponível.` : input.message,
+          input.action
+            ? t('mobile.toast.actionAvailable', {
+                message: input.message,
+                action: input.action.label,
+              })
+            : input.message,
         );
       },
       hide: () => setToast(null),
     }),
-    [],
+    [t],
   );
 
   return (
@@ -137,7 +144,7 @@ function ToastView({
 
 export function useToast(): ToastApi {
   const value = use(ToastContext);
-  if (!value) throw new Error('useToast precisa de <ToastProvider>');
+  if (!value) throw new Error('useToast needs <ToastProvider>');
   return value;
 }
 

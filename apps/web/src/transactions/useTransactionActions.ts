@@ -1,6 +1,7 @@
 import type { Transaction, TransactionCreate } from '@sobra/shared';
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { useI18n } from '../i18n/i18nContext';
 import { useServices } from '../lib/servicesContext';
 import { bodyFromTransaction } from './transactionForm';
 
@@ -14,6 +15,7 @@ import { bodyFromTransaction } from './transactionForm';
  */
 export function useTransactionActions() {
   const { mutations } = useServices();
+  const { t, errorText } = useI18n();
   const create = useMutation(mutations.transactions.create);
   const update = useMutation(mutations.transactions.update);
   const remove = useMutation(mutations.transactions.remove);
@@ -23,14 +25,16 @@ export function useTransactionActions() {
       update.mutate(
         { id: transaction.id, body: { ...body, notes: body.notes ?? null } },
         {
-          onSuccess: () => toast.success('Transação atualizada.'),
-          onError: (error) => toast.error(`Não deu para salvar: ${error.message}`),
+          onSuccess: () => toast.success(t('web.transactions.toasts.updated')),
+          onError: (error) =>
+            toast.error(t('web.transactions.toasts.saveFailed', { reason: errorText(error) })),
         },
       );
     } else {
       create.mutate(body, {
-        onSuccess: () => toast.success('Transação lançada.'),
-        onError: (error) => toast.error(`Não deu para lançar: ${error.message}`),
+        onSuccess: () => toast.success(t('web.transactions.toasts.created')),
+        onError: (error) =>
+          toast.error(t('web.transactions.toasts.createFailed', { reason: errorText(error) })),
       });
     }
   };
@@ -38,17 +42,21 @@ export function useTransactionActions() {
   const removeWithUndo = (tx: Transaction) =>
     remove.mutate(tx.id, {
       onSuccess: () =>
-        toast(`“${tx.description}” apagada.`, {
+        toast(t('web.transactions.toasts.deleted', { description: tx.description }), {
           action: {
-            label: 'Desfazer',
+            label: t('common.actions.undo'),
             onClick: () =>
               create.mutate(bodyFromTransaction(tx), {
-                onSuccess: () => toast.success('Transação restaurada.'),
-                onError: (error) => toast.error(`Não deu para restaurar: ${error.message}`),
+                onSuccess: () => toast.success(t('web.transactions.toasts.restored')),
+                onError: (error) =>
+                  toast.error(
+                    t('web.transactions.toasts.restoreFailed', { reason: errorText(error) }),
+                  ),
               }),
           },
         }),
-      onError: (error) => toast.error(`Não deu para apagar: ${error.message}`),
+      onError: (error) =>
+        toast.error(t('web.transactions.toasts.deleteFailed', { reason: errorText(error) })),
     });
 
   return { save, remove: removeWithUndo };

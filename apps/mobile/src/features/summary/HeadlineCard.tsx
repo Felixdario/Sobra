@@ -1,7 +1,7 @@
 import { cents, type Cents, type MonthSummary } from '@sobra/shared';
 import { Triangle } from 'lucide-react-native';
 import { View } from 'react-native';
-import { formatMoney, speakMoney } from '../../lib/money';
+import { useI18n } from '../../i18n/I18nProvider';
 import { FIGURE_MAX_FONT_SCALE } from '../../theme/fontScale';
 import { makeStyles } from '../../theme/makeStyles';
 import { useTheme } from '../../theme/ThemeProvider';
@@ -18,8 +18,9 @@ import type { Headline } from './summaryModel';
 export function HeadlineCard({ headline, summary }: { headline: Headline; summary: MonthSummary }) {
   const theme = useTheme();
   const styles = useStyles();
+  const i18n = useI18n();
   const figure =
-    headline.tone === 'debt' ? formatMoney(cents(-headline.value)) : formatMoney(headline.value);
+    headline.tone === 'debt' ? i18n.money(cents(-headline.value)) : i18n.money(headline.value);
   const figureColor =
     headline.tone === 'debt' ? theme.colors.money.debt : theme.colors.text.primary;
   const delta = headline.delta;
@@ -31,7 +32,7 @@ export function HeadlineCard({ headline, summary }: { headline: Headline; summar
       <View
         onLayout={fit.onLayout}
         accessible
-        accessibilityLabel={`${headline.label}: ${speakMoney(headline.tone === 'debt' ? cents(-headline.value) : headline.value)}`}
+        accessibilityLabel={`${headline.label}: ${i18n.speakMoney(headline.tone === 'debt' ? cents(-headline.value) : headline.value)}`}
       >
         <AppText variant="label" tone="secondary">
           {headline.label}
@@ -67,18 +68,18 @@ export function HeadlineCard({ headline, summary }: { headline: Headline; summar
       ) : null}
       <View style={styles.kpis}>
         <Kpi
-          label="Receitas"
+          label={i18n.t('mobile.summary.kpis.income')}
           value={summary.income}
           sign="always"
           color={summary.income === 0 ? theme.colors.money.zero : theme.colors.money.income}
         />
         <Kpi
-          label="Despesas"
+          label={i18n.t('mobile.summary.kpis.expense')}
           value={cents(-summary.expense)}
           color={summary.expense === 0 ? theme.colors.money.zero : theme.colors.money.expense}
         />
         <Kpi
-          label="Saldo em contas"
+          label={i18n.t('mobile.summary.kpis.balance')}
           value={summary.balance}
           color={summary.balance < 0 ? theme.colors.money.debt : theme.colors.text.primary}
         />
@@ -101,14 +102,15 @@ function Kpi({
 }) {
   const theme = useTheme();
   const styles = useStyles();
-  const text = formatMoney(value, sign);
+  const i18n = useI18n();
+  const text = i18n.money(value, sign);
   const fit = useFitValue(text, theme.text.titleSm, FIGURE_MAX_FONT_SCALE);
   return (
     <View
       style={styles.kpi}
       onLayout={fit.onLayout}
       accessible
-      accessibilityLabel={`${label}: ${speakMoney(value)}`}
+      accessibilityLabel={`${label}: ${i18n.speakMoney(value)}`}
     >
       <AppText variant="bodySm" tone="secondary">
         {label}

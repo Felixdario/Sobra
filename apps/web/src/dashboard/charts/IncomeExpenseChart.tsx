@@ -1,8 +1,8 @@
-import { formatMonth, type IncomeVsExpensePoint } from '@sobra/shared';
+import type { IncomeVsExpensePoint } from '@sobra/shared';
 import { space } from '@sobra/tokens';
 import { scaleBand, scaleLinear } from '@visx/scale';
 import { useState } from 'react';
-import { capitalize, compactReais, money, signedMoney } from '../../lib/format';
+import { useI18n } from '../../i18n/i18nContext';
 import styles from './chart.module.css';
 import { axisGutter, columnPath, niceTicks } from './geometry';
 import { Tooltip } from './Tooltip';
@@ -17,12 +17,13 @@ const GAP = space[0.5];
 type Props = { points: IncomeVsExpensePoint[]; titleId: string; descId: string };
 
 export function IncomeExpenseChart({ points, titleId, descId }: Props) {
+  const { t, fmt } = useI18n();
   const [ref, width] = useElementWidth<HTMLDivElement>();
   const [active, setActive] = useState<number | null>(null);
   const height = INCOME_EXPENSE_HEIGHT;
   const max = Math.max(...points.map((p) => Math.max(p.income, p.expense)), 1);
   const ticks = niceTicks(max, 3);
-  const margin = { ...BASE_MARGIN, left: axisGutter(ticks.map(compactReais)) };
+  const margin = { ...BASE_MARGIN, left: axisGutter(ticks.map(fmt.compactAmount)) };
   const innerWidth = Math.max(width - margin.left - margin.right, 0);
   const baseY = height - margin.bottom;
   const top = ticks.at(-1) ?? max;
@@ -68,7 +69,7 @@ export function IncomeExpenseChart({ points, titleId, descId }: Props) {
               y={y(tick) + space[1]}
               textAnchor="end"
             >
-              {compactReais(tick)}
+              {fmt.compactAmount(tick)}
             </text>
           </g>
         ))}
@@ -88,7 +89,7 @@ export function IncomeExpenseChart({ points, titleId, descId }: Props) {
                 y={height - space[1]}
                 textAnchor="middle"
               >
-                {formatMonth(point.month, 'short')}
+                {fmt.monthShort(point.month)}
               </text>
               <rect
                 className={styles.hit}
@@ -105,26 +106,29 @@ export function IncomeExpenseChart({ points, titleId, descId }: Props) {
       </svg>
       {activePoint ? (
         <Tooltip
-          title={capitalize(formatMonth(activePoint.month))}
+          title={fmt.monthTitle(activePoint.month)}
           x={(x(activePoint.month) ?? 0) + band}
           width={width}
           rows={[
             {
               key: 'income',
-              value: money(activePoint.income),
-              label: 'Receitas',
+              value: fmt.money(activePoint.income),
+              label: t('web.dashboard.charts.incomeExpense.income'),
               color: 'var(--color-chart-income)',
             },
             {
               key: 'expense',
-              value: money(activePoint.expense),
-              label: 'Despesas',
+              value: fmt.money(activePoint.expense),
+              label: t('web.dashboard.charts.incomeExpense.expense'),
               color: 'var(--color-chart-expense)',
             },
             {
               key: 'net',
-              value: signedMoney(activePoint.net),
-              label: activePoint.net >= 0 ? 'Sobra' : 'Faltou',
+              value: fmt.signedMoney(activePoint.net),
+              label:
+                activePoint.net >= 0
+                  ? t('web.dashboard.charts.incomeExpense.left')
+                  : t('web.dashboard.charts.incomeExpense.short'),
               color: 'var(--color-chart-main)',
             },
           ]}
@@ -135,39 +139,43 @@ export function IncomeExpenseChart({ points, titleId, descId }: Props) {
 }
 
 export function IncomeExpenseLegend() {
+  const { t } = useI18n();
   return (
     <ul className={styles.legend}>
       <li>
         <span className={`${styles.key} ${styles.keyIncome}`} aria-hidden="true" />
-        Receitas
+        {t('web.dashboard.charts.incomeExpense.income')}
       </li>
       <li>
         <span className={`${styles.key} ${styles.keyExpense}`} aria-hidden="true" />
-        Despesas
+        {t('web.dashboard.charts.incomeExpense.expense')}
       </li>
     </ul>
   );
 }
 
 export function IncomeExpenseTable({ points }: { points: IncomeVsExpensePoint[] }) {
+  const { t, fmt } = useI18n();
   return (
     <table>
-      <caption className="visually-hidden">Receitas, despesas e resultado por mês</caption>
+      <caption className="visually-hidden">
+        {t('web.dashboard.charts.incomeExpense.caption')}
+      </caption>
       <thead>
         <tr>
-          <th scope="col">Mês</th>
-          <th scope="col">Receitas</th>
-          <th scope="col">Despesas</th>
-          <th scope="col">Resultado</th>
+          <th scope="col">{t('web.dashboard.charts.month')}</th>
+          <th scope="col">{t('web.dashboard.charts.incomeExpense.income')}</th>
+          <th scope="col">{t('web.dashboard.charts.incomeExpense.expense')}</th>
+          <th scope="col">{t('web.dashboard.charts.incomeExpense.net')}</th>
         </tr>
       </thead>
       <tbody>
         {points.map((point) => (
           <tr key={point.month}>
-            <th scope="row">{capitalize(formatMonth(point.month))}</th>
-            <td className="num">{money(point.income)}</td>
-            <td className="num">{money(point.expense)}</td>
-            <td className="num">{signedMoney(point.net)}</td>
+            <th scope="row">{fmt.monthTitle(point.month)}</th>
+            <td className="num">{fmt.money(point.income)}</td>
+            <td className="num">{fmt.money(point.expense)}</td>
+            <td className="num">{fmt.signedMoney(point.net)}</td>
           </tr>
         ))}
       </tbody>

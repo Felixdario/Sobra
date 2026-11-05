@@ -1,13 +1,18 @@
 import type { TransactionCreateBody, TransactionUpdateBody } from '@sobra/client';
 import { cents, type Account, type Category, type Transaction } from '@sobra/shared';
+import type { I18n } from '../../i18n/format';
+
+/** Category names as the person reads them (translated default names) and their sort order. */
+export type Naming = Pick<I18n, 'category' | 'compare'>;
 
 export type LaunchType = 'expense' | 'income';
 
-/** Most used first (recent transactions of the same kind), ties by name. */
+/** Most used first (recent transactions of the same kind), ties by name in the user's language. */
 export function rankCategories(
   categories: readonly Category[],
   recent: readonly Transaction[],
   type: LaunchType,
+  naming: Naming,
 ): Category[] {
   const uses = new Map<string, number>();
   for (const tx of recent) {
@@ -18,7 +23,8 @@ export function rankCategories(
     .filter((category) => category.kind === type)
     .sort(
       (a, b) =>
-        (uses.get(b.id) ?? 0) - (uses.get(a.id) ?? 0) || a.name.localeCompare(b.name, 'pt-BR'),
+        (uses.get(b.id) ?? 0) - (uses.get(a.id) ?? 0) ||
+        naming.compare(naming.category(a), naming.category(b)),
     );
 }
 
@@ -85,6 +91,7 @@ export function draftFromTransaction(tx: Transaction): LaunchDraft {
 export function buildUpdate(
   draft: LaunchDraft,
   categories: readonly Category[],
+  naming: Naming,
 ): TransactionUpdateBody | null {
   const tx = draft.editing;
   if (!tx || draft.amount <= 0) return null;
@@ -105,15 +112,19 @@ export function buildUpdate(
     categoryId: category.id,
     amount: cents(draft.amount),
     date: draft.date,
-    description: draft.description.trim() || category.name,
+    description: draft.description.trim() || naming.category(category),
     notes,
   };
 }
 
-/** The request body, or null while something required is missing. */
+/**
+ * The request body, or null while something required is missing. An empty description becomes
+ * the category's name as shown, so an en-US user gets "Groceries", not the stored pt-BR name.
+ */
 export function buildPayload(
   draft: LaunchDraft,
   categories: readonly Category[],
+  naming: Naming,
 ): TransactionCreateBody | null {
   const category = categories.find((item) => item.id === draft.categoryId);
   if (draft.amount <= 0 || !category || !draft.accountId) return null;
@@ -122,7 +133,7 @@ export function buildPayload(
     accountId: draft.accountId,
     categoryId: category.id,
     amount: cents(draft.amount),
-    description: draft.description.trim() || category.name,
+    description: draft.description.trim() || naming.category(category),
     date: draft.date,
     ...(draft.notes.trim() ? { notes: draft.notes.trim() } : {}),
   };

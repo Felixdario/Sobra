@@ -6,7 +6,9 @@ export type Choices = Record<number, RowChoice>;
 /** Fallback when the API has no suggestion: "Outros" of the right kind, or the first one. */
 function fallbackCategory(categories: Category[], kind: 'income' | 'expense'): string {
   const ofKind = categories.filter((c) => c.kind === kind);
-  return (ofKind.find((c) => c.name === 'Outros') ?? ofKind[0])?.id ?? '';
+  const other =
+    ofKind.find((c) => c.systemKey === 'other') ?? ofKind.find((c) => c.name === 'Outros');
+  return (other ?? ofKind[0])?.id ?? '';
 }
 
 /** Valid rows are in, duplicates are out until the user opts in, invalid rows can't be in. */

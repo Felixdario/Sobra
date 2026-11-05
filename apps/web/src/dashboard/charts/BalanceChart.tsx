@@ -1,14 +1,9 @@
-import {
-  formatDate,
-  formatMonth,
-  monthKey,
-  parseLocalDate,
-  type BalanceHistory,
-} from '@sobra/shared';
+import { monthKey, parseLocalDate, type BalanceHistory } from '@sobra/shared';
 import { space } from '@sobra/tokens';
 import { scaleLinear } from '@visx/scale';
 import { useState, type PointerEvent } from 'react';
-import { capitalize, compactMoney, compactReais, money } from '../../lib/format';
+import type { Format } from '../../i18n/format';
+import { useI18n } from '../../i18n/i18nContext';
 import styles from './chart.module.css';
 import { axisGutter, CAPTION_CHAR, rangeTicks } from './geometry';
 import { Tooltip } from './Tooltip';
@@ -22,10 +17,8 @@ const DOT_RADIUS = space[1];
 
 type Point = { date: string; balance: number };
 
-function labelOf(date: string): string {
-  return date.length === 7
-    ? capitalize(formatMonth(monthKey(date)))
-    : formatDate(parseLocalDate(date));
+function labelOf(date: string, fmt: Format): string {
+  return date.length === 7 ? fmt.monthTitle(monthKey(date)) : fmt.date(parseLocalDate(date));
 }
 
 /** One series: no legend box, the title names it. Crosshair snaps to the nearest day. */
@@ -38,6 +31,7 @@ export function BalanceChart({
   titleId: string;
   descId: string;
 }) {
+  const { t, fmt } = useI18n();
   const [ref, width] = useElementWidth<HTMLDivElement>();
   const [active, setActive] = useState<number | null>(null);
   const points: Point[] = history.points;
@@ -46,10 +40,10 @@ export function BalanceChart({
   const ticks = rangeTicks(Math.min(...values), Math.max(...values), 3);
   const last = points.at(-1);
   // The direct label at the line's end is compact past R$ 100 mil (exact value in the tooltip).
-  const endLabel = last ? compactMoney(last.balance) : '';
+  const endLabel = last ? fmt.compactMoney(last.balance) : '';
   const margin = {
     ...BASE_MARGIN,
-    left: axisGutter(ticks.map(compactReais)),
+    left: axisGutter(ticks.map(fmt.compactAmount)),
     right: Math.max(space[16] + space[4], LABEL_OFFSET + endLabel.length * CAPTION_CHAR),
   };
   const right = width - margin.right;
@@ -109,7 +103,7 @@ export function BalanceChart({
               y={y(tick) + space[1]}
               textAnchor="end"
             >
-              {compactReais(tick)}
+              {fmt.compactAmount(tick)}
             </text>
           </g>
         ))}
@@ -121,9 +115,7 @@ export function BalanceChart({
             y={height - space[1]}
             textAnchor="start"
           >
-            {roomy
-              ? formatMonth(monthKey(m.key), 'short')
-              : formatMonth(monthKey(m.key), 'short').slice(0, 3)}
+            {roomy ? fmt.monthShort(monthKey(m.key)) : fmt.monthShort(monthKey(m.key)).slice(0, 3)}
           </text>
         ))}
         <path className={styles.line} d={path} />
@@ -173,14 +165,14 @@ export function BalanceChart({
       </svg>
       {activePoint && active !== null ? (
         <Tooltip
-          title={labelOf(activePoint.date)}
+          title={labelOf(activePoint.date, fmt)}
           x={x(active)}
           width={width}
           rows={[
             {
               key: 'balance',
-              value: money(activePoint.balance),
-              label: 'Saldo total',
+              value: fmt.money(activePoint.balance),
+              label: t('web.dashboard.charts.balance.series'),
               color: 'var(--color-chart-main)',
             },
           ]}
@@ -192,22 +184,23 @@ export function BalanceChart({
 
 /** One row per month (end-of-month balance), so the table stays readable for daily data. */
 export function BalanceTable({ history }: { history: BalanceHistory }) {
+  const { t, fmt } = useI18n();
   const byMonth = new Map<string, number>();
   for (const point of history.points) byMonth.set(point.date.slice(0, 7), point.balance);
   return (
     <table>
-      <caption className="visually-hidden">Saldo total no fim de cada mês</caption>
+      <caption className="visually-hidden">{t('web.dashboard.charts.balance.caption')}</caption>
       <thead>
         <tr>
-          <th scope="col">Mês</th>
-          <th scope="col">Saldo no fim do mês</th>
+          <th scope="col">{t('web.dashboard.charts.month')}</th>
+          <th scope="col">{t('web.dashboard.charts.balance.endOfMonth')}</th>
         </tr>
       </thead>
       <tbody>
         {[...byMonth].map(([month, balance]) => (
           <tr key={month}>
-            <th scope="row">{capitalize(formatMonth(monthKey(month)))}</th>
-            <td className="num">{money(balance)}</td>
+            <th scope="row">{fmt.monthTitle(monthKey(month))}</th>
+            <td className="num">{fmt.money(balance)}</td>
           </tr>
         ))}
       </tbody>

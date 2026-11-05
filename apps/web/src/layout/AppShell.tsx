@@ -5,15 +5,18 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router';
 import { BrandLockup } from '../components/BrandMark';
 import { Button } from '../components/Button';
+import { useI18n } from '../i18n/i18nContext';
 import { useServices } from '../lib/servicesContext';
 import { useMediaQuery } from '../lib/useMediaQuery';
 import styles from './AppShell.module.css';
 import { NAV_ITEMS } from './navItems';
+import { PreferencesButton } from './PreferencesDialog';
 import { ThemeSwitch } from './ThemeSwitch';
 
 function Navigation({ onNavigate }: { onNavigate?: () => void }) {
+  const { t } = useI18n();
   return (
-    <nav aria-label="Principal">
+    <nav aria-label={t('web.shell.mainNav')}>
       <ul className={styles.nav}>
         {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
           <li key={to}>
@@ -24,7 +27,7 @@ function Navigation({ onNavigate }: { onNavigate?: () => void }) {
               onClick={onNavigate}
             >
               <Icon size={20} strokeWidth={1.75} aria-hidden="true" />
-              {label}
+              {t(label)}
             </NavLink>
           </li>
         ))}
@@ -38,9 +41,11 @@ function AccountFooter() {
   const navigate = useNavigate();
   const me = useQuery({ ...queries.me(), staleTime: Infinity });
   const logout = useMutation(mutations.auth.logout);
+  const { t } = useI18n();
   return (
     <div className={styles.footer}>
       <ThemeSwitch />
+      <PreferencesButton />
       <div className={styles.user}>
         <span className={styles.userText}>
           <span className={styles.userName} title={me.data?.name}>
@@ -53,8 +58,8 @@ function AccountFooter() {
         <Button
           variant="ghost"
           iconOnly
-          aria-label="Sair"
-          title="Sair"
+          aria-label={t('common.actions.signOut')}
+          title={t('common.actions.signOut')}
           loading={logout.isPending}
           onClick={() =>
             logout.mutate(undefined, { onSettled: () => navigate('/entrar', { replace: true }) })
@@ -72,6 +77,7 @@ function CompactBar() {
   const panelId = useId();
   const toggleRef = useRef<HTMLButtonElement>(null);
   const location = useLocation();
+  const { t } = useI18n();
   const [path, setPath] = useState(location.pathname);
   if (path !== location.pathname) {
     setPath(location.pathname);
@@ -100,7 +106,7 @@ function CompactBar() {
           iconOnly
           aria-expanded={open}
           aria-controls={panelId}
-          aria-label={open ? 'Fechar menu' : 'Abrir menu'}
+          aria-label={open ? t('web.shell.closeMenu') : t('web.shell.openMenu')}
           onClick={() => setOpen((value) => !value)}
         >
           {open ? (

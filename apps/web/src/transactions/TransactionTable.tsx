@@ -1,4 +1,5 @@
 import type { TransactionSortField } from '@sobra/client';
+import type { Translator } from '@sobra/i18n';
 import type { Transaction } from '@sobra/shared';
 import {
   createColumnHelper,
@@ -11,7 +12,9 @@ import {
 import { ArrowDown, ArrowUp, ArrowUpDown, Trash } from 'lucide-react';
 import { Button } from '../components/Button';
 import { IdentityMark } from '../components/IdentityMark';
-import { accountLabel, amountOf, categoryLabel, formatShortDate } from './display';
+import type { Format } from '../i18n/format';
+import { useI18n } from '../i18n/i18nContext';
+import { accountLabel, amountOf, categoryLabel } from './display';
 import type { Sort } from './listState';
 import styles from './TransactionTable.module.css';
 
@@ -39,20 +42,22 @@ function SortIcon({ direction }: { direction: false | 'asc' | 'desc' }) {
 /**
  * Columns live at module scope so their cell renderers keep one identity: a new function per
  * render would remount every cell (and drop the focus a closing panel returns to its row).
- * Handlers and pending state come through the table's `meta`.
+ * Handlers, pending state and the translator come through the table's `meta`.
  */
-type TableMeta = Pick<Props, 'onEdit' | 'onRemove' | 'pendingIds'>;
+type TableMeta = Pick<Props, 'onEdit' | 'onRemove' | 'pendingIds'> & { t: Translator; fmt: Format };
 const metaOf = (table: Table<Transaction>) => table.options.meta as TableMeta;
 
 const columns = [
   column.accessor('date', {
-    header: 'Data',
-    cell: (info) => <span className="num">{formatShortDate(info.getValue())}</span>,
+    header: ({ table }) => metaOf(table).t('web.transactions.table.date'),
+    cell: ({ getValue, table }) => (
+      <span className="num">{metaOf(table).fmt.shortDate(getValue())}</span>
+    ),
   }),
   column.accessor('description', {
-    header: 'Descrição',
+    header: ({ table }) => metaOf(table).t('web.transactions.table.description'),
     cell: ({ row, table }) => {
-      const { onEdit, pendingIds } = metaOf(table);
+      const { onEdit, pendingIds, t } = metaOf(table);
       const tx = row.original;
       return (
         <button
@@ -60,7 +65,7 @@ const columns = [
           className={styles.describe}
           onClick={() => onEdit(tx)}
           disabled={pendingIds.has(tx.id)}
-          aria-label={`Editar ${tx.description}`}
+          aria-label={t('web.transactions.table.editRow', { description: tx.description })}
         >
           <IdentityMark
             color={tx.category?.color ?? null}
@@ -70,8 +75,8 @@ const columns = [
             <span className={styles.title} title={tx.description}>
               {tx.description}
             </span>
-            <span className={styles.meta} title={categoryLabel(tx)}>
-              {categoryLabel(tx)}
+            <span className={styles.meta} title={categoryLabel(tx, t)}>
+              {categoryLabel(tx, t)}
             </span>
           </span>
         </button>
@@ -80,7 +85,7 @@ const columns = [
   }),
   column.display({
     id: 'account',
-    header: 'Conta',
+    header: ({ table }) => metaOf(table).t('web.transactions.table.account'),
     cell: ({ row }) => (
       <span className={styles.account} title={accountLabel(row.original)}>
         {accountLabel(row.original)}
@@ -88,9 +93,10 @@ const columns = [
     ),
   }),
   column.accessor('amount', {
-    header: 'Valor',
-    cell: ({ row }) => {
-      const amount = amountOf(row.original);
+    header: ({ table }) => metaOf(table).t('web.transactions.table.amount'),
+    cell: ({ row, table }) => {
+      const { t, fmt } = metaOf(table);
+      const amount = amountOf(row.original, t, fmt);
       return (
         <span className={`${styles.amount} ${styles[amount.tone]} num`} aria-label={amount.spoken}>
           {amount.text}
@@ -100,15 +106,19 @@ const columns = [
   }),
   column.display({
     id: 'actions',
-    header: () => <span className="visually-hidden">Ações</span>,
+    header: ({ table }) => (
+      <span className="visually-hidden">{metaOf(table).t('web.transactions.table.actions')}</span>
+    ),
     cell: ({ row, table }) => {
-      const { onRemove, pendingIds } = metaOf(table);
+      const { onRemove, pendingIds, t } = metaOf(table);
       return (
         <Button
           variant="ghost"
           iconOnly
-          aria-label={`Apagar ${row.original.description}`}
-          title="Apagar"
+          aria-label={t('web.transactions.table.removeRow', {
+            description: row.original.description,
+          })}
+          title={t('web.transactions.table.remove')}
           disabled={pendingIds.has(row.original.id)}
           onClick={() => onRemove(row.original)}
         >
@@ -124,6 +134,7 @@ const columns = [
  * screen), the table owns columns and rendering. The description is the row's primary action.
  */
 export function TransactionTable({ rows, sort, onSort, onEdit, onRemove, pendingIds }: Props) {
+  const { t, fmt } = useI18n();
   const sorting: SortingState = [{ id: sort.field, desc: sort.direction === 'desc' }];
   const table = useReactTable({
     data: rows,
@@ -131,14 +142,14 @@ export function TransactionTable({ rows, sort, onSort, onEdit, onRemove, pending
     state: { sorting },
     manualSorting: true,
     manualPagination: true,
-    meta: { onEdit, onRemove, pendingIds } satisfies TableMeta,
+    meta: { onEdit, onRemove, pendingIds, t, fmt } satisfies TableMeta,
     getRowId: (tx) => tx.id,
     getCoreRowModel: getCoreRowModel(),
   });
 
   return (
     <table className={styles.table}>
-      <caption className="visually-hidden">Transações do período, uma por linha</caption>
+      <caption className="visually-hidden">{t('web.transactions.table.caption')}</caption>
       <thead>
         {table.getHeaderGroups().map((group) => (
           <tr key={group.id}>

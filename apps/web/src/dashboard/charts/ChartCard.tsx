@@ -3,6 +3,7 @@ import { useId, useState, type ReactNode } from 'react';
 import { Button } from '../../components/Button';
 import { ErrorLine } from '../../components/ErrorLine';
 import { Skeleton } from '../../components/Skeleton';
+import { useI18n } from '../../i18n/i18nContext';
 import styles from './ChartCard.module.css';
 
 type QueryState = {
@@ -40,6 +41,7 @@ export function ChartCard({
   table,
   children,
 }: ChartCardProps) {
+  const { t } = useI18n();
   const titleId = useId();
   const descId = useId();
   const tableId = useId();
@@ -93,7 +95,9 @@ export function ChartCard({
                 onClick={() => setShowTable((value) => !value)}
               >
                 <Table2 size={16} strokeWidth={1.75} aria-hidden="true" />
-                {showTable ? 'Ocultar tabela' : 'Ver tabela'}
+                {showTable
+                  ? t('web.dashboard.charts.hideTable')
+                  : t('web.dashboard.charts.showTable')}
               </Button>
             </div>
           ) : null}

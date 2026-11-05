@@ -6,7 +6,7 @@ import {
   type Transaction,
   type TransactionCreate,
 } from '@sobra/shared';
-import { dayLabel } from '../launch/dates';
+import type { I18n } from '../../i18n/format';
 
 export type ListRow =
   | { kind: 'day'; key: string; date: string; label: string; total: Cents }
@@ -20,10 +20,15 @@ export function netOf(tx: Transaction): number {
 }
 
 /**
- * Rows for the list: a header per day ("Hoje", "Ontem", "seg., 2 de nov.") with the day's net,
+ * Rows for the list: a header per day ("Hoje"/"Today", "Ontem"/"Yesterday", "seg., 2 de nov.")
+ * with the day's net,
  * then the day's transactions in the API order (newest first). Totals cover the loaded pages.
  */
-export function groupByDay(items: readonly Transaction[], now: Date = new Date()): ListRow[] {
+export function groupByDay(
+  items: readonly Transaction[],
+  { dayLabel }: Pick<I18n, 'dayLabel'>,
+  now: Date = new Date(),
+): ListRow[] {
   const rows: ListRow[] = [];
   const totals = new Map<string, number>();
   for (const tx of items) {

@@ -1,6 +1,7 @@
 import '@testing-library/jest-dom/vitest';
 import { cleanup, configure } from '@testing-library/react';
 import { afterEach, beforeEach, vi } from 'vitest';
+import { installBrowserLanguages, setBrowserLanguages } from './languages';
 
 // The root runs every package in parallel; lazy routes and fake fetches can take a while there.
 configure({ asyncUtilTimeout: 5_000 });
@@ -38,7 +39,10 @@ if (!Element.prototype.setPointerCapture) {
   Element.prototype.hasPointerCapture = () => false;
 }
 
+installBrowserLanguages();
+
 beforeEach(() => {
+  setBrowserLanguages(['pt-BR']);
   vi.stubGlobal('matchMedia', vi.fn(matchMedia));
   window.localStorage.clear();
   document.cookie = 'sobra_csrf=; Max-Age=0; Path=/';

@@ -1,4 +1,4 @@
-import { formatDate, type CsvImportPreview } from '@sobra/shared';
+import type { CsvImportPreview } from '@sobra/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { FileUp, Undo2 } from 'lucide-react';
 import { useState, type DragEvent } from 'react';
@@ -9,7 +9,7 @@ import { Button } from '../components/Button';
 import { ErrorLine } from '../components/ErrorLine';
 import { EmptyState, Page, Panel } from '../components/Page';
 import { SelectField } from '../components/SelectField';
-import { count } from '../lib/format';
+import { useI18n } from '../i18n/i18nContext';
 import { useServices } from '../lib/servicesContext';
 import styles from './ImportPage.module.css';
 import { commitRows, initialChoices, type Choices, type RowChoice } from './previewState';
@@ -20,32 +20,45 @@ function History() {
   const imports = useQuery(queries.imports.list());
   const accounts = useQuery(queries.accounts.list({ includeArchived: true }));
   const undo = useMutation(mutations.imports.undo);
+  const { t, fmt, errorText } = useI18n();
   const accountName = (id: string) =>
-    accounts.data?.find((a) => a.id === id)?.name ?? 'conta removida';
+    accounts.data?.find((a) => a.id === id)?.name ?? t('web.imports.history.removedAccount');
 
   return (
-    <Panel title="Importações anteriores" titleId="importacoes">
+    <Panel title={t('web.imports.history.title')} titleId="importacoes">
       {imports.isError ? (
         <ErrorLine
-          what="Não deu para carregar as importações"
+          what={t('web.imports.history.failed')}
           error={imports.error}
           onRetry={() => void imports.refetch()}
         />
       ) : !imports.data ? null : imports.data.length === 0 ? (
-        <p className={styles.muted}>Nenhuma importação ainda.</p>
+        <p className={styles.muted}>{t('web.imports.history.none')}</p>
       ) : (
         <ul className={styles.history}>
           {imports.data.map((batch) => (
             <li key={batch.id}>
               <span className={styles.batch}>
-                <span className={styles.batchName}>{batch.fileName ?? 'Arquivo sem nome'}</span>
+                <span className={styles.batchName}>
+                  {batch.fileName ?? t('web.imports.history.unnamed')}
+                </span>
                 <span className={`${styles.muted} num`}>
-                  {formatDate(new Date(batch.createdAt))} · {accountName(batch.accountId)} ·{' '}
-                  {count(batch.importedCount)}{' '}
-                  {batch.importedCount === 1 ? 'importado' : 'importados'}
                   {batch.skippedCount > 0
-                    ? `, ${count(batch.skippedCount)} ${batch.skippedCount === 1 ? 'ignorado' : 'ignorados'}`
-                    : ''}
+                    ? t('web.imports.history.lineWithSkipped', {
+                        date: fmt.date(new Date(batch.createdAt)),
+                        account: accountName(batch.accountId),
+                        imported: t('web.imports.history.imported', {
+                          count: batch.importedCount,
+                        }),
+                        skipped: t('web.imports.history.skipped', { count: batch.skippedCount }),
+                      })
+                    : t('web.imports.history.line', {
+                        date: fmt.date(new Date(batch.createdAt)),
+                        account: accountName(batch.accountId),
+                        imported: t('web.imports.history.imported', {
+                          count: batch.importedCount,
+                        }),
+                      })}
                 </span>
               </span>
               <Button
@@ -55,14 +68,20 @@ function History() {
                   undo.mutate(batch.id, {
                     onSuccess: () =>
                       toast.success(
-                        `Importação desfeita: ${count(batch.importedCount)} ${batch.importedCount === 1 ? 'lançamento' : 'lançamentos'} de ${batch.fileName ?? 'arquivo'} removidos.`,
+                        t('web.imports.history.undone', {
+                          count: batch.importedCount,
+                          file: batch.fileName ?? t('web.imports.history.fileFallback'),
+                        }),
                       ),
-                    onError: (error) => toast.error(`Não deu para desfazer: ${error.message}`),
+                    onError: (error) =>
+                      toast.error(
+                        t('web.imports.history.undoFailed', { reason: errorText(error) }),
+                      ),
                   })
                 }
               >
                 <Undo2 size={16} strokeWidth={1.75} aria-hidden="true" />
-                Desfazer
+                {t('common.actions.undo')}
               </Button>
             </li>
           ))}
@@ -79,6 +98,7 @@ export function ImportPage() {
   const categories = useQuery(queries.categories.list());
   const previewMutation = useMutation(mutations.imports.preview);
   const commit = useMutation(mutations.imports.commit);
+  const { t, errorText } = useI18n();
   const [accountId, setAccountId] = useState('');
   const [file, setFile] = useState<{ name: string; text: string } | null>(null);
   const [preview, setPreview] = useState<CsvImportPreview | null>(null);
@@ -95,7 +115,7 @@ export function ImportPage() {
     setError(undefined);
     setPreview(null);
     if (!/\.csv$/i.test(picked.name) && picked.type !== 'text/csv') {
-      setError('Escolha um arquivo .csv exportado pelo banco.');
+      setError(t('web.imports.notCsv'));
       return;
     }
     setFile({ name: picked.name, text: await picked.text() });
@@ -110,7 +130,7 @@ export function ImportPage() {
           setPreview(result);
           setChoices(initialChoices(result, categories.data ?? []));
         },
-        onError: (failure) => setError(failure.message),
+        onError: (failure) => setError(errorText(failure)),
       },
     );
   };
@@ -119,7 +139,7 @@ export function ImportPage() {
     if (!preview) return;
     const { rows, force } = commitRows(preview, choices);
     if (rows.length === 0) {
-      setError('Marque ao menos uma linha para importar.');
+      setError(t('web.imports.selectOne'));
       return;
     }
     commit.mutate(
@@ -128,12 +148,15 @@ export function ImportPage() {
         onSuccess: (result) => {
           const month = rows[0]?.date.slice(0, 7);
           toast.success(
-            `${result.imported} ${result.imported === 1 ? 'lançamento importado' : 'lançamentos importados'}${
-              result.skipped > 0 ? `, ${result.skipped} já existiam e foram ignorados` : ''
-            }.`,
+            result.skipped > 0
+              ? t('web.imports.importedWithSkipped', {
+                  count: result.imported,
+                  skipped: result.skipped,
+                })
+              : t('web.imports.imported', { count: result.imported }),
             {
               action: {
-                label: 'Ver transações',
+                label: t('web.imports.viewTransactions'),
                 onClick: () => navigate(`/transacoes?mes=${month}&conta=${preview.accountId}`),
               },
             },
@@ -141,7 +164,7 @@ export function ImportPage() {
           setPreview(null);
           setFile(null);
         },
-        onError: (failure) => setError(failure.message),
+        onError: (failure) => setError(errorText(failure)),
       },
     );
   };
@@ -160,18 +183,18 @@ export function ImportPage() {
     }));
 
   return (
-    <Page title="Importar CSV">
-      <Panel title="1. Arquivo e conta" titleId="importar-arquivo">
+    <Page title={t('nav.import')}>
+      <Panel title={t('web.imports.step1')} titleId="importar-arquivo">
         {accounts.isError ? (
           <ErrorLine
-            what="Não deu para carregar as contas"
+            what={t('web.accounts.failed')}
             error={accounts.error}
             onRetry={() => void accounts.refetch()}
           />
         ) : (
           <div className={styles.pick}>
             <SelectField
-              label="Conta do extrato"
+              label={t('web.imports.account')}
               value={account}
               onChange={(event) => {
                 setAccountId(event.target.value);
@@ -190,17 +213,13 @@ export function ImportPage() {
               onDrop={onDrop}
             >
               <FileUp size={20} strokeWidth={1.75} aria-hidden="true" />
-              <span className={styles.dropTitle}>
-                {file ? file.name : 'Arraste o CSV aqui ou escolha o arquivo'}
-              </span>
-              <span className={styles.muted}>
-                Colunas de data, descrição e valor; separador e cabeçalho são detectados.
-              </span>
+              <span className={styles.dropTitle}>{file ? file.name : t('web.imports.drop')}</span>
+              <span className={styles.muted}>{t('web.imports.dropHint')}</span>
               <input
                 type="file"
                 accept=".csv,text/csv"
                 className={styles.file}
-                aria-label="Arquivo CSV"
+                aria-label={t('web.imports.file')}
                 onChange={(event) => void load(event.target.files?.[0])}
               />
             </label>
@@ -211,7 +230,7 @@ export function ImportPage() {
                 loading={previewMutation.isPending}
                 onClick={runPreview}
               >
-                Ver prévia
+                {t('web.imports.preview')}
               </Button>
             </div>
           </div>
@@ -221,22 +240,21 @@ export function ImportPage() {
 
       {preview ? (
         <Panel
-          title="2. Prévia"
+          title={t('web.imports.step2')}
           titleId="importar-previa"
           aside={
             <span className={`${styles.muted} num`}>
-              {count(preview.validCount)} {preview.validCount === 1 ? 'válida' : 'válidas'} ·{' '}
-              {count(preview.invalidCount)} com erro · {count(preview.duplicateCount)}{' '}
-              {preview.duplicateCount === 1 ? 'já existente' : 'já existentes'}
+              {[
+                t('web.imports.valid', { count: preview.validCount }),
+                t('web.imports.invalid', { count: preview.invalidCount }),
+                t('web.imports.duplicates', { count: preview.duplicateCount }),
+              ].join(' · ')}
             </span>
           }
         >
-          <p className={styles.muted}>
-            Nada é gravado até você confirmar. Linhas que já existem na conta ficam desmarcadas;
-            marque para importar mesmo assim.
-          </p>
+          <p className={styles.muted}>{t('web.imports.previewNote')}</p>
           {preview.rows.length === 0 ? (
-            <EmptyState title="O arquivo não tem linhas para importar." />
+            <EmptyState title={t('web.imports.noRows')} />
           ) : (
             <PreviewRows
               preview={preview}
@@ -248,7 +266,7 @@ export function ImportPage() {
           <FormError message={error} />
           <div className={styles.confirm}>
             <Button variant="secondary" onClick={() => setPreview(null)}>
-              Cancelar
+              {t('common.actions.cancel')}
             </Button>
             <Button
               variant="primary"
@@ -256,7 +274,7 @@ export function ImportPage() {
               disabled={selected === 0}
               onClick={confirm}
             >
-              Importar {selected} {selected === 1 ? 'lançamento' : 'lançamentos'}
+              {t('web.imports.submit', { count: selected })}
             </Button>
           </div>
         </Panel>

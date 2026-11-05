@@ -1,10 +1,12 @@
+import { categoryName, type Translator } from '@sobra/i18n';
 import type { Category, CsvImportPreview, CsvImportPreviewRow } from '@sobra/shared';
 import { CircleAlert, Copy } from 'lucide-react';
-import { signedMoney } from '../lib/format';
+import type { Format } from '../i18n/format';
+import { useI18n } from '../i18n/i18nContext';
 import { useWide } from '../lib/useWide';
-import { formatShortDate } from '../transactions/display';
 import type { Choices, RowChoice } from './previewState';
 import styles from './ImportPage.module.css';
+import { translateRowError } from './rowError';
 
 type Props = {
   preview: CsvImportPreview;
@@ -14,11 +16,12 @@ type Props = {
 };
 
 function Status({ row }: { row: CsvImportPreviewRow }) {
+  const { t } = useI18n();
   if (row.error) {
     return (
       <span className={styles.error}>
         <CircleAlert size={16} strokeWidth={1.75} aria-hidden="true" />
-        {row.error}
+        {translateRowError(t, row.error)}
       </span>
     );
   }
@@ -26,7 +29,7 @@ function Status({ row }: { row: CsvImportPreviewRow }) {
     return (
       <span className={styles.duplicate}>
         <Copy size={16} strokeWidth={1.75} aria-hidden="true" />
-        Já existe na conta
+        {t('web.imports.rows.duplicate')}
       </span>
     );
   }
@@ -38,14 +41,20 @@ function cellsOf({
   choice,
   categories,
   onChange,
+  t,
+  fmt,
 }: {
   row: CsvImportPreviewRow;
   choice: RowChoice | undefined;
   categories: Category[];
   onChange: Props['onChange'];
+  t: Translator;
+  fmt: Format;
 }) {
   const mapped = row.mapped;
-  const label = mapped?.description ?? (row.raw.description || `Linha ${row.rowNumber}`);
+  const label =
+    mapped?.description ??
+    (row.raw.description || t('web.imports.rows.lineLabel', { row: row.rowNumber }));
   const options = mapped ? categories.filter((c) => c.kind === mapped.type) : [];
   return {
     include: (
@@ -54,29 +63,29 @@ function cellsOf({
         className={styles.check}
         checked={Boolean(choice?.include)}
         disabled={!mapped}
-        aria-label={`Importar ${label}`}
+        aria-label={t('web.imports.rows.includeRow', { label })}
         onChange={(event) => onChange(row.rowNumber, { include: event.target.checked })}
       />
     ),
-    date: mapped ? formatShortDate(mapped.date) : row.raw.date || '—',
+    date: mapped ? fmt.shortDate(mapped.date) : row.raw.date || t('common.labels.none'),
     description: label,
     amount: mapped ? (
       <span className={`${mapped.type === 'income' ? styles.income : ''} num`}>
-        {signedMoney(mapped.type === 'income' ? mapped.amount : -mapped.amount)}
+        {fmt.signedMoney(mapped.type === 'income' ? mapped.amount : -mapped.amount)}
       </span>
     ) : (
-      <span className="num">{row.raw.amount || '—'}</span>
+      <span className="num">{row.raw.amount || t('common.labels.none')}</span>
     ),
     category: mapped ? (
       <select
         className={styles.categorySelect}
-        aria-label={`Categoria de ${label}`}
+        aria-label={t('web.imports.rows.categoryOf', { label })}
         value={choice?.categoryId ?? ''}
         onChange={(event) => onChange(row.rowNumber, { categoryId: event.target.value })}
       >
         {options.map((c) => (
           <option key={c.id} value={c.id}>
-            {c.name}
+            {categoryName(t, c)}
           </option>
         ))}
       </select>
@@ -87,11 +96,19 @@ function cellsOf({
 /** The preview: a table on wide screens, stacked rows on a phone. */
 export function PreviewRows({ preview, categories, choices, onChange }: Props) {
   const wide = useWide();
+  const { t, fmt } = useI18n();
   if (!wide) {
     return (
       <ul className={styles.cards}>
         {preview.rows.map((row) => {
-          const cells = cellsOf({ row, choice: choices[row.rowNumber], categories, onChange });
+          const cells = cellsOf({
+            row,
+            choice: choices[row.rowNumber],
+            categories,
+            onChange,
+            t,
+            fmt,
+          });
           return (
             <li key={row.rowNumber} className={styles.card} data-invalid={!row.mapped || undefined}>
               <div className={styles.cardHead}>
@@ -100,7 +117,7 @@ export function PreviewRows({ preview, categories, choices, onChange }: Props) {
                 <span className={styles.cardAmount}>{cells.amount}</span>
               </div>
               <span className={styles.cardMeta}>
-                Linha {row.rowNumber} · {cells.date}
+                {t('web.imports.rows.cardMeta', { row: row.rowNumber, date: cells.date })}
               </span>
               <Status row={row} />
               {cells.category}
@@ -112,30 +129,37 @@ export function PreviewRows({ preview, categories, choices, onChange }: Props) {
   }
   return (
     <table className={styles.table}>
-      <caption className="visually-hidden">Prévia do arquivo, uma linha por lançamento</caption>
+      <caption className="visually-hidden">{t('web.imports.rows.caption')}</caption>
       <thead>
         <tr>
           <th scope="col" className={styles.colInclude}>
-            <span className="visually-hidden">Importar</span>
+            <span className="visually-hidden">{t('web.imports.rows.include')}</span>
           </th>
           <th scope="col" className={styles.colLine}>
-            Linha
+            {t('web.imports.rows.line')}
           </th>
           <th scope="col" className={styles.colDate}>
-            Data
+            {t('web.imports.rows.date')}
           </th>
-          <th scope="col">Descrição</th>
+          <th scope="col">{t('web.imports.rows.description')}</th>
           <th scope="col" className={`${styles.right} ${styles.colAmount}`}>
-            Valor
+            {t('web.imports.rows.amount')}
           </th>
           <th scope="col" className={styles.colCategory}>
-            Categoria
+            {t('web.imports.rows.category')}
           </th>
         </tr>
       </thead>
       <tbody>
         {preview.rows.map((row) => {
-          const cells = cellsOf({ row, choice: choices[row.rowNumber], categories, onChange });
+          const cells = cellsOf({
+            row,
+            choice: choices[row.rowNumber],
+            categories,
+            onChange,
+            t,
+            fmt,
+          });
           return (
             <tr key={row.rowNumber} data-invalid={!row.mapped || undefined}>
               <td>{cells.include}</td>
