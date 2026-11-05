@@ -1,5 +1,5 @@
 import { CircleAlert } from 'lucide-react';
-import { useId, type InputHTMLAttributes, type Ref } from 'react';
+import { useId, type InputHTMLAttributes, type Ref, type TextareaHTMLAttributes } from 'react';
 import styles from './TextField.module.css';
 
 type TextFieldProps = InputHTMLAttributes<HTMLInputElement> & {
@@ -47,6 +47,47 @@ export function TextField({
       ) : hint ? (
         <p id={messageId} className={styles.hint}>
           {hint}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+type TextAreaFieldProps = TextareaHTMLAttributes<HTMLTextAreaElement> & {
+  label: string;
+  error?: string | undefined;
+  ref?: Ref<HTMLTextAreaElement>;
+};
+
+/** Multi-line sibling of TextField for free text (notes up to 500 characters). */
+export function TextAreaField({
+  label,
+  error,
+  id,
+  ref,
+  className = '',
+  ...textarea
+}: TextAreaFieldProps) {
+  const autoId = useId();
+  const inputId = id ?? autoId;
+  const messageId = `${inputId}-message`;
+  return (
+    <div className={`${styles.field} ${className}`}>
+      <label className={styles.label} htmlFor={inputId}>
+        {label}
+      </label>
+      <textarea
+        ref={ref}
+        id={inputId}
+        className={`${styles.input} ${styles.textarea}`}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? messageId : undefined}
+        {...textarea}
+      />
+      {error ? (
+        <p id={messageId} className={styles.error}>
+          <CircleAlert size={16} strokeWidth={1.75} aria-hidden="true" />
+          {error}
         </p>
       ) : null}
     </div>

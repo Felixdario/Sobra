@@ -1,17 +1,20 @@
-import { cents, type MonthSummary } from '@financas/shared';
+import { cents, type Cents, type MonthSummary } from '@financas/shared';
 import { Triangle } from 'lucide-react-native';
 import { View } from 'react-native';
 import { formatMoney, speakMoney } from '../../lib/money';
+import { FIGURE_MAX_FONT_SCALE } from '../../theme/fontScale';
 import { makeStyles } from '../../theme/makeStyles';
 import { useTheme } from '../../theme/ThemeProvider';
 import { AppText } from '../../ui/AppText';
 import { ICON_STROKE } from '../../ui/icons';
+import { useFigureStyle, useFitValue } from '../../ui/useFigureStyle';
 import type { Headline } from './summaryModel';
 
-/** Longest figure that fits Figure XL at phone width; longer ones step down to Figure LG. */
-const FIGURE_XL_MAX = 12;
-
-/** The month's answer: one Figure XL, what it means, and the change with its base named. */
+/**
+ * The month's answer: one Figure XL, what it means, and the change with its base named. The
+ * figure steps down to fit (never cut); KPI rows wrap the value under the label when both don't
+ * fit on one line (2× text, billions).
+ */
 export function HeadlineCard({ headline, summary }: { headline: Headline; summary: MonthSummary }) {
   const theme = useTheme();
   const styles = useStyles();
@@ -21,10 +24,12 @@ export function HeadlineCard({ headline, summary }: { headline: Headline; summar
     headline.tone === 'debt' ? theme.colors.money.debt : theme.colors.text.primary;
   const delta = headline.delta;
   const deltaColor = delta?.good ? theme.colors.money.income : theme.colors.money.debt;
+  const fit = useFigureStyle(figure);
 
   return (
     <View style={styles.card}>
       <View
+        onLayout={fit.onLayout}
         accessible
         accessibilityLabel={`${headline.label}: ${speakMoney(headline.tone === 'debt' ? cents(-headline.value) : headline.value)}`}
       >
@@ -32,11 +37,12 @@ export function HeadlineCard({ headline, summary }: { headline: Headline; summar
           {headline.label}
         </AppText>
         <AppText
-          variant={figure.length > FIGURE_XL_MAX ? 'figureLg' : 'figureXl'}
+          variant={fit.variant}
+          maxFontSizeMultiplier={fit.maxFontSizeMultiplier}
+          allowFontScaling={fit.allowFontScaling}
+          style={fit.fitStyle}
           color={figureColor}
           testID="headline-figure"
-          numberOfLines={1}
-          adjustsFontSizeToFit
         >
           {figure}
         </AppText>
@@ -54,7 +60,7 @@ export function HeadlineCard({ headline, summary }: { headline: Headline; summar
               strokeWidth={ICON_STROKE}
             />
           </View>
-          <AppText variant="caption" color={deltaColor}>
+          <AppText variant="caption" color={deltaColor} style={styles.flex}>
             {delta.text}
           </AppText>
         </View>
@@ -62,17 +68,18 @@ export function HeadlineCard({ headline, summary }: { headline: Headline; summar
       <View style={styles.kpis}>
         <Kpi
           label="Receitas"
-          value={formatMoney(summary.income, 'always')}
-          color={theme.colors.money.income}
+          value={summary.income}
+          sign="always"
+          color={summary.income === 0 ? theme.colors.money.zero : theme.colors.money.income}
         />
         <Kpi
           label="Despesas"
-          value={formatMoney(cents(-summary.expense))}
-          color={theme.colors.money.expense}
+          value={cents(-summary.expense)}
+          color={summary.expense === 0 ? theme.colors.money.zero : theme.colors.money.expense}
         />
         <Kpi
           label="Saldo em contas"
-          value={formatMoney(summary.balance)}
+          value={summary.balance}
           color={summary.balance < 0 ? theme.colors.money.debt : theme.colors.text.primary}
         />
       </View>
@@ -80,15 +87,40 @@ export function HeadlineCard({ headline, summary }: { headline: Headline; summar
   );
 }
 
-function Kpi({ label, value, color }: { label: string; value: string; color: string }) {
+/** One element for screen readers: "Despesas: menos 263 reais e 16 centavos". */
+function Kpi({
+  label,
+  value,
+  sign = 'auto',
+  color,
+}: {
+  label: string;
+  value: Cents;
+  sign?: 'auto' | 'always';
+  color: string;
+}) {
+  const theme = useTheme();
   const styles = useStyles();
+  const text = formatMoney(value, sign);
+  const fit = useFitValue(text, theme.text.titleSm, FIGURE_MAX_FONT_SCALE);
   return (
-    <View style={styles.kpi}>
+    <View
+      style={styles.kpi}
+      onLayout={fit.onLayout}
+      accessible
+      accessibilityLabel={`${label}: ${speakMoney(value)}`}
+    >
       <AppText variant="bodySm" tone="secondary">
         {label}
       </AppText>
-      <AppText variant="titleSm" color={color} style={styles.kpiValue}>
-        {value}
+      <AppText
+        variant="titleSm"
+        color={color}
+        allowFontScaling={fit.allowFontScaling}
+        maxFontSizeMultiplier={FIGURE_MAX_FONT_SCALE}
+        style={[styles.kpiValue, fit.fitStyle]}
+      >
+        {text}
       </AppText>
     </View>
   );
@@ -111,9 +143,12 @@ const useStyles = makeStyles((t) => ({
   },
   kpi: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    columnGap: t.space[3],
     minHeight: t.layout.row,
+    paddingVertical: t.space[1],
   },
-  kpiValue: { fontVariant: ['tabular-nums', 'lining-nums'] },
+  kpiValue: { marginLeft: 'auto', fontVariant: ['tabular-nums', 'lining-nums'] },
+  flex: { flex: 1 },
 }));

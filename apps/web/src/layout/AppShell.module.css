@@ -115,6 +115,7 @@
 .compactBar > a {
   flex-direction: row;
   align-items: center;
+  min-height: var(--touch-min);
   gap: var(--space-3);
 }
 
@@ -153,10 +154,20 @@
     visibility 0s;
 }
 
+/* Reduced motion: no travel, a 120ms fade both ways. */
 @media (prefers-reduced-motion: reduce) {
   .panel,
   .panel[data-open='true'] {
     transform: none;
+    transition:
+      opacity var(--duration-fast) var(--ease-standard),
+      visibility 0s linear var(--duration-fast);
+  }
+
+  .panel[data-open='true'] {
+    transition:
+      opacity var(--duration-fast) var(--ease-standard),
+      visibility 0s;
   }
 }
 

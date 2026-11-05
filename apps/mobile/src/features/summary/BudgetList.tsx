@@ -58,10 +58,12 @@ function BudgetRow({ item }: { item: BudgetVsActualItem }) {
       }}
     >
       <View style={styles.titleRow}>
-        <ColorSquare color={item.color} />
-        <AppText variant="label" style={styles.name} numberOfLines={1}>
-          {item.name}
-        </AppText>
+        <View style={styles.nameGroup}>
+          <ColorSquare color={item.color} />
+          <AppText variant="label" style={styles.name} numberOfLines={2}>
+            {item.name}
+          </AppText>
+        </View>
         <AppText variant="bodySm" tone="secondary" style={styles.figures}>
           {formatMoney(item.actual, 'never')} de {formatMoney(item.budgeted, 'never')}
         </AppText>
@@ -69,7 +71,7 @@ function BudgetRow({ item }: { item: BudgetVsActualItem }) {
       <BudgetBar item={item} />
       <View style={styles.statusRow}>
         <Icon size={ICON_SIZE.inline} color={statusColor} strokeWidth={ICON_STROKE} />
-        <AppText variant="caption" color={statusColor}>
+        <AppText variant="caption" color={statusColor} style={styles.statusText}>
           {text}
         </AppText>
         <AppText variant="caption" tone="tertiary" style={styles.percent}>
@@ -133,9 +135,18 @@ function BudgetBar({ item }: { item: BudgetVsActualItem }) {
 const useStyles = makeStyles((t) => ({
   list: { gap: t.space[4] },
   row: { gap: t.space[2] },
-  titleRow: { flexDirection: 'row', alignItems: 'center', gap: t.space[2] },
-  name: { flex: 1 },
-  figures: { fontVariant: ['tabular-nums', 'lining-nums'] },
+  // The name keeps at least half the row; long figures wrap below it instead of squeezing it.
+  titleRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', columnGap: t.space[2] },
+  nameGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: t.space[2],
+    flexGrow: 1,
+    flexShrink: 1,
+    minWidth: '45%',
+  },
+  name: { flex: 1, textAlign: 'left' },
+  figures: { marginLeft: 'auto', fontVariant: ['tabular-nums', 'lining-nums'] },
   track: {
     height: TRACK_HEIGHT,
     borderRadius: t.radii.sm,
@@ -143,5 +154,6 @@ const useStyles = makeStyles((t) => ({
     backgroundColor: t.colors.budget.track,
   },
   statusRow: { flexDirection: 'row', alignItems: 'center', gap: t.space[1] },
+  statusText: { flexShrink: 1 },
   percent: { marginLeft: 'auto', fontVariant: ['tabular-nums', 'lining-nums'] },
 }));

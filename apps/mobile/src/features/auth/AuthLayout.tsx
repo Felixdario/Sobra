@@ -37,7 +37,9 @@ export function AuthLayout({
             {subtitle}
           </AppText>
         </View>
-        <AppText variant="title">{title}</AppText>
+        <AppText variant="title" accessibilityRole="header">
+          {title}
+        </AppText>
         {children}
       </ScrollView>
     </KeyboardAvoidingView>

@@ -1,7 +1,7 @@
 import { breakpoints } from '@financas/tokens';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { LogOut, Menu, X } from 'lucide-react';
-import { useEffect, useId, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router';
 import { BrandLockup } from '../components/BrandMark';
 import { Button } from '../components/Button';
@@ -43,8 +43,12 @@ function AccountFooter() {
       <ThemeSwitch />
       <div className={styles.user}>
         <span className={styles.userText}>
-          <span className={styles.userName}>{me.data?.name}</span>
-          <span className={styles.userEmail}>{me.data?.email}</span>
+          <span className={styles.userName} title={me.data?.name}>
+            {me.data?.name}
+          </span>
+          <span className={styles.userEmail} title={me.data?.email}>
+            {me.data?.email}
+          </span>
         </span>
         <Button
           variant="ghost"
@@ -66,6 +70,7 @@ function AccountFooter() {
 function CompactBar() {
   const [open, setOpen] = useState(false);
   const panelId = useId();
+  const toggleRef = useRef<HTMLButtonElement>(null);
   const location = useLocation();
   const [path, setPath] = useState(location.pathname);
   if (path !== location.pathname) {
@@ -75,7 +80,12 @@ function CompactBar() {
 
   useEffect(() => {
     if (!open) return;
-    const onKey = (event: KeyboardEvent) => event.key === 'Escape' && setOpen(false);
+    // Esc closes the menu and, since the panel turns inert, puts focus back on the toggle.
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      setOpen(false);
+      toggleRef.current?.focus();
+    };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [open]);
@@ -85,6 +95,7 @@ function CompactBar() {
       <div className={styles.compactBar}>
         <BrandLockup />
         <Button
+          ref={toggleRef}
           variant="ghost"
           iconOnly
           aria-expanded={open}

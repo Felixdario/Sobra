@@ -1,7 +1,18 @@
 import { isApiError } from '../errors';
 
-export { invalidationMap, queryKeys, type InvalidatingMutation, type QueryDomain } from './keys';
-export { createQueries, type ApiQueries, type ApiQueryOptions } from './queries';
+export {
+  invalidationMap,
+  queryKeys,
+  type InvalidatingMutation,
+  type QueryDomain,
+  type TransactionInfiniteParams,
+} from './keys';
+export {
+  createQueries,
+  type ApiInfiniteQueryOptions,
+  type ApiQueries,
+  type ApiQueryOptions,
+} from './queries';
 export {
   createMutations,
   invalidateAfter,
@@ -16,6 +27,7 @@ export {
   optimisticRemoveTransaction,
   optimisticUpdateTransaction,
   type OptimisticSnapshot,
+  type TransactionPages,
 } from './optimistic';
 
 const MAX_RETRIES = 2;

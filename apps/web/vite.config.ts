@@ -19,6 +19,22 @@ const API_TARGET = process.env.VITE_API_PROXY ?? 'http://localhost:3333';
 
 export default defineConfig({
   plugins: [sobraTokens(), react()],
+  build: {
+    rolldownOptions: {
+      output: {
+        // React, React DOM and the router change far less often than the app: their own chunk
+        // stays cached across deploys. Zod and the API client stay with the entry that needs them.
+        codeSplitting: {
+          groups: [
+            {
+              name: 'react',
+              test: /[\\/]node_modules[\\/](?:react|react-dom|scheduler|react-router)[\\/]/,
+            },
+          ],
+        },
+      },
+    },
+  },
   server: {
     proxy: {
       '/api': {

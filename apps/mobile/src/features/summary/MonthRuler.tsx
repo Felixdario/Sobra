@@ -54,7 +54,11 @@ export function MonthRuler({ ruler, partial }: Props) {
 
   return (
     <View style={styles.wrap}>
-      <View style={styles.labels}>
+      <View
+        style={styles.labels}
+        importantForAccessibility="no-hide-descendants"
+        accessibilityElementsHidden
+      >
         <AppText variant="caption" tone="secondary">
           Recebido {formatMoney(ruler.income, 'never')}
         </AppText>
@@ -111,7 +115,12 @@ export function MonthRuler({ ruler, partial }: Props) {
           </Svg>
         ) : null}
       </View>
-      <View style={styles.legend}>
+      {/* The ruler's label already reads every plane; the legend is for the eye. */}
+      <View
+        style={styles.legend}
+        importantForAccessibility="no-hide-descendants"
+        accessibilityElementsHidden
+      >
         {planes.map((plane) => (
           <LegendRow
             key={plane.key}
@@ -130,7 +139,7 @@ function LegendRow({ color, name, amount }: { color: string; name: string; amoun
   return (
     <View style={styles.legendRow}>
       <View style={[styles.swatch, { backgroundColor: color }]} />
-      <AppText variant="bodySm" tone="secondary" style={styles.legendName} numberOfLines={1}>
+      <AppText variant="bodySm" tone="secondary" style={styles.legendName} numberOfLines={2}>
         {name}
       </AppText>
       <AppText variant="bodySm" style={styles.amount}>
@@ -142,11 +151,18 @@ function LegendRow({ color, name, amount }: { color: string; name: string; amoun
 
 const useStyles = makeStyles((t) => ({
   wrap: { gap: t.space[2] },
-  labels: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
+  labels: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    alignItems: 'baseline',
+    columnGap: t.space[3],
+  },
   bar: { borderRadius: t.radii.sm, overflow: 'hidden', backgroundColor: t.colors.budget.track },
   legend: { gap: t.space[1] },
   legendRow: { flexDirection: 'row', alignItems: 'center', gap: t.space[2] },
   swatch: { width: t.space[2], height: t.space[2], borderRadius: t.radii.xs },
-  legendName: { flex: 1 },
-  amount: { fontVariant: ['tabular-nums', 'lining-nums'] },
+  // Names in any script start at the swatch (an Arabic name would align right on its own).
+  legendName: { flex: 1, textAlign: 'left' },
+  amount: { flexShrink: 0, fontVariant: ['tabular-nums', 'lining-nums'] },
 }));

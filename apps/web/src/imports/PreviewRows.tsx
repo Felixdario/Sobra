@@ -115,16 +115,22 @@ export function PreviewRows({ preview, categories, choices, onChange }: Props) {
       <caption className="visually-hidden">Prévia do arquivo, uma linha por lançamento</caption>
       <thead>
         <tr>
-          <th scope="col">
+          <th scope="col" className={styles.colInclude}>
             <span className="visually-hidden">Importar</span>
           </th>
-          <th scope="col">Linha</th>
-          <th scope="col">Data</th>
+          <th scope="col" className={styles.colLine}>
+            Linha
+          </th>
+          <th scope="col" className={styles.colDate}>
+            Data
+          </th>
           <th scope="col">Descrição</th>
-          <th scope="col" className={styles.right}>
+          <th scope="col" className={`${styles.right} ${styles.colAmount}`}>
             Valor
           </th>
-          <th scope="col">Categoria</th>
+          <th scope="col" className={styles.colCategory}>
+            Categoria
+          </th>
         </tr>
       </thead>
       <tbody>

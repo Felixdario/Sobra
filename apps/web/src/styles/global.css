@@ -7,6 +7,9 @@
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  /* Browser surfaces in the palette: concrete scrollbar, cobalt caret. */
+  scrollbar-color: var(--color-border-strong) transparent;
+  caret-color: var(--color-border-focus);
 }
 
 body {
@@ -42,9 +45,17 @@ ol {
 }
 
 button,
-input {
+input,
+select,
+textarea {
   font: inherit;
   color: inherit;
+}
+
+/* The browser default placeholder gray fails 4.5:1 on the dark surface; tertiary text passes. */
+::placeholder {
+  color: var(--color-text-tertiary);
+  opacity: 1;
 }
 
 a {

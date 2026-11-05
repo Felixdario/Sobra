@@ -1,4 +1,4 @@
-import type { DataTag, QueryFunctionContext, QueryKey } from '@tanstack/query-core';
+import type { DataTag, InfiniteData, QueryFunctionContext, QueryKey } from '@tanstack/query-core';
 import type { ApiClient } from '../client';
 import type { ApiError } from '../errors';
 import type { RequestOptions } from '../http';
@@ -8,8 +8,9 @@ import type {
   SummaryMonthParams,
   SummaryRangeParams,
   TransactionListParams,
+  TransactionPage,
 } from '../types';
-import { queryKeys } from './keys';
+import { queryKeys, type TransactionInfiniteParams } from './keys';
 
 /**
  * Same shape as TanStack's `queryOptions(...)`: the key is tagged with the data and error types,
@@ -19,6 +20,34 @@ export type ApiQueryOptions<TKey extends QueryKey, TData> = {
   queryKey: DataTag<TKey, TData, ApiError>;
   queryFn: (context: QueryFunctionContext<TKey>) => Promise<TData>;
 };
+
+/**
+ * Same shape as TanStack's `infiniteQueryOptions(...)`, for `useInfiniteQuery` on web and RN.
+ * Pages are numbered from 1 and the next one exists while `page < totalPages`.
+ */
+export type ApiInfiniteQueryOptions<TKey extends QueryKey, TPage> = {
+  queryKey: DataTag<TKey, InfiniteData<TPage, number>, ApiError>;
+  queryFn: (context: QueryFunctionContext<TKey, number>) => Promise<TPage>;
+  initialPageParam: number;
+  getNextPageParam: (lastPage: TPage) => number | undefined;
+};
+
+function infiniteTransactions(
+  api: ApiClient,
+  params: TransactionInfiniteParams,
+): ApiInfiniteQueryOptions<ReturnType<typeof queryKeys.transactions.infinite>, TransactionPage> {
+  return {
+    queryKey: queryKeys.transactions.infinite(params) as DataTag<
+      ReturnType<typeof queryKeys.transactions.infinite>,
+      InfiniteData<TransactionPage, number>,
+      ApiError
+    >,
+    queryFn: ({ pageParam, signal }) =>
+      api.transactions.list({ ...params, page: pageParam }, { signal }),
+    initialPageParam: 1,
+    getNextPageParam: (last) => (last.page < last.totalPages ? last.page + 1 : undefined),
+  };
+}
 
 function query<const TKey extends QueryKey, TData>(
   queryKey: TKey,
@@ -49,6 +78,8 @@ export function createQueries(api: ApiClient) {
     transactions: {
       list: (params: TransactionListParams = {}) =>
         query(queryKeys.transactions.list(params), (opts) => api.transactions.list(params, opts)),
+      /** Infinite scroll: `useInfiniteQuery(queries.transactions.infinite({ month }))`. */
+      infinite: (params: TransactionInfiniteParams = {}) => infiniteTransactions(api, params),
       detail: (id: string) =>
         query(queryKeys.transactions.detail(id), (opts) => api.transactions.get(id, opts)),
     },

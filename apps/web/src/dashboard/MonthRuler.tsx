@@ -79,7 +79,9 @@ export function MonthRuler(props: MonthRulerProps) {
               style={{ background: `var(--plane-${index + 1})` }}
               aria-hidden="true"
             />
-            <span className={styles.legendName}>{plane.name}</span>
+            <span className={styles.legendName} title={plane.name}>
+              {plane.name}
+            </span>
             <span className={`${styles.legendValue} num`}>{money(plane.amount)}</span>
           </li>
         ))}

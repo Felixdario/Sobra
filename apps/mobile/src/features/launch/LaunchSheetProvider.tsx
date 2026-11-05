@@ -8,8 +8,7 @@ import { storage } from '../../lib/storage';
 import { BottomSheet } from '../../ui/BottomSheet';
 import { useToast } from '../../ui/Toast';
 import { todayKey } from './dates';
-import { LaunchForm, LaunchHeader } from './LaunchForm';
-import { listMutations } from '../transactions/infiniteTransactions';
+import { LaunchFooter, LaunchForm, LaunchHeader } from './LaunchForm';
 import {
   buildPayload,
   buildUpdate,
@@ -81,7 +80,7 @@ function LaunchSheet({ open, onClose, draft, onChange, lastAccountId }: SheetPro
   const categories = useQuery({ ...queries.categories.list(), enabled });
   const recent = useQuery({ ...queries.transactions.list(RECENT_PARAMS), enabled });
   const create = useMutation(mutations.transactions.create);
-  const update = useMutation(useMemo(() => listMutations(mutations).update, [mutations]));
+  const update = useMutation(mutations.transactions.update);
   const editing = draft.editing;
 
   const activeAccounts = useMemo(
@@ -155,6 +154,14 @@ function LaunchSheet({ open, onClose, draft, onChange, lastAccountId }: SheetPro
         editing ? 'Editar transação' : draft.type === 'expense' ? 'Lançar gasto' : 'Lançar receita'
       }
       header={<LaunchHeader draft={effective} onChange={onChange} />}
+      footer={
+        <LaunchFooter
+          draft={effective}
+          accountsCount={activeAccounts.length}
+          canSave={editing ? updateBody !== null : payload !== null}
+          onSave={save}
+        />
+      }
     >
       <LaunchForm
         draft={effective}
@@ -172,8 +179,6 @@ function LaunchSheet({ open, onClose, draft, onChange, lastAccountId }: SheetPro
           categories.refetch();
           recent.refetch();
         }}
-        canSave={editing ? updateBody !== null : payload !== null}
-        onSave={save}
       />
     </BottomSheet>
   );

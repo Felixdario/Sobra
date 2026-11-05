@@ -1,8 +1,8 @@
 import type { IconName } from '@financas/shared';
 import { ICON_NAMES } from '@financas/shared';
+import { identityColors } from '@financas/tokens';
 import { useId } from 'react';
 import { ICON_LABELS, ICONS } from '../lib/icons';
-import { IDENTITY_COLORS } from '../lib/identityColors';
 import styles from './SwatchPicker.module.css';
 
 type ColorPickerProps = {
@@ -17,9 +17,9 @@ type ColorPickerProps = {
  */
 export function ColorPicker({ value, onChange, error }: ColorPickerProps) {
   const name = useId();
-  const known = IDENTITY_COLORS.some((c) => c.hex.toLowerCase() === value.toLowerCase());
+  const known = identityColors.some((c) => c.hex.toLowerCase() === value.toLowerCase());
   const options =
-    known || !value ? IDENTITY_COLORS : [{ name: 'Atual', hex: value }, ...IDENTITY_COLORS];
+    known || !value ? identityColors : [{ name: 'Atual', hex: value }, ...identityColors];
   return (
     <fieldset className={styles.group}>
       <legend className={styles.legend}>Cor</legend>

@@ -428,6 +428,9 @@ Movimento comunica estado; nada faz entrada ao carregar.
   verde).
 - **Compacto em gráficos:** eixos e rótulos de barra em "2 mil", "12,5 mil", "1,2 mi"; o valor exato
   vai no tooltip e na tabela.
+- **Valor longo:** nunca truncado nem com reticências. Na manchete e nos KPIs o número encolhe até
+  caber na célula (R$ 1.000.000.000,00 inteiro); nos rótulos diretos de gráfico vira compacto a partir
+  de R$ 100 mil ("−R$ 1 bi"). Nomes longos truncam com o nome inteiro no `title` (ADR-032).
 - **Cartão de crédito:** saldo negativo em `money.debt` com "−"; a fatura é dívida, não "saldo
   disponível".
 

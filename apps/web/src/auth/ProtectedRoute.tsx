@@ -20,6 +20,7 @@ export function ProtectedRoute() {
   if (me.isError) {
     return (
       <main className={styles.blocked}>
+        <h1 className="visually-hidden">Sobra</h1>
         <ErrorLine
           what="Não deu para abrir sua sessão"
           error={me.error}
@@ -29,6 +30,12 @@ export function ProtectedRoute() {
       </main>
     );
   }
-  if (me.isPending) return <main className={styles.blocked} aria-busy="true" />;
+  if (me.isPending) {
+    return (
+      <main className={styles.blocked} aria-busy="true">
+        <h1 className="visually-hidden">Abrindo sua sessão</h1>
+      </main>
+    );
+  }
   return <Outlet />;
 }

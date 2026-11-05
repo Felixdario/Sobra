@@ -25,15 +25,21 @@
   min-width: 0;
 }
 
-.title,
+/* The description gets two lines next to a long amount; metadata stays on one. */
+.title {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow-wrap: anywhere;
+  font-weight: var(--font-weight-medium);
+}
+
 .meta {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.title {
-  font-weight: var(--font-weight-medium);
 }
 
 .meta {

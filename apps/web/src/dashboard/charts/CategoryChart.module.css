@@ -1,3 +1,7 @@
+.wrap {
+  container-type: inline-size;
+}
+
 .list {
   display: grid;
   grid-template-columns: minmax(0, 8fr) minmax(0, 11fr) auto;
@@ -61,4 +65,21 @@
   line-height: var(--text-caption-line);
   font-weight: var(--font-weight-regular);
   color: var(--color-text-tertiary);
+}
+
+/* Narrow card: name and value share the first line, the bar takes the full width below. */
+@container (max-width: 480px) {
+  .list {
+    grid-template-columns: minmax(0, 1fr) auto;
+    row-gap: var(--space-2);
+  }
+
+  .row {
+    row-gap: var(--space-1);
+  }
+
+  .track {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
 }

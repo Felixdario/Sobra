@@ -9,6 +9,7 @@
   align-items: center;
   gap: var(--space-3);
   width: 100%;
+  min-width: 0;
   min-height: var(--layout-row);
   padding: 0;
   border: 0;
@@ -26,6 +27,6 @@
 
 @media (min-width: 1024px) {
   .columns {
-    grid-template-columns: 3fr 2fr;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
   }
 }

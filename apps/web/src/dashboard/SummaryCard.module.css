@@ -44,6 +44,7 @@
 }
 
 .headline {
+  container-type: inline-size;
   display: grid;
   gap: var(--space-1);
 }
@@ -55,12 +56,12 @@
   color: var(--color-text-secondary);
 }
 
+/* The one figure of the screen, shrunk only when it would not fit (see lib/fit.ts). */
 .figure {
-  font-size: var(--text-figure-lg-size);
+  font-size: min(var(--text-figure-lg-size), calc(100cqi / (var(--fit-chars, 1) * 0.52)));
   line-height: var(--text-figure-lg-line);
   letter-spacing: var(--text-figure-lg-tracking);
   font-weight: var(--font-weight-semibold);
-  overflow-wrap: anywhere;
 }
 
 .debt {
@@ -105,7 +106,7 @@
   }
 
   .figure {
-    font-size: var(--text-figure-xl-size);
+    font-size: min(var(--text-figure-xl-size), calc(100cqi / (var(--fit-chars, 1) * 0.52)));
     line-height: var(--text-figure-xl-line);
     letter-spacing: var(--text-figure-xl-tracking);
   }

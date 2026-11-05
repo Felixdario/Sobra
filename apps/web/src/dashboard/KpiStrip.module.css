@@ -5,6 +5,7 @@
 }
 
 .cell {
+  container-type: inline-size;
   display: grid;
   align-content: start;
   gap: var(--space-1);
@@ -30,8 +31,9 @@
   color: var(--color-text-secondary);
 }
 
+/* Shrinks to fit the cell when the amount is long (R$ 1.000.000.000,00): never cut a number. */
 .value {
-  font-size: var(--text-title-size);
+  font-size: min(var(--text-title-size), calc(100cqi / (var(--fit-chars, 1) * 0.52)));
   line-height: var(--text-title-line);
   letter-spacing: var(--text-figure-md-tracking);
   font-weight: var(--font-weight-semibold);
@@ -40,6 +42,11 @@
 
 .debt {
   color: var(--color-money-debt);
+}
+
+/* DESIGN.md, "Zero": R$ 0,00 in the zero tone, not a dash. */
+.zero {
+  color: var(--color-money-zero);
 }
 
 .pending {
@@ -76,7 +83,7 @@
 
 @media (min-width: 768px) {
   .value {
-    font-size: var(--text-figure-md-size);
+    font-size: min(var(--text-figure-md-size), calc(100cqi / (var(--fit-chars, 1) * 0.52)));
     line-height: var(--text-figure-md-line);
   }
 }

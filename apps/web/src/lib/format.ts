@@ -57,3 +57,30 @@ export function spokenMoney(value: Cents | number): string {
 export function capitalize(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
+
+const countFormatter = new Intl.NumberFormat('pt-BR');
+
+/** Counts with the pt-BR separator: 1284 → "1.284". */
+export function count(value: number): string {
+  return countFormatter.format(value);
+}
+
+const compactMoneyFormatter = new Intl.NumberFormat('pt-BR', {
+  style: 'currency',
+  currency: 'BRL',
+  notation: 'compact',
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 1,
+});
+
+/** At or above R$ 100 mil the label is compact. */
+const COMPACT_FROM = 10_000_000;
+
+/**
+ * Direct labels on charts (DESIGN.md, "Compacto em gráficos"): exact up to R$ 99.999,99, then
+ * "R$ 123,5 mil" / "−R$ 1 bi". The exact value stays in the tooltip and the table.
+ */
+export function compactMoney(value: number): string {
+  if (Math.abs(value) < COMPACT_FROM) return money(value);
+  return toMinus(compactMoneyFormatter.format(value / 100)).replace(/\s/g, ' ');
+}

@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { categoryCreateSchema, type Category, type CategoryKind } from '@financas/shared';
+import { identityColors } from '@financas/tokens';
 import { useMutation } from '@tanstack/react-query';
 import { Trash } from 'lucide-react';
 import { Controller, useForm } from 'react-hook-form';
@@ -11,7 +12,6 @@ import { SelectField } from '../components/SelectField';
 import { Sheet } from '../components/Sheet';
 import { ColorPicker, IconPicker } from '../components/SwatchPicker';
 import { TextField } from '../components/TextField';
-import { IDENTITY_COLORS } from '../lib/identityColors';
 import { useServices } from '../lib/servicesContext';
 import formStyles from '../transactions/TransactionSheet.module.css';
 
@@ -34,7 +34,7 @@ function CategoryForm({
     resolver: zodResolver(categoryCreateSchema),
     defaultValues: category
       ? { name: category.name, kind: category.kind, color: category.color, icon: category.icon }
-      : { name: '', kind, color: IDENTITY_COLORS[0].hex, icon: 'sparkles' },
+      : { name: '', kind, color: identityColors[0].hex, icon: 'sparkles' },
   });
   const { errors } = form.formState;
   // 409 in use, 400 validation: the API's own pt-BR message, shown where the user is looking.

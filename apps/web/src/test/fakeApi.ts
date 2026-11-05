@@ -17,10 +17,14 @@ export const BASE_URL = 'http://api.test';
 
 export type FakeRequest = { method: string; path: string; query: URLSearchParams; body: unknown };
 export type FakeReply = { status: number; body?: unknown };
-export type FakeRoutes = Record<string, (request: FakeRequest) => FakeReply | Promise<FakeReply>>;
+export type FakeHandler = (request: FakeRequest) => FakeReply | Promise<FakeReply>;
+export type FakeRoutes = Record<string, FakeHandler>;
 
-/** A `fetch` double keyed by "METHOD /path"; unknown routes answer 404 in the API's format. */
-export function createFakeApi(routes: FakeRoutes) {
+/**
+ * A `fetch` double keyed by "METHOD /path" (or one handler for every request); unknown routes
+ * answer 404 in the API's format. A handler that throws plays a network failure.
+ */
+export function createFakeApi(routes: FakeRoutes | FakeHandler) {
   const requests: FakeRequest[] = [];
   const fetch = async (url: string, init: { method: string; body?: string }) => {
     const parsed = new URL(url);
@@ -31,7 +35,8 @@ export function createFakeApi(routes: FakeRoutes) {
       body: init.body ? JSON.parse(init.body) : undefined,
     };
     requests.push(request);
-    const handler = routes[`${request.method} ${request.path}`];
+    const handler =
+      typeof routes === 'function' ? routes : routes[`${request.method} ${request.path}`];
     const reply = handler
       ? await handler(request)
       : { status: 404, body: { error: { code: 'NOT_FOUND', message: 'Não encontrado' } } };

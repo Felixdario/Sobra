@@ -14,7 +14,7 @@ function fire(run: () => Promise<void>) {
 export const haptics = {
   /** A value ticked past a step: month changed, type toggled. */
   selection: () => fire(() => Haptics.selectionAsync()),
-  /** Something snapped home: a dragged sheet settling back open. */
+  /** A drag crossed its commit point: a swiped row armed to delete. */
   impact: () => fire(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)),
   /** The launch was committed. */
   success: () => fire(() => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)),

@@ -4,7 +4,9 @@ import { TIME_ZONE, type Transaction } from '@financas/shared';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { Search, SlidersHorizontal, X } from 'lucide-react-native';
 import { useMemo, useState } from 'react';
-import { FlatList, RefreshControl, TextInput, View } from 'react-native';
+import { durations, easings } from '@financas/tokens';
+import { RefreshControl, TextInput, View } from 'react-native';
+import Animated, { Easing, LinearTransition } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useIsOnline } from '../../api/network';
 import { useServices } from '../../api/ServicesProvider';
@@ -21,7 +23,6 @@ import { EmptyState, ErrorLine, OfflineBanner, Skeleton } from '../../ui/states'
 import { useLaunch } from '../launch/LaunchSheetProvider';
 import { DayHeader } from './DayHeader';
 import { FilterSheet } from './FilterSheet';
-import { infiniteOptions } from './infiniteTransactions';
 import { groupByDay, hasFilters, toParams, type Filters, type ListRow } from './listModel';
 import { RowMenu } from './RowMenu';
 import { SwipeableRow, SwipeProvider, useSwipeCoordinator } from './SwipeableRow';
@@ -29,6 +30,12 @@ import { describeTransaction, TransactionRow } from './TransactionRow';
 import { useRowActions } from './useRowActions';
 
 const SEARCH_DEBOUNCE_MS = 300;
+
+/**
+ * When a row leaves (swipe to delete) the rows below close the gap in 180ms instead of jumping.
+ * Transform-based, on the UI thread; Reanimated skips it with Reduce Motion on.
+ */
+const REFLOW = LinearTransition.duration(durations.base).easing(Easing.bezier(...easings.standard));
 const time = new Intl.DateTimeFormat('pt-BR', {
   hour: '2-digit',
   minute: '2-digit',
@@ -44,7 +51,7 @@ export function TransactionsScreen() {
 }
 
 function TransactionsList() {
-  const { api, queries } = useServices();
+  const { queries } = useServices();
   const theme = useTheme();
   const styles = useStyles();
   const insets = useSafeAreaInsets();
@@ -64,7 +71,7 @@ function TransactionsList() {
 
   const effective = useMemo(() => ({ ...filters, search }), [filters, search]);
   const params = useMemo(() => toParams(effective), [effective]);
-  const list = useInfiniteQuery(infiniteOptions(api, params));
+  const list = useInfiniteQuery(queries.transactions.infinite(params));
   const accounts = useQuery(queries.accounts.list());
   const categories = useQuery(queries.categories.list());
 
@@ -134,7 +141,11 @@ function TransactionsList() {
           <PressableScale
             testID="open-filters"
             accessibilityRole="button"
-            accessibilityLabel={activeCount > 0 ? `Filtros, ${activeCount} ativos` : 'Filtros'}
+            accessibilityLabel={
+              activeCount > 0
+                ? `Filtros, ${activeCount} ${activeCount === 1 ? 'ativo' : 'ativos'}`
+                : 'Filtros'
+            }
             onPress={() => setFiltersOpen(true)}
             style={[styles.filterButton, activeCount > 0 && styles.filterActive]}
             pressedStyle={styles.filterPressed}
@@ -183,8 +194,9 @@ function TransactionsList() {
         </View>
       ) : null}
       {list.data ? (
-        <FlatList
+        <Animated.FlatList
           testID="transactions-list"
+          itemLayoutAnimation={REFLOW}
           data={rows}
           keyExtractor={(row) => row.key}
           renderItem={renderItem}

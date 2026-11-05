@@ -64,7 +64,7 @@ describe('lançar gasto em 3 toques', () => {
     expect(screen.getByTestId('save')).toBeDisabled();
     await fireEvent.press(screen.getByTestId('key-5'));
     expect(screen.getByTestId('save')).toBeDisabled();
-    expect(screen.getByText('Escolha a categoria para salvar.')).toBeTruthy();
+    expect(screen.getByText('Escolha a categoria.')).toBeTruthy();
   });
 
   it('se a API recusa, desfaz o otimista e avisa com a saída', async () => {

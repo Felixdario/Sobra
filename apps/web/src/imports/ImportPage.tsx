@@ -1,4 +1,4 @@
-import type { CsvImportPreview } from '@financas/shared';
+import { formatDate, type CsvImportPreview } from '@financas/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { FileUp, Undo2 } from 'lucide-react';
 import { useState, type DragEvent } from 'react';
@@ -9,7 +9,7 @@ import { Button } from '../components/Button';
 import { ErrorLine } from '../components/ErrorLine';
 import { EmptyState, Page, Panel } from '../components/Page';
 import { SelectField } from '../components/SelectField';
-import { formatDate } from '@financas/shared';
+import { count } from '../lib/format';
 import { useServices } from '../lib/servicesContext';
 import styles from './ImportPage.module.css';
 import { commitRows, initialChoices, type Choices, type RowChoice } from './previewState';
@@ -20,7 +20,8 @@ function History() {
   const imports = useQuery(queries.imports.list());
   const accounts = useQuery(queries.accounts.list({ includeArchived: true }));
   const undo = useMutation(mutations.imports.undo);
-  const accountName = (id: string) => accounts.data?.find((a) => a.id === id)?.name ?? 'conta';
+  const accountName = (id: string) =>
+    accounts.data?.find((a) => a.id === id)?.name ?? 'conta removida';
 
   return (
     <Panel title="Importações anteriores" titleId="importacoes">
@@ -40,8 +41,11 @@ function History() {
                 <span className={styles.batchName}>{batch.fileName ?? 'Arquivo sem nome'}</span>
                 <span className={`${styles.muted} num`}>
                   {formatDate(new Date(batch.createdAt))} · {accountName(batch.accountId)} ·{' '}
-                  {batch.importedCount} importados
-                  {batch.skippedCount > 0 ? `, ${batch.skippedCount} ignorados` : ''}
+                  {count(batch.importedCount)}{' '}
+                  {batch.importedCount === 1 ? 'importado' : 'importados'}
+                  {batch.skippedCount > 0
+                    ? `, ${count(batch.skippedCount)} ${batch.skippedCount === 1 ? 'ignorado' : 'ignorados'}`
+                    : ''}
                 </span>
               </span>
               <Button
@@ -51,7 +55,7 @@ function History() {
                   undo.mutate(batch.id, {
                     onSuccess: () =>
                       toast.success(
-                        `Importação desfeita: ${batch.importedCount} lançamentos de ${batch.fileName ?? 'arquivo'} removidos.`,
+                        `Importação desfeita: ${count(batch.importedCount)} ${batch.importedCount === 1 ? 'lançamento' : 'lançamentos'} de ${batch.fileName ?? 'arquivo'} removidos.`,
                       ),
                     onError: (error) => toast.error(`Não deu para desfazer: ${error.message}`),
                   })
@@ -221,8 +225,9 @@ export function ImportPage() {
           titleId="importar-previa"
           aside={
             <span className={`${styles.muted} num`}>
-              {preview.validCount} válidas · {preview.invalidCount} com erro ·{' '}
-              {preview.duplicateCount} já existentes
+              {count(preview.validCount)} {preview.validCount === 1 ? 'válida' : 'válidas'} ·{' '}
+              {count(preview.invalidCount)} com erro · {count(preview.duplicateCount)}{' '}
+              {preview.duplicateCount === 1 ? 'já existente' : 'já existentes'}
             </span>
           }
         >

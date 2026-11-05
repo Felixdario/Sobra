@@ -17,7 +17,8 @@ function ThemedToaster() {
       theme={resolved}
       position="bottom-right"
       closeButton
-      toastOptions={{ className: toastStyles.toast ?? '' }}
+      containerAriaLabel="Notificações"
+      toastOptions={{ className: toastStyles.toast ?? '', closeButtonAriaLabel: 'Fechar aviso' }}
     />
   );
 }

@@ -139,7 +139,7 @@ describe('aba Transações', () => {
     );
     await screen.findByTestId('row-Mercado');
 
-    await rowAction(/^Mercado, Mercado · Nubank/, 'delete');
+    await rowAction(/^Mercado, Mercado, Nubank, menos 45 reais e 90 centavos$/, 'delete');
     await waitFor(() => expect(screen.queryByTestId('row-Mercado')).toBeNull());
     expect(await screen.findByText('“Mercado” apagada.')).toBeTruthy();
     await waitFor(() => expect(calls.some((call) => call.method === 'DELETE')).toBe(true));
@@ -169,7 +169,7 @@ describe('aba Transações', () => {
     );
     await screen.findByTestId('row-Mercado');
 
-    await rowAction(/^Mercado, Mercado · Nubank/, 'delete');
+    await rowAction(/^Mercado, Mercado, Nubank, menos 45 reais e 90 centavos$/, 'delete');
     expect(await screen.findByText(/^Não deu para apagar “Mercado”/)).toBeTruthy();
     expect(await screen.findByTestId('row-Mercado')).toBeTruthy();
   });
@@ -189,7 +189,7 @@ describe('aba Transações', () => {
     );
     await screen.findByTestId('row-Mercado');
 
-    await rowAction(/^Mercado, Mercado · Nubank/, 'edit');
+    await rowAction(/^Mercado, Mercado, Nubank, menos 45 reais e 90 centavos$/, 'edit');
     expect(await screen.findByText('Salvar alterações')).toBeTruthy();
     expect(screen.getByTestId('amount')).toHaveTextContent(/^−R\$.45,90$/);
     await fireEvent.press(screen.getByTestId('key-backspace'));
@@ -217,7 +217,7 @@ describe('aba Transações', () => {
     );
     await screen.findByTestId('row-Transporte');
 
-    await rowAction(/^Transporte, Transporte · Carteira/, 'longpress');
+    await rowAction(/^Transporte, Transporte, Carteira, /, 'longpress');
     await fireEvent.press(await screen.findByTestId('menu-delete'));
     await waitFor(() => expect(calls.some((call) => call.method === 'DELETE')).toBe(true));
     await waitFor(() => expect(screen.queryByTestId('row-Transporte')).toBeNull());

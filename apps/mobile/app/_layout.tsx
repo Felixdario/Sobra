@@ -6,6 +6,7 @@ import {
 } from '@expo-google-fonts/archivo';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
+import type { FetchLike } from '@financas/client';
 import { StatusBar } from 'expo-status-bar';
 import * as SystemUI from 'expo-system-ui';
 import { useEffect } from 'react';
@@ -24,9 +25,25 @@ import { ThemeProvider, useTheme } from '../src/theme/ThemeProvider';
 SplashScreen.preventAutoHideAsync().catch(() => {});
 connectOnlineManager();
 
+/*
+ * Development only: the break-ui scenarios (Ajustes) answer through this fetch. The requires sit
+ * inside `if (__DEV__)`: Metro folds `__DEV__` to false before collecting dependencies, so the
+ * scenario data and its toggle are not in release bundles at all.
+ */
+const devOptions: { fetch?: FetchLike } = {};
+if (__DEV__) {
+  /* eslint-disable @typescript-eslint/no-require-imports */
+  const scenarios = require('../src/dev/scenarios') as typeof import('../src/dev/scenarios');
+  const settings = require('../src/dev/DevSettings') as typeof import('../src/dev/DevSettings');
+  /* eslint-enable @typescript-eslint/no-require-imports */
+  devOptions.fetch = scenarios.createScenarioFetch(fetch as unknown as FetchLike);
+  settings.restoreDevSettings().catch(() => {});
+}
+
 const services = createServices({
   baseUrl: process.env.EXPO_PUBLIC_API_URL ?? DEFAULT_API_URL,
   tokenStore: createTokenStore(storage),
+  ...devOptions,
 });
 
 function RootNavigator({ fontsReady }: { fontsReady: boolean }) {

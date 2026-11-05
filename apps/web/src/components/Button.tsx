@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes } from 'react';
+import type { ButtonHTMLAttributes, Ref } from 'react';
 import styles from './Button.module.css';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost';
@@ -8,6 +8,7 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   block?: boolean;
   iconOnly?: boolean;
   loading?: boolean;
+  ref?: Ref<HTMLButtonElement>;
 };
 
 function buttonClass(variant: ButtonVariant = 'secondary', extra = ''): string {

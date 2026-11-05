@@ -11,6 +11,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
+import { project, rubberband } from '../../lib/gesture';
 import { haptics } from '../../lib/haptics';
 import { makeStyles } from '../../theme/makeStyles';
 import { useTheme } from '../../theme/ThemeProvider';
@@ -22,18 +23,6 @@ const FULL_SWIPE = 0.6;
 /** Horizontal intent before the row moves; vertical intent hands the touch to the list. */
 const ACTIVATE_X = 12;
 const FAIL_Y = 8;
-
-/** Where a flick would come to rest (apple-design §6, exponential decay). */
-function project(velocity: number, decelerationRate = 0.998) {
-  'worklet';
-  return ((velocity / 1000) * decelerationRate) / (1 - decelerationRate);
-}
-
-/** The further past the edge, the less the row follows (apple-design §9). */
-function rubberband(overshoot: number, dimension: number, constant = 0.55) {
-  'worklet';
-  return (overshoot * dimension * constant) / (dimension + constant * Math.abs(overshoot));
-}
 
 type Closer = () => void;
 
@@ -171,9 +160,7 @@ export function SwipeableRow({
       onLayout={(event) => width.set(event.nativeEvent.layout.width)}
       accessible
       accessibilityLabel={label}
-      accessibilityHint={
-        disabled ? undefined : 'Ações: editar ou apagar. Toque duas vezes e segure para o menu.'
-      }
+      accessibilityHint={disabled ? 'Ainda salvando.' : 'Tem ações: editar e apagar.'}
       accessibilityActions={
         disabled
           ? []

@@ -1,5 +1,6 @@
 import { Delete } from 'lucide-react-native';
 import { View } from 'react-native';
+import { CONTROL_MAX_FONT_SCALE } from '../../theme/fontScale';
 import { makeStyles } from '../../theme/makeStyles';
 import { useTheme } from '../../theme/ThemeProvider';
 import { AppText } from '../../ui/AppText';
@@ -17,7 +18,7 @@ const ROWS: readonly (readonly KeypadKey[])[] = [
 export function Keypad({ onKey }: { onKey: (key: KeypadKey) => void }) {
   const styles = useStyles();
   return (
-    <View style={styles.grid} accessibilityLabel="Teclado do valor">
+    <View style={styles.grid}>
       {ROWS.map((row) => (
         <View key={row.join()} style={styles.row}>
           {row.map((key) => (
@@ -37,7 +38,9 @@ function Key({ value, onKey }: { value: KeypadKey; onKey: (key: KeypadKey) => vo
     <PressableScale
       testID={`key-${value}`}
       accessibilityRole="button"
-      accessibilityLabel={isBackspace ? 'Apagar último dígito' : value}
+      accessibilityLabel={
+        isBackspace ? 'Apagar último dígito' : value === '00' ? 'Dois zeros' : value
+      }
       accessibilityHint={isBackspace ? 'Toque e segure para zerar' : undefined}
       onPress={() => onKey(value)}
       onLongPress={isBackspace ? () => onKey('clear') : undefined}
@@ -52,7 +55,11 @@ function Key({ value, onKey }: { value: KeypadKey; onKey: (key: KeypadKey) => vo
           strokeWidth={ICON_STROKE}
         />
       ) : (
-        <AppText variant="title" style={styles.digit}>
+        <AppText
+          variant="title"
+          style={styles.digit}
+          maxFontSizeMultiplier={CONTROL_MAX_FONT_SCALE}
+        >
           {value}
         </AppText>
       )}
@@ -65,7 +72,7 @@ const useStyles = makeStyles((t) => ({
   row: { flexDirection: 'row', gap: t.space[2] },
   keyArea: { flex: 1 },
   key: {
-    height: t.layout.rowTall,
+    minHeight: t.layout.rowTall,
     borderRadius: t.radii.md,
     alignItems: 'center',
     justifyContent: 'center',

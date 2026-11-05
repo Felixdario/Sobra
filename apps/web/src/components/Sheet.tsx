@@ -15,8 +15,9 @@ type SheetProps = {
 };
 
 /**
- * Native modal <dialog>: focus moves inside, the page behind is inert, Esc closes, and the
- * browser returns focus to the element that opened it.
+ * Native modal <dialog>: focus moves inside, the page behind is inert and Esc closes. Focus goes
+ * back to the element that opened it: the content unmounts before `close()`, so the browser's own
+ * restore (which needs focus inside the dialog) would leave it on <body>.
  */
 export function Sheet({
   open,
@@ -28,6 +29,7 @@ export function Sheet({
   variant = 'side',
 }: SheetProps) {
   const ref = useRef<HTMLDialogElement>(null);
+  const opener = useRef<HTMLElement | null>(null);
   const titleId = useId();
   const descId = useId();
 
@@ -35,11 +37,17 @@ export function Sheet({
     const dialog = ref.current;
     if (!dialog) return;
     if (open && !dialog.open) {
+      opener.current =
+        document.activeElement instanceof HTMLElement ? document.activeElement : null;
       dialog.showModal();
       // The first field, not the close button, when the content marks one.
       dialog.querySelector<HTMLElement>('[data-autofocus]')?.focus();
     }
-    if (!open && dialog.open) dialog.close();
+    if (!open && dialog.open) {
+      dialog.close();
+      if (opener.current?.isConnected) opener.current.focus();
+      opener.current = null;
+    }
   }, [open]);
 
   return (

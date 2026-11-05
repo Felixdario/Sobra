@@ -13,6 +13,7 @@ import {
 import { View } from 'react-native';
 import Animated, { Easing, FadeInDown, FadeOutDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { announce, useScreenReader } from '../lib/a11y';
 import { makeStyles } from '../theme/makeStyles';
 import { useTheme } from '../theme/ThemeProvider';
 import { AppText } from './AppText';
@@ -25,17 +26,21 @@ type ToastInput = {
   action?: { label: string; onPress: () => void };
 };
 
-type ToastItem = ToastInput & { id: number };
+/** `replaces`: another toast was on screen; this one waits for it to leave (no double exposure). */
+type ToastItem = ToastInput & { id: number; replaces: boolean };
 
 type ToastApi = { show: (toast: ToastInput) => void; hide: () => void };
 
 const ToastContext = createContext<ToastApi | null>(null);
 
 const VISIBLE_MS = { neutral: 4000, error: 6000 } as const;
+/** With a screen reader on, a toast with an action stays long enough to reach "Desfazer". */
+const SCREEN_READER_ACTION_MS = 12_000;
 
 // animate-expo "Toast": enters and leaves along the same path, exit faster than entry.
 const ENTER = FadeInDown.duration(durations.moderate).easing(Easing.bezier(...easings.enter));
 const EXIT = FadeOutDown.duration(durations.base).easing(Easing.bezier(...easings.exit));
+const ENTER_AFTER_EXIT = ENTER.delay(durations.base);
 
 export function ToastProvider({
   children,
@@ -51,7 +56,12 @@ export function ToastProvider({
     () => ({
       show: (input) => {
         counter.current += 1;
-        setToast({ ...input, id: counter.current });
+        const id = counter.current;
+        setToast((current) => ({ ...input, id, replaces: current !== null }));
+        // iOS has no live regions: the message is spoken explicitly (Android also hears it once).
+        announce(
+          input.action ? `${input.message} ${input.action.label} disponível.` : input.message,
+        );
       },
       hide: () => setToast(null),
     }),
@@ -81,11 +91,13 @@ function ToastView({
   const styles = useStyles();
   const insets = useSafeAreaInsets();
   const tone = toast.tone ?? 'neutral';
+  const screenReader = useScreenReader();
+  const visibleMs = screenReader && toast.action ? SCREEN_READER_ACTION_MS : VISIBLE_MS[tone];
 
   useEffect(() => {
-    const timer = setTimeout(onDone, VISIBLE_MS[tone]);
+    const timer = setTimeout(onDone, visibleMs);
     return () => clearTimeout(timer);
-  }, [onDone, tone]);
+  }, [onDone, visibleMs]);
 
   const runAction = useCallback(() => {
     toast.action?.onPress();
@@ -94,12 +106,12 @@ function ToastView({
 
   return (
     <Animated.View
-      entering={ENTER}
+      entering={toast.replaces ? ENTER_AFTER_EXIT : ENTER}
       exiting={EXIT}
       pointerEvents="box-none"
       style={[styles.wrap, { bottom: insets.bottom + bottomOffset + theme.space[4] }]}
     >
-      <View style={styles.toast} accessibilityRole="alert" accessibilityLiveRegion="assertive">
+      <View style={styles.toast} accessibilityRole="alert">
         {tone === 'error' ? (
           <CircleAlert
             size={ICON_SIZE.row}

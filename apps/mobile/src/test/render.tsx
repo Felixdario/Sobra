@@ -66,11 +66,27 @@ export function createTestServices(routes: Routes, session: TokenPair | null = n
   return { services, calls };
 }
 
-export function Providers({ services, children }: { services: Services; children: ReactNode }) {
+export type RenderOptions = {
+  /**
+   * System text size multiplier (Dynamic Type / Android font size). Defaults to 1: React
+   * Native's Jest mock reports a window fontScale of 2.
+   */
+  fontScale?: number;
+};
+
+export function Providers({
+  services,
+  fontScale,
+  children,
+}: {
+  services: Services;
+  fontScale?: number | undefined;
+  children: ReactNode;
+}) {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider initialMetrics={metrics}>
-        <ThemeProvider>
+        <ThemeProvider fontScale={fontScale ?? 1}>
           <ServicesProvider services={services}>
             <AuthProvider>
               <ToastProvider>
@@ -88,8 +104,13 @@ export async function renderWithServices(
   ui: ReactElement,
   routes: Routes,
   session: TokenPair | null = null,
+  options: RenderOptions = {},
 ) {
   const { services, calls } = createTestServices(routes, session);
-  const result = await render(<Providers services={services}>{ui}</Providers>);
+  const result = await render(
+    <Providers services={services} fontScale={options.fontScale}>
+      {ui}
+    </Providers>,
+  );
   return { ...result, services, calls };
 }

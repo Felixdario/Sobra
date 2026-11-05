@@ -2,8 +2,10 @@ import { durations, springs } from '@financas/tokens';
 import { useEffect, useState, type ReactNode } from 'react';
 import {
   BackHandler,
+  Keyboard,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   useWindowDimensions,
   View,
@@ -20,21 +22,10 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { scheduleOnRN } from 'react-native-worklets';
-import { haptics } from '../lib/haptics';
+import { announce } from '../lib/a11y';
+import { project, rubberband } from '../lib/gesture';
 import { makeStyles } from '../theme/makeStyles';
 import { useTheme } from '../theme/ThemeProvider';
-
-/** Where a flick would come to rest (Apple's exponential decay, apple-design §6). */
-function project(velocity: number, decelerationRate = 0.998) {
-  'worklet';
-  return ((velocity / 1000) * decelerationRate) / (1 - decelerationRate);
-}
-
-/** Past the top edge the sheet follows less and less (apple-design §9). */
-function rubberband(overshoot: number, dimension: number, constant = 0.55) {
-  'worklet';
-  return (overshoot * dimension * constant) / (dimension + constant * Math.abs(overshoot));
-}
 
 type Props = {
   open: boolean;
@@ -44,6 +35,8 @@ type Props = {
   label: string;
   /** Drag area (grabber + header). The rest of the sheet keeps its own touches. */
   header: ReactNode;
+  /** Pinned under the content (the sheet's main action stays visible at any text size). */
+  footer?: ReactNode;
   children: ReactNode;
 };
 
@@ -51,9 +44,11 @@ type Props = {
  * Bottom sheet driven by one shared value on the UI thread. Opening and closing are springs from
  * the current on-screen position (`springs.sheet`), so a sheet grabbed mid-flight follows the
  * finger and a reopened one reverses without a jump. Release hands the finger's velocity to the
- * spring and decides by projected momentum, not distance. Reduce motion: a fast crossfade.
+ * spring and decides by projected momentum, not distance. Reduce motion: a fast crossfade, and
+ * a drag released short of closing returns in 120ms without a spring. No haptic on the snap
+ * back: it happens on every small drag and would be noise.
  */
-export function BottomSheet({ open, onClose, onClosed, label, header, children }: Props) {
+export function BottomSheet({ open, onClose, onClosed, label, header, footer, children }: Props) {
   const theme = useTheme();
   const styles = useStyles();
   const insets = useSafeAreaInsets();
@@ -68,6 +63,26 @@ export function BottomSheet({ open, onClose, onClosed, label, header, children }
 
   if (open && !mounted) setMounted(true);
 
+  // iOS lays the keyboard over the window; the sheet rises above it so a focused field stays in
+  // view (Android resizes the window itself, adjustResize).
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  useEffect(() => {
+    if (Platform.OS !== 'ios' || !open) return;
+    const show = Keyboard.addListener('keyboardWillShow', (event) =>
+      setKeyboardHeight(event.endCoordinates.height),
+    );
+    const hide = Keyboard.addListener('keyboardWillHide', () => setKeyboardHeight(0));
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, [open]);
+
+  // Screen readers: say which sheet opened; the escape gesture (two-finger Z) closes it.
+  useEffect(() => {
+    if (open) announce(label);
+  }, [open, label]);
+
   useEffect(() => {
     if (!mounted) return;
     const settled = () => {
@@ -75,7 +90,8 @@ export function BottomSheet({ open, onClose, onClosed, label, header, children }
       onClosed?.();
     };
     if (reduced) {
-      translateY.set(0);
+      // Crossfade in place: a sheet dragged halfway fades from where the finger left it.
+      if (open) translateY.set(0);
       fade.set(
         withTiming(open ? 1 : 0, { duration: durations.fast }, (finished) => {
           if (finished && !open) scheduleOnRN(settled);
@@ -125,8 +141,11 @@ export function BottomSheet({ open, onClose, onClosed, label, header, children }
         scheduleOnRN(onClose);
         return;
       }
-      translateY.set(withSpring(0, { ...springs.sheet, velocity: event.velocityY }));
-      scheduleOnRN(haptics.impact);
+      translateY.set(
+        reduced
+          ? withTiming(0, { duration: durations.fast })
+          : withSpring(0, { ...springs.sheet, velocity: event.velocityY }),
+      );
     },
   });
 
@@ -156,8 +175,19 @@ export function BottomSheet({ open, onClose, onClosed, label, header, children }
       <Animated.View
         accessibilityViewIsModal
         accessibilityLabel={label}
+        onAccessibilityEscape={onClose}
         onLayout={(event) => sheetHeight.set(event.nativeEvent.layout.height)}
-        style={[styles.sheet, { paddingBottom: insets.bottom + theme.space[2] }, sheetStyle]}
+        style={[
+          styles.sheet,
+          keyboardHeight > 0
+            ? {
+                bottom: keyboardHeight,
+                maxHeight: windowHeight - keyboardHeight - insets.top,
+                paddingBottom: theme.space[2],
+              }
+            : { paddingBottom: insets.bottom + theme.space[2] },
+          sheetStyle,
+        ]}
       >
         <GestureDetector gesture={pan}>
           <View>
@@ -165,7 +195,16 @@ export function BottomSheet({ open, onClose, onClosed, label, header, children }
             {header}
           </View>
         </GestureDetector>
-        {children}
+        {/* Scrolls only when the content is taller than the screen (large text, small phones). */}
+        <ScrollView
+          style={styles.body}
+          bounces={false}
+          keyboardShouldPersistTaps="handled"
+          nestedScrollEnabled
+        >
+          {children}
+        </ScrollView>
+        {footer ? <View style={styles.footer}>{footer}</View> : null}
       </Animated.View>
     </View>
   );
@@ -186,6 +225,8 @@ const useStyles = makeStyles((t) => ({
     backgroundColor: t.colors.bg.surface,
     ...t.shadows.overlay,
   },
+  body: { flexGrow: 0, flexShrink: 1 },
+  footer: { paddingTop: t.space[3], gap: t.space[1] },
   grabber: {
     alignSelf: 'center',
     width: t.space[10],

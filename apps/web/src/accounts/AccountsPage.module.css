@@ -37,10 +37,17 @@
   min-width: 0;
 }
 
+/*
+ * Names get two lines beside the balance (an unbroken word breaks where it must); past that they
+ * clamp, with the full name in `title` and in the edit panel.
+ */
 .name {
+  display: -webkit-box;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow-wrap: anywhere;
   font-weight: var(--font-weight-medium);
 }
 

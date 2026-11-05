@@ -1,5 +1,6 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '../components/Button';
+import { count } from '../lib/format';
 import { SelectField } from '../components/SelectField';
 import { PAGE_SIZES } from './listState';
 import styles from './Pagination.module.css';
@@ -19,7 +20,7 @@ export function Pagination({ page, pageSize, total, totalPages, onPage, onPageSi
   return (
     <nav className={styles.pagination} aria-label="Paginação">
       <p className={`${styles.range} num`} aria-live="polite">
-        {first}–{last} de {total} {total === 1 ? 'transação' : 'transações'}
+        {count(first)}–{count(last)} de {count(total)} {total === 1 ? 'transação' : 'transações'}
       </p>
       <div className={styles.controls}>
         <SelectField
@@ -40,7 +41,7 @@ export function Pagination({ page, pageSize, total, totalPages, onPage, onPageSi
           <ChevronLeft size={20} strokeWidth={1.75} aria-hidden="true" />
         </Button>
         <span className={`${styles.page} num`}>
-          Página {page} de {Math.max(totalPages, 1)}
+          Página {count(page)} de {count(Math.max(totalPages, 1))}
         </span>
         <Button
           variant="ghost"

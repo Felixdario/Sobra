@@ -8,15 +8,16 @@ import {
 import { space } from '@financas/tokens';
 import { scaleLinear } from '@visx/scale';
 import { useState, type PointerEvent } from 'react';
-import { capitalize, compactReais, money } from '../../lib/format';
+import { capitalize, compactMoney, compactReais, money } from '../../lib/format';
 import styles from './chart.module.css';
-import { rangeTicks } from './geometry';
+import { axisGutter, CAPTION_CHAR, rangeTicks } from './geometry';
 import { Tooltip } from './Tooltip';
 import { useElementWidth } from './useElementWidth';
 
 export const BALANCE_HEIGHT = space[20] * 3;
 
-const MARGIN = { top: space[3], right: space[16] + space[4], bottom: space[6], left: space[10] };
+const BASE_MARGIN = { top: space[3], bottom: space[6] };
+const LABEL_OFFSET = space[3];
 const DOT_RADIUS = space[1];
 
 type Point = { date: string; balance: number };
@@ -41,17 +42,25 @@ export function BalanceChart({
   const [active, setActive] = useState<number | null>(null);
   const points: Point[] = history.points;
   const height = BALANCE_HEIGHT;
-  const right = width - MARGIN.right;
-  const baseY = height - MARGIN.bottom;
   const values = points.map((p) => p.balance);
   const ticks = rangeTicks(Math.min(...values), Math.max(...values), 3);
+  const last = points.at(-1);
+  // The direct label at the line's end is compact past R$ 100 mil (exact value in the tooltip).
+  const endLabel = last ? compactMoney(last.balance) : '';
+  const margin = {
+    ...BASE_MARGIN,
+    left: axisGutter(ticks.map(compactReais)),
+    right: Math.max(space[16] + space[4], LABEL_OFFSET + endLabel.length * CAPTION_CHAR),
+  };
+  const right = width - margin.right;
+  const baseY = height - margin.bottom;
   const y = scaleLinear({
     domain: [ticks[0] ?? 0, ticks.at(-1) ?? 1],
-    range: [baseY, MARGIN.top],
+    range: [baseY, margin.top],
   });
   const x = scaleLinear({
     domain: [0, Math.max(points.length - 1, 1)],
-    range: [MARGIN.left, right],
+    range: [margin.left, right],
   });
   const path = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${x(i)},${y(p.balance)}`).join('');
   const monthStarts = points
@@ -61,8 +70,7 @@ export function BalanceChart({
       first: i === 0 || p.date.slice(0, 7) !== points[i - 1]?.date.slice(0, 7),
     }))
     .filter((m) => m.first);
-  const roomy = (right - MARGIN.left) / Math.max(monthStarts.length, 1) >= space[12];
-  const last = points.at(-1);
+  const roomy = (right - margin.left) / Math.max(monthStarts.length, 1) >= space[12];
   const activePoint = active === null ? null : points[active];
 
   const onMove = (event: PointerEvent<SVGRectElement>) => {
@@ -90,14 +98,14 @@ export function BalanceChart({
           <g key={tick}>
             <line
               className={tick === 0 ? styles.baseline : styles.grid}
-              x1={MARGIN.left}
+              x1={margin.left}
               x2={right}
               y1={y(tick)}
               y2={y(tick)}
             />
             <text
               className={styles.axis}
-              x={MARGIN.left - space[2]}
+              x={margin.left - space[2]}
               y={y(tick) + space[1]}
               textAnchor="end"
             >
@@ -129,10 +137,10 @@ export function BalanceChart({
             />
             <text
               className={styles.direct}
-              x={x(points.length - 1) + space[3]}
+              x={x(points.length - 1) + LABEL_OFFSET}
               y={y(last.balance) + space[1]}
             >
-              {money(last.balance)}
+              {endLabel}
             </text>
           </>
         ) : null}
@@ -142,7 +150,7 @@ export function BalanceChart({
               className={styles.crosshair}
               x1={x(active)}
               x2={x(active)}
-              y1={MARGIN.top}
+              y1={margin.top}
               y2={baseY}
             />
             <circle
@@ -155,10 +163,10 @@ export function BalanceChart({
         ) : null}
         <rect
           className={styles.hit}
-          x={MARGIN.left}
-          y={MARGIN.top}
-          width={Math.max(right - MARGIN.left, 0)}
-          height={Math.max(baseY - MARGIN.top, 0)}
+          x={margin.left}
+          y={margin.top}
+          width={Math.max(right - margin.left, 0)}
+          height={Math.max(baseY - margin.top, 0)}
           onPointerMove={onMove}
           onPointerDown={onMove}
         />

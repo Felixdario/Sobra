@@ -9,6 +9,7 @@ import {
   type Account,
   type AccountType,
 } from '@financas/shared';
+import { identityColors } from '@financas/tokens';
 import { useMutation } from '@tanstack/react-query';
 import { Archive } from 'lucide-react';
 import { Controller, useForm } from 'react-hook-form';
@@ -20,7 +21,6 @@ import { SelectField } from '../components/SelectField';
 import { Sheet } from '../components/Sheet';
 import { ColorPicker, IconPicker } from '../components/SwatchPicker';
 import { TextField } from '../components/TextField';
-import { IDENTITY_COLORS } from '../lib/identityColors';
 import { useServices } from '../lib/servicesContext';
 import formStyles from '../transactions/TransactionSheet.module.css';
 import { ACCOUNT_TYPE_LABELS, DEFAULT_ICON } from './labels';
@@ -67,7 +67,7 @@ function AccountForm({ account, onClose }: { account: Account | null; onClose: (
           name: '',
           type: 'checking',
           initialBalance: '',
-          color: IDENTITY_COLORS[0].hex,
+          color: identityColors[0].hex,
           icon: 'landmark',
         },
   });

@@ -1,4 +1,9 @@
-import { MutationObserver, QueryClient, type QueryKey } from '@tanstack/query-core';
+import {
+  InfiniteQueryObserver,
+  MutationObserver,
+  QueryClient,
+  type QueryKey,
+} from '@tanstack/query-core';
 import { afterEach, describe, expect, expectTypeOf, it } from 'vitest';
 import type { Account, Transaction } from '@financas/shared';
 import { createApiClient } from '../client';
@@ -27,6 +32,7 @@ import {
   queryKeys,
   shouldRetry,
   type ApiMutationOptions,
+  type TransactionPages,
 } from './index';
 
 const clients: QueryClient[] = [];
@@ -257,16 +263,17 @@ describe('invalidações após mutação', () => {
   });
 });
 
+const apiFailure: FakeReply = {
+  status: 500,
+  body: { error: { code: 'INTERNAL_ERROR', message: 'Erro interno do servidor' } },
+};
+
 describe('atualização otimista de transações', () => {
   /** The API answer stays pending until the test decides it. */
   function pendingApi() {
     const reply = deferred<FakeReply>();
     return { reply, handler: (() => reply.promise) satisfies FakeHandler };
   }
-  const apiFailure: FakeReply = {
-    status: 500,
-    body: { error: { code: 'INTERNAL_ERROR', message: 'Erro interno do servidor' } },
-  };
 
   it('criar: aparece na lista do mês certo e mexe no saldo antes da resposta; troca pelo item real', async () => {
     const { reply, handler } = pendingApi();
@@ -373,5 +380,179 @@ describe('atualização otimista de transações', () => {
     ]);
     expect(queryClient.getQueryState(novemberKey)?.isInvalidated).toBe(true);
     expect(queryClient.getQueryState(queryKeys.accounts.list())?.isInvalidated).toBe(true);
+  });
+});
+
+describe('lista infinita de transações', () => {
+  const infiniteKey = queryKeys.transactions.infinite({ month: '2026-11' });
+  const older = expense(ids.tx3, '2026-11-01', 900, 'Farmácia');
+  const never = () => deferred<FakeReply>().promise;
+
+  /** Two loaded pages of one item each (pageSize 1); a third on the server when `morePages`. */
+  function seedPages(queryClient: QueryClient, morePages: boolean) {
+    const total = morePages ? 3 : 2;
+    const p = (n: number, items: Transaction[]): TransactionPage => ({
+      items,
+      page: n,
+      pageSize: 1,
+      total,
+      totalPages: total,
+    });
+    queryClient.setQueryData(queryKeys.accounts.list(), [nubank, poupanca]);
+    queryClient.setQueryData(queryKeys.categories.list(), [category]);
+    queryClient.setQueryData<TransactionPages>(infiniteKey, {
+      pages: [p(1, [tx1]), p(2, [tx2])],
+      pageParams: [1, 2],
+    });
+  }
+  const pages = (queryClient: QueryClient) =>
+    queryClient.getQueryData<TransactionPages>(infiniteKey);
+  const namesByPage = (queryClient: QueryClient) =>
+    pages(queryClient)?.pages.map((p) => p.items.map((t) => t.description));
+  const newExpense = (description: string, date: string, amount = 100) => ({
+    type: 'expense' as const,
+    accountId: ids.nubank,
+    categoryId: ids.mercado,
+    amount,
+    description,
+    date,
+  });
+
+  it('infiniteQueryOptions: chave sem página, página como pageParam, próxima enquanto houver', async () => {
+    const replies = [
+      { ...page([tx1], 1), total: 2, totalPages: 2 },
+      { ...page([tx2], 1), page: 2, total: 2, totalPages: 2 },
+    ];
+    const { queryClient, queries, requests } = setup(() => ({
+      status: 200,
+      body: replies[requests.length - 1],
+    }));
+    const options = queries.transactions.infinite({ month: '2026-11' });
+    expect(options.queryKey).toEqual(['transactions', 'infinite', { month: '2026-11' }]);
+    expect(options.queryKey.slice(0, 2)).toEqual(queryKeys.transactions.infinites());
+
+    const observer = new InfiniteQueryObserver(queryClient, options);
+    await observer.refetch();
+    expect(observer.getCurrentResult().hasNextPage).toBe(true);
+    await observer.fetchNextPage();
+    expect(requests.map((r) => r.query.get('page'))).toEqual(['1', '2']);
+    expect(requests[1]?.query.get('month')).toBe('2026-11');
+    const result = observer.getCurrentResult();
+    expect(result.hasNextPage).toBe(false);
+    expect(result.data?.pages.flatMap((p) => p.items.map((t) => t.id))).toEqual([ids.tx1, ids.tx2]);
+    expectTypeOf(queryClient.getQueryData(options.queryKey)).toEqualTypeOf<
+      TransactionPages | undefined
+    >();
+  });
+
+  it('criar insere na página certa pela data e atualiza o total de todas as páginas', async () => {
+    const reply = deferred<FakeReply>();
+    const { queryClient, mutations } = setup(() => reply.promise);
+    seedPages(queryClient, false);
+
+    const done = run(queryClient, mutations.transactions.create, newExpense('Café', '2026-11-02'));
+    await expect.poll(() => pages(queryClient)?.pages[0]?.total).toBe(3);
+    // Same day as "Padaria" (page 2): goes before it, on page 2.
+    expect(namesByPage(queryClient)).toEqual([['Supermercado'], ['Café', 'Padaria']]);
+    expect(pages(queryClient)?.pages.every((p) => p.totalPages === 3)).toBe(true);
+
+    reply.resolve({ status: 201, body: expense(ids.tx3, '2026-11-02', 100, 'Café') });
+    await done;
+    expect(pages(queryClient)?.pages[1]?.items[0]?.id).toBe(ids.tx3);
+  });
+
+  it('criar mais antigo que tudo: fim da última página se acabou; fora da vista se há página por vir', async () => {
+    const ended = setup(never);
+    seedPages(ended.queryClient, false);
+    void run(
+      ended.queryClient,
+      ended.mutations.transactions.create,
+      newExpense('Antigo', '2026-11-01'),
+    );
+    await expect.poll(() => namesByPage(ended.queryClient)?.[1]).toEqual(['Padaria', 'Antigo']);
+
+    const more = setup(never);
+    seedPages(more.queryClient, true);
+    void run(
+      more.queryClient,
+      more.mutations.transactions.create,
+      newExpense('Antigo', '2026-11-01'),
+    );
+    await expect.poll(() => pages(more.queryClient)?.pages[0]?.total).toBe(4);
+    expect(namesByPage(more.queryClient)).toEqual([['Supermercado'], ['Padaria']]);
+  });
+
+  it('criar fora do filtro não toca nas páginas; o saldo muda igual', async () => {
+    const { queryClient, mutations } = setup(never);
+    seedPages(queryClient, false);
+    const before = pages(queryClient);
+    void run(queryClient, mutations.transactions.create, newExpense('Outubro', '2026-10-10'));
+    await expect.poll(() => balanceOf(queryClient, ids.nubank)).toBe(99_900);
+    expect(pages(queryClient)).toBe(before);
+  });
+
+  it('editar espelha nas páginas e muda de lugar se a data mudar; saldo usa o item das páginas; rollback', async () => {
+    const reply = deferred<FakeReply>();
+    const { queryClient, mutations } = setup(() => reply.promise);
+    seedPages(queryClient, false);
+    const before = cacheState(queryClient);
+
+    const done = run(queryClient, mutations.transactions.update, {
+      id: ids.tx1,
+      body: { amount: 5000, date: '2026-11-01', description: 'Mercado do mês' },
+    });
+    await expect.poll(() => namesByPage(queryClient)).toEqual([[], ['Padaria', 'Mercado do mês']]);
+    expect(pages(queryClient)?.pages[0]?.total).toBe(2);
+    expect(balanceOf(queryClient, ids.nubank)).toBe(100_000 + 4590 - 5000);
+
+    reply.resolve(apiFailure);
+    await expect(done).rejects.toBeInstanceOf(ApiError);
+    expect(cacheState(queryClient)).toEqual(before);
+  });
+
+  it('editar sem mudar a data troca no lugar; sair do filtro remove das páginas', async () => {
+    const { queryClient, mutations } = setup(never);
+    seedPages(queryClient, false);
+    void run(queryClient, mutations.transactions.update, {
+      id: ids.tx2,
+      body: { description: 'Padaria da esquina' },
+    });
+    await expect
+      .poll(() => namesByPage(queryClient))
+      .toEqual([['Supermercado'], ['Padaria da esquina']]);
+
+    void run(queryClient, mutations.transactions.update, {
+      id: ids.tx1,
+      body: { date: '2026-10-31' },
+    });
+    await expect.poll(() => namesByPage(queryClient)).toEqual([[], ['Padaria da esquina']]);
+    expect(pages(queryClient)?.pages.map((p) => p.total)).toEqual([1, 1]);
+  });
+
+  it('apagar some das páginas, devolve o saldo e volta tudo se a API falhar', async () => {
+    const reply = deferred<FakeReply>();
+    const { queryClient, mutations } = setup(() => reply.promise);
+    seedPages(queryClient, false);
+    const singleKey = queryKeys.transactions.list({ month: '2026-11' });
+    queryClient.setQueryData(singleKey, page([tx1, older]));
+    const before = cacheState(queryClient);
+
+    const done = run(queryClient, mutations.transactions.remove, ids.tx2);
+    await expect.poll(() => namesByPage(queryClient)).toEqual([['Supermercado'], []]);
+    expect(pages(queryClient)?.pages.map((p) => p.total)).toEqual([1, 1]);
+    expect(balanceOf(queryClient, ids.nubank)).toBe(101_200);
+    // A single-page list without the item is left alone.
+    expect(queryClient.getQueryData<TransactionPage>(singleKey)?.total).toBe(2);
+
+    reply.resolve(apiFailure);
+    await expect(done).rejects.toBeInstanceOf(ApiError);
+    expect(cacheState(queryClient)).toEqual(before);
+  });
+
+  it('as mutações invalidam as páginas para reconciliar com o servidor', async () => {
+    const { queryClient, mutations } = setup(() => ({ status: 204 }));
+    seedPages(queryClient, false);
+    await run(queryClient, mutations.transactions.remove, ids.tx1);
+    expect(queryClient.getQueryState(infiniteKey)?.isInvalidated).toBe(true);
   });
 });

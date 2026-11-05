@@ -1,5 +1,11 @@
-import type { TransactionListParams } from '@financas/client';
-import { cents, type Cents, type MonthKey, type Transaction } from '@financas/shared';
+import type { TransactionInfiniteParams } from '@financas/client/query';
+import {
+  cents,
+  type Cents,
+  type MonthKey,
+  type Transaction,
+  type TransactionCreate,
+} from '@financas/shared';
 import { dayLabel } from '../launch/dates';
 
 export type ListRow =
@@ -49,8 +55,8 @@ export type Filters = {
 export const PAGE_SIZE = 30;
 
 /** Query params for the API (empty values dropped, so cache keys stay stable). */
-export function toParams(filters: Filters): TransactionListParams {
-  const params: TransactionListParams = { pageSize: PAGE_SIZE };
+export function toParams(filters: Filters): TransactionInfiniteParams {
+  const params: TransactionInfiniteParams = { pageSize: PAGE_SIZE };
   if (filters.month) params.month = filters.month;
   if (filters.accountId) params.accountId = filters.accountId;
   if (filters.categoryId) params.categoryId = filters.categoryId;
@@ -63,4 +69,18 @@ export function hasFilters(filters: Filters): boolean {
   return Boolean(
     filters.month || filters.accountId || filters.categoryId || filters.search?.trim(),
   );
+}
+
+/** Body that recreates a deleted transaction ("Desfazer"): same fields, new id. */
+export function recreateBody(tx: Transaction): TransactionCreate {
+  const base = {
+    accountId: tx.accountId,
+    amount: tx.amount,
+    description: tx.description,
+    date: tx.date,
+    ...(tx.notes ? { notes: tx.notes } : {}),
+  };
+  return tx.type === 'transfer'
+    ? { ...base, type: 'transfer', toAccountId: tx.toAccountId }
+    : { ...base, type: tx.type, categoryId: tx.categoryId };
 }

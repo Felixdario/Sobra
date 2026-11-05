@@ -61,6 +61,7 @@
 }
 
 .iconOnly {
+  flex: none;
   width: var(--layout-control-height-touch);
   padding: 0;
 }

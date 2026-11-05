@@ -76,7 +76,9 @@ export function CategoriesPage() {
                           aria-label={`Editar ${category.name}`}
                         >
                           <IdentityMark color={category.color} icon={category.icon} />
-                          <span className={accountStyles.name}>{category.name}</span>
+                          <span className={accountStyles.name} title={category.name}>
+                            {category.name}
+                          </span>
                         </button>
                       </li>
                     ))}

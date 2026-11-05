@@ -8,5 +8,5 @@ export default defineConfig({
   outDir: 'dist',
   clean: true,
   sourcemap: true,
-  noExternal: ['@financas/shared', 'date-fns', '@date-fns/tz'],
+  noExternal: ['@financas/shared', '@financas/tokens', 'date-fns', '@date-fns/tz'],
 });

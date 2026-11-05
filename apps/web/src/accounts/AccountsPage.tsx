@@ -45,7 +45,9 @@ function AccountRow({ account, onEdit }: { account: Account; onEdit: (a: Account
       >
         <IdentityMark color={account.color} icon={account.icon} />
         <span className={styles.text}>
-          <span className={styles.name}>{account.name}</span>
+          <span className={styles.name} title={account.name}>
+            {account.name}
+          </span>
           <span className={styles.meta}>
             {ACCOUNT_TYPE_LABELS[account.type]}
             {account.archived ? ' · arquivada' : ''}

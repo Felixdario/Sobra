@@ -1,8 +1,10 @@
-import { DESCRIPTION_MAX, NOTES_MAX, type Account, type Category } from '@financas/shared';
+import { cents, DESCRIPTION_MAX, NOTES_MAX, type Account, type Category } from '@financas/shared';
 import { ArrowLeftRight, Calendar, Pencil, StickyNote, Wallet } from 'lucide-react-native';
 import { useState } from 'react';
 import { TextInput, View } from 'react-native';
+import { announce } from '../../lib/a11y';
 import { haptics } from '../../lib/haptics';
+import { speakMoney } from '../../lib/money';
 import { makeStyles } from '../../theme/makeStyles';
 import { useTheme } from '../../theme/ThemeProvider';
 import { AppText } from '../../ui/AppText';
@@ -12,7 +14,7 @@ import { ICON_SIZE, ICON_STROKE } from '../../ui/icons';
 import { Segmented } from '../../ui/Segmented';
 import { ErrorLine, Skeleton } from '../../ui/states';
 import { AmountDisplay } from './AmountDisplay';
-import { applyKey, type KeypadKey } from './centsKeypad';
+import { applyKey, MAX_CENTS, type KeypadKey } from './centsKeypad';
 import { CategoryGrid } from './CategoryGrid';
 import { dayLabel, recentDays } from './dates';
 import { Keypad } from './Keypad';
@@ -71,9 +73,7 @@ export function LaunchForm({
   accounts,
   categoriesState,
   onRetry,
-  canSave,
-  onSave,
-}: Props) {
+}: Omit<Props, 'canSave' | 'onSave'>) {
   const theme = useTheme();
   const styles = useStyles();
   const [panel, setPanel] = useState<Panel>('categories');
@@ -94,10 +94,13 @@ export function LaunchForm({
       if (key !== 'backspace' && key !== 'clear') {
         haptics.warning();
         setRejections((count) => count + 1);
+        announce(`Valor máximo: ${speakMoney(cents(MAX_CENTS))}.`);
       }
       return;
     }
     onChange({ ...draft, amount: result.value });
+    // The keypad is read key by key; after each one the new amount is spoken.
+    announce(speakMoney(cents(result.value)));
   };
 
   return (
@@ -108,7 +111,7 @@ export function LaunchForm({
         {transfer ? (
           <View style={styles.transfer}>
             <ArrowLeftRight size={ICON_SIZE.inline} color={iconColor} strokeWidth={ICON_STROKE} />
-            <AppText variant="label" tone="secondary">
+            <AppText variant="label" tone="secondary" style={styles.flex}>
               {transfer.account.name} → {transfer.toAccount.name}
             </AppText>
           </View>
@@ -222,12 +225,36 @@ export function LaunchForm({
         ) : null}
       </View>
 
-      <Keypad onKey={onKey} />
+      {/* While typing text the system keyboard is up; the amount keypad steps aside. */}
+      {panel === 'description' || panel === 'notes' ? null : <Keypad onKey={onKey} />}
+    </View>
+  );
+}
 
+/** What is still missing before saving, in words (said by screen readers as the button hint). */
+export function missingForSave(draft: LaunchDraft, accountsCount: number): string | null {
+  if (!draft.editing && accountsCount === 0) return 'Crie uma conta no painel web para lançar.';
+  if (draft.amount === 0) return 'Digite o valor.';
+  if (draft.editing?.type !== 'transfer' && !draft.categoryId) return 'Escolha a categoria.';
+  return null;
+}
+
+/** Pinned under the sheet: the save action and, when it can't save yet, why. */
+export function LaunchFooter({
+  draft,
+  accountsCount,
+  canSave,
+  onSave,
+}: Pick<Props, 'draft' | 'canSave' | 'onSave'> & { accountsCount: number }) {
+  const styles = useStyles();
+  const missing = canSave ? null : missingForSave(draft, accountsCount);
+  const noAccount = !draft.editing && accountsCount === 0;
+  return (
+    <>
       <Button
         testID="save"
         label={
-          editing
+          draft.editing
             ? 'Salvar alterações'
             : draft.type === 'expense'
               ? 'Salvar despesa'
@@ -235,14 +262,14 @@ export function LaunchForm({
         }
         disabled={!canSave}
         onPress={onSave}
-        accessibilityHint={canSave ? undefined : 'Digite o valor e escolha a categoria'}
+        accessibilityHint={missing ?? undefined}
       />
-      {!canSave && draft.amount > 0 && !draft.categoryId ? (
-        <AppText variant="caption" tone="tertiary" style={styles.hint}>
-          Escolha a categoria para salvar.
+      {missing && (draft.amount > 0 || noAccount) ? (
+        <AppText variant="caption" tone="secondary" style={styles.hint}>
+          {missing}
         </AppText>
       ) : null}
-    </View>
+    </>
   );
 }
 
@@ -275,6 +302,7 @@ function Options({
       {items.map((item) => (
         <Chip
           key={item.id}
+          accessibilityRole="radio"
           label={item.label}
           selected={item.id === selectedId}
           onPress={() => onSelect(item.id)}
@@ -301,6 +329,7 @@ const useStyles = makeStyles((t) => ({
     backgroundColor: t.colors.bg.surface,
   },
   hint: { textAlign: 'center' },
+  flex: { flex: 1 },
   transfer: {
     flexDirection: 'row',
     alignItems: 'center',

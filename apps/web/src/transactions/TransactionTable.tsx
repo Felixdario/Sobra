@@ -6,9 +6,9 @@ import {
   getCoreRowModel,
   useReactTable,
   type SortingState,
+  type Table,
 } from '@tanstack/react-table';
 import { ArrowDown, ArrowUp, ArrowUpDown, Trash } from 'lucide-react';
-import { useMemo } from 'react';
 import { Button } from '../components/Button';
 import { IdentityMark } from '../components/IdentityMark';
 import { accountLabel, amountOf, categoryLabel, formatShortDate } from './display';
@@ -37,79 +37,93 @@ function SortIcon({ direction }: { direction: false | 'asc' | 'desc' }) {
 }
 
 /**
+ * Columns live at module scope so their cell renderers keep one identity: a new function per
+ * render would remount every cell (and drop the focus a closing panel returns to its row).
+ * Handlers and pending state come through the table's `meta`.
+ */
+type TableMeta = Pick<Props, 'onEdit' | 'onRemove' | 'pendingIds'>;
+const metaOf = (table: Table<Transaction>) => table.options.meta as TableMeta;
+
+const columns = [
+  column.accessor('date', {
+    header: 'Data',
+    cell: (info) => <span className="num">{formatShortDate(info.getValue())}</span>,
+  }),
+  column.accessor('description', {
+    header: 'Descrição',
+    cell: ({ row, table }) => {
+      const { onEdit, pendingIds } = metaOf(table);
+      const tx = row.original;
+      return (
+        <button
+          type="button"
+          className={styles.describe}
+          onClick={() => onEdit(tx)}
+          disabled={pendingIds.has(tx.id)}
+          aria-label={`Editar ${tx.description}`}
+        >
+          <IdentityMark
+            color={tx.category?.color ?? null}
+            icon={tx.type === 'transfer' ? null : (tx.category?.icon ?? 'sparkles')}
+          />
+          <span className={styles.text}>
+            <span className={styles.title} title={tx.description}>
+              {tx.description}
+            </span>
+            <span className={styles.meta} title={categoryLabel(tx)}>
+              {categoryLabel(tx)}
+            </span>
+          </span>
+        </button>
+      );
+    },
+  }),
+  column.display({
+    id: 'account',
+    header: 'Conta',
+    cell: ({ row }) => (
+      <span className={styles.account} title={accountLabel(row.original)}>
+        {accountLabel(row.original)}
+      </span>
+    ),
+  }),
+  column.accessor('amount', {
+    header: 'Valor',
+    cell: ({ row }) => {
+      const amount = amountOf(row.original);
+      return (
+        <span className={`${styles.amount} ${styles[amount.tone]} num`} aria-label={amount.spoken}>
+          {amount.text}
+        </span>
+      );
+    },
+  }),
+  column.display({
+    id: 'actions',
+    header: () => <span className="visually-hidden">Ações</span>,
+    cell: ({ row, table }) => {
+      const { onRemove, pendingIds } = metaOf(table);
+      return (
+        <Button
+          variant="ghost"
+          iconOnly
+          aria-label={`Apagar ${row.original.description}`}
+          title="Apagar"
+          disabled={pendingIds.has(row.original.id)}
+          onClick={() => onRemove(row.original)}
+        >
+          <Trash size={16} strokeWidth={1.75} aria-hidden="true" />
+        </Button>
+      );
+    },
+  }),
+];
+
+/**
  * TanStack Table in manual mode: the API sorts and paginates (the whole month may not be on
  * screen), the table owns columns and rendering. The description is the row's primary action.
  */
 export function TransactionTable({ rows, sort, onSort, onEdit, onRemove, pendingIds }: Props) {
-  const columns = useMemo(
-    () => [
-      column.accessor('date', {
-        header: 'Data',
-        cell: (info) => <span className="num">{formatShortDate(info.getValue())}</span>,
-      }),
-      column.accessor('description', {
-        header: 'Descrição',
-        cell: ({ row }) => {
-          const tx = row.original;
-          return (
-            <button
-              type="button"
-              className={styles.describe}
-              onClick={() => onEdit(tx)}
-              disabled={pendingIds.has(tx.id)}
-              aria-label={`Editar ${tx.description}`}
-            >
-              <IdentityMark
-                color={tx.category?.color ?? null}
-                icon={tx.type === 'transfer' ? null : (tx.category?.icon ?? 'sparkles')}
-              />
-              <span className={styles.text}>
-                <span className={styles.title}>{tx.description}</span>
-                <span className={styles.meta}>{categoryLabel(tx)}</span>
-              </span>
-            </button>
-          );
-        },
-      }),
-      column.display({
-        id: 'account',
-        header: 'Conta',
-        cell: ({ row }) => <span className={styles.account}>{accountLabel(row.original)}</span>,
-      }),
-      column.accessor('amount', {
-        header: 'Valor',
-        cell: ({ row }) => {
-          const amount = amountOf(row.original);
-          return (
-            <span
-              className={`${styles.amount} ${styles[amount.tone]} num`}
-              aria-label={amount.spoken}
-            >
-              {amount.text}
-            </span>
-          );
-        },
-      }),
-      column.display({
-        id: 'actions',
-        header: () => <span className="visually-hidden">Ações</span>,
-        cell: ({ row }) => (
-          <Button
-            variant="ghost"
-            iconOnly
-            aria-label={`Apagar ${row.original.description}`}
-            title="Apagar"
-            disabled={pendingIds.has(row.original.id)}
-            onClick={() => onRemove(row.original)}
-          >
-            <Trash size={16} strokeWidth={1.75} aria-hidden="true" />
-          </Button>
-        ),
-      }),
-    ],
-    [onEdit, onRemove, pendingIds],
-  );
-
   const sorting: SortingState = [{ id: sort.field, desc: sort.direction === 'desc' }];
   const table = useReactTable({
     data: rows,
@@ -117,6 +131,7 @@ export function TransactionTable({ rows, sort, onSort, onEdit, onRemove, pending
     state: { sorting },
     manualSorting: true,
     manualPagination: true,
+    meta: { onEdit, onRemove, pendingIds } satisfies TableMeta,
     getRowId: (tx) => tx.id,
     getCoreRowModel: getCoreRowModel(),
   });

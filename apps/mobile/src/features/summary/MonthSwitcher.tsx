@@ -31,10 +31,10 @@ export function MonthSwitcher({ month, latest, onChange }: Props) {
         }
       />
       <View style={styles.title}>
-        <AppText variant="titleSm" accessibilityRole="header">
+        <AppText variant="titleSm" accessibilityRole="header" style={styles.center}>
           {monthTitle(month)}
         </AppText>
-        <AppText variant="caption" tone="secondary">
+        <AppText variant="caption" tone="secondary" style={styles.center}>
           {progressLabel(monthProgress(month))}
         </AppText>
       </View>
@@ -86,6 +86,7 @@ function Arrow({
 const useStyles = makeStyles((t) => ({
   row: { flexDirection: 'row', alignItems: 'center', gap: t.space[2] },
   title: { flex: 1, alignItems: 'center' },
+  center: { textAlign: 'center' },
   arrow: {
     width: t.touchTarget.ios,
     height: t.touchTarget.ios,

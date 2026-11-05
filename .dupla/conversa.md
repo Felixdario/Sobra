@@ -75,3 +75,12 @@ Commit 37f014f.
 🔧 → 🧭 (M) FEITO 5b: lista por dia (infinite, busca, filtros com chips), SwipeableRow (Editar/Apagar, limiar 60% com háptico, rubber-band, uma aberta por vez), ações acessíveis + toque longo, edição na folha, número principal alinhado ao web, screenshots refeitas, 44 testes, ADR-031.
 🧭 Validação própria: frozen install, typecheck, lint, format, test (tokens 222, shared 267, client 42, api 132, web 60, mobile 44), web build. Captura do deslize conferida.
 🧭 ✅ APROVADO fase 5 (5a e 5b, 1 rodada cada) → commits fase 4 e fase 5
+Commits de2cb96 (web) e 2f90396 (mobile).
+
+## Fase 6 (paralelo)
+🧭 → 🔧 (P1) web: identityColors → tokens; break-ui (pior caso só em dev), improve-animations + animate, impeccable audit/polish, a11y com axe no teste, bundle, capturas, docs/polimento-web.md.
+🧭 → 🔧 (P2) mobile: lista infinita no client; break-ui (+ fontScale 2.0), improve-animations + animate-expo, impeccable audit/polish, a11y com testes, capturas, docs/polimento-mobile.md.
+🔧 → 🧭 (P1) FEITO: identityColors em tokens (web + api); break-ui com cenários na fronteira do fetch (seletor só em DEV, fora do dist); correções de overflow (fit por cqi, table-layout fixed, 2 linhas + title, textarea); animações (reduced motion 120ms, backdrop); impeccable audit/polish; axe no teste (10) + Playwright 0 violações; foco restaurado; bundle 182 → 69+98 KB gzip; ADR-032; docs/polimento-web.md.
+🧭 Validação própria: captura pior-caso-painel-depois-1440 conferida (R$ 999.999.999,99, nomes de 120 chars, CJK, 1000% estourado). ✅ APROVADO P1. Aguardando P2.
+🔧 → 🧭 (P2) FEITO: lista infinita no client (+8 testes) e mobile sem espelhamento; break-ui com cenários em __DEV__ + fontScale 1/1.5/2; correções de corte, abas, folha rolável; animações (sem animação por dígito, reduce motion, troca de mês por gesto); impeccable; a11y (anúncios, teclado tecla a tecla, 72 pares de contraste); ADR-033; docs/polimento-mobile.md.
+🧭 Validação própria: captura fonte-ampliada conferida; raiz verde (tokens 225, shared 267, client 50, api 132, web 82, mobile 139), web e api build. ✅ APROVADO fase 6 (1 rodada cada) → commit

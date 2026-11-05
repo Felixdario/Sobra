@@ -1,4 +1,5 @@
 .wrap {
+  container-type: inline-size;
   display: grid;
   gap: var(--space-1);
 }
@@ -55,6 +56,7 @@
 
 .scale {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
   justify-content: space-between;
   gap: var(--space-3);
@@ -81,10 +83,7 @@
 
 .legend {
   display: grid;
-  grid-template-columns: repeat(
-    auto-fill,
-    minmax(min(100%, calc(var(--space-20) * 2 + var(--space-5))), 1fr)
-  );
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, calc(var(--space-20) * 3)), 1fr));
   gap: var(--space-1) var(--space-6);
   margin-top: var(--space-3);
   font-size: var(--text-body-sm-size);
@@ -106,12 +105,23 @@
 }
 
 .legendName {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .legendValue {
+  flex: none;
   margin-left: auto;
   color: var(--color-text-secondary);
+}
+
+/* Narrow ruler (phone): the result takes its own line under the two ends, not squeezed between. */
+@container (max-width: 560px) {
+  .result {
+    order: 1;
+    flex-basis: 100%;
+    text-align: right;
+  }
 }

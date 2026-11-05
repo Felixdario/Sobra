@@ -2,6 +2,7 @@ import type { MonthKey, MonthSummary, SpendingByCategory } from '@financas/share
 import { Link } from 'react-router';
 import { ErrorLine } from '../components/ErrorLine';
 import { Skeleton } from '../components/Skeleton';
+import { fitChars } from '../lib/fit';
 import { money, percent, signedMoney } from '../lib/format';
 import { monthName, monthTitle, type MonthProgress } from '../lib/month';
 import { Delta } from './Delta';
@@ -34,7 +35,9 @@ function Headline({ summary, progress }: { summary: MonthSummary; progress: Mont
     return (
       <>
         <p className={styles.caption}>Sobra até agora</p>
-        <p className={`${styles.figure} num`}>{money(left)}</p>
+        <p className={`${styles.figure} num`} style={fitChars(money(left))}>
+          {money(left)}
+        </p>
         <p className={styles.line}>
           Até agora: <span className="num">{money(summary.income)}</span> recebidos,{' '}
           <span className="num">{money(summary.expense)}</span> gastos · parcial, dia {progress.day}{' '}
@@ -47,7 +50,12 @@ function Headline({ summary, progress }: { summary: MonthSummary; progress: Mont
   return (
     <>
       <p className={styles.caption}>{left >= 0 ? 'Sobra do mês' : 'Faltou no mês'}</p>
-      <p className={`${styles.figure} ${left < 0 ? styles.debt : ''} num`}>{money(left)}</p>
+      <p
+        className={`${styles.figure} ${left < 0 ? styles.debt : ''} num`}
+        style={fitChars(money(left))}
+      >
+        {money(left)}
+      </p>
       <p className={styles.line}>
         {left >= 0 ? 'sobraram de' : 'gastos acima de'}{' '}
         <span className="num">{money(summary.income)}</span> recebidos

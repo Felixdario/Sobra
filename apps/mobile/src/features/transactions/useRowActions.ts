@@ -1,11 +1,10 @@
 import type { Transaction } from '@financas/shared';
 import { useMutation } from '@tanstack/react-query';
-import { useMemo } from 'react';
 import { useServices } from '../../api/ServicesProvider';
 import { haptics } from '../../lib/haptics';
 import { useToast } from '../../ui/Toast';
 import { useLaunch } from '../launch/LaunchSheetProvider';
-import { listMutations, recreateBody } from './infiniteTransactions';
+import { recreateBody } from './listModel';
 
 /**
  * Edit opens the launch sheet in edit mode. Delete has no confirmation, it has undo (DESIGN.md):
@@ -16,8 +15,7 @@ export function useRowActions() {
   const { mutations } = useServices();
   const launch = useLaunch();
   const toast = useToast();
-  const options = useMemo(() => listMutations(mutations), [mutations]);
-  const remove = useMutation(options.remove);
+  const remove = useMutation(mutations.transactions.remove);
   const create = useMutation(mutations.transactions.create);
 
   const restore = (tx: Transaction) =>

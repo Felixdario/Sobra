@@ -13,6 +13,17 @@
   background: var(--color-bg-overlay);
 }
 
+/* The dim arrives with the panel (opacity only); without it the overlay snaps in under a slide. */
+.sheet[open]::backdrop {
+  transition: opacity var(--duration-moderate) var(--ease-enter);
+}
+
+@starting-style {
+  .sheet[open]::backdrop {
+    opacity: 0;
+  }
+}
+
 .panel {
   display: grid;
   grid-template-rows: auto auto minmax(0, 1fr) auto;
@@ -103,7 +114,13 @@
   }
 }
 
+/* Reduced motion (DESIGN.md): no travel, a 120ms fade for the panel and the dim. */
 @media (prefers-reduced-motion: reduce) {
+  .side[open],
+  .sheet[open]::backdrop {
+    transition: opacity var(--duration-fast) var(--ease-enter);
+  }
+
   @starting-style {
     .side[open] {
       transform: none;

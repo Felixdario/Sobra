@@ -2,6 +2,7 @@ import type { BottomTabBarProps } from 'expo-router/js-tabs';
 import { LayoutDashboard, List, Plus, Settings, type LucideIcon } from 'lucide-react-native';
 import { Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { CONTROL_MAX_FONT_SCALE } from '../theme/fontScale';
 import { makeStyles } from '../theme/makeStyles';
 import { useTheme } from '../theme/ThemeProvider';
 import { AppText } from './AppText';
@@ -52,7 +53,12 @@ export function TabBar({
               }}
             >
               <Icon size={ICON_SIZE.row} color={color} strokeWidth={ICON_STROKE} />
-              <AppText variant="caption" color={color}>
+              <AppText
+                variant="caption"
+                color={color}
+                numberOfLines={1}
+                maxFontSizeMultiplier={CONTROL_MAX_FONT_SCALE}
+              >
                 {label}
               </AppText>
             </Pressable>
@@ -82,7 +88,12 @@ function LaunchButton({ onPress }: { onPress: () => void }) {
           color={theme.colors.action.onPrimary}
           strokeWidth={ICON_STROKE}
         />
-        <AppText variant="caption" color={theme.colors.action.onPrimary}>
+        <AppText
+          variant="caption"
+          color={theme.colors.action.onPrimary}
+          numberOfLines={1}
+          maxFontSizeMultiplier={CONTROL_MAX_FONT_SCALE}
+        >
           Lançar
         </AppText>
       </PressableScale>
@@ -110,7 +121,7 @@ const useStyles = makeStyles((t) => ({
     alignItems: 'center',
     gap: t.space[1],
     minHeight: t.touchTarget.ios,
-    paddingHorizontal: t.space[3],
+    paddingHorizontal: t.space[2],
     borderRadius: t.radii.md,
     backgroundColor: t.colors.action.primary,
   },

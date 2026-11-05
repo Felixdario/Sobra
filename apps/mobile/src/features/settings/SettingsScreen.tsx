@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../api/AuthProvider';
 import { useServices } from '../../api/ServicesProvider';
@@ -8,6 +8,12 @@ import { useThemeContext, type ThemePreference } from '../../theme/ThemeProvider
 import { AppText } from '../../ui/AppText';
 import { Button } from '../../ui/Button';
 import { Segmented } from '../../ui/Segmented';
+
+/** break-ui scenarios and simulated text size; dropped from release bundles (see app/_layout). */
+const DevSettings = __DEV__
+  ? // eslint-disable-next-line @typescript-eslint/no-require-imports
+    (require('../../dev/DevSettings') as typeof import('../../dev/DevSettings')).DevSettings
+  : null;
 
 const THEME_OPTIONS = [
   { value: 'system', label: 'Sistema' },
@@ -26,7 +32,7 @@ export function SettingsScreen() {
 
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>
-      <View style={styles.content}>
+      <ScrollView contentContainerStyle={styles.content}>
         <AppText variant="title" accessibilityRole="header">
           Ajustes
         </AppText>
@@ -49,13 +55,14 @@ export function SettingsScreen() {
             onChange={setPreference}
           />
         </View>
+        {DevSettings ? <DevSettings /> : null}
         <Button
           variant="secondary"
           label="Sair"
           loading={logout.isPending}
           onPress={() => logout.mutate(undefined, { onSettled: () => auth.markSignedOut() })}
         />
-      </View>
+      </ScrollView>
     </View>
   );
 }

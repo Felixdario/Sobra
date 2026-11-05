@@ -120,6 +120,7 @@ function BalanceCard({ data }: { data: DashboardData['balance'] }) {
 function BudgetCard({ data, month }: { data: DashboardData['budgets']; month: MonthKey }) {
   const budgets = data.data;
   const over = budgets?.items.filter((item) => item.actual > item.budgeted).length ?? 0;
+  const href = month === currentMonth(new Date()) ? '/orcamentos' : `/orcamentos?mes=${month}`;
   return (
     <ChartCard
       title="Orçado × realizado"
@@ -136,7 +137,7 @@ function BudgetCard({ data, month }: { data: DashboardData['budgets']; month: Mo
       empty={
         budgets && budgets.items.length === 0 ? (
           <p>
-            Sem orçamento para {monthName(month)}. <Link to="/orcamentos">Definir orçamentos</Link>
+            Sem orçamento para {monthName(month)}. <Link to={href}>Definir orçamentos</Link>
           </p>
         ) : null
       }
@@ -148,7 +149,7 @@ function BudgetCard({ data, month }: { data: DashboardData['budgets']; month: Mo
           : null
       }
     >
-      {() => (budgets ? <BudgetChart budgets={budgets} /> : null)}
+      {() => (budgets ? <BudgetChart budgets={budgets} href={href} /> : null)}
     </ChartCard>
   );
 }

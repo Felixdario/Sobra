@@ -6,6 +6,9 @@ import type {
   TransactionListParams,
 } from '../types';
 
+/** Filters of an infinite list: the page number is the page param, not part of the key. */
+export type TransactionInfiniteParams = Omit<TransactionListParams, 'page'>;
+
 /**
  * Hierarchical keys: `[domain, kind, params]`. Invalidating `[domain]` reaches every list and
  * detail of that domain; `[domain, 'list']` reaches every filtered list.
@@ -28,6 +31,10 @@ export const queryKeys = {
     all: () => ['transactions'] as const,
     lists: () => ['transactions', 'list'] as const,
     list: (params: TransactionListParams = {}) => ['transactions', 'list', params] as const,
+    /** Pages loaded on demand (infinite scroll); the data is `InfiniteData<TransactionPage>`. */
+    infinites: () => ['transactions', 'infinite'] as const,
+    infinite: (params: TransactionInfiniteParams = {}) =>
+      ['transactions', 'infinite', params] as const,
     detail: (id: string) => ['transactions', 'detail', id] as const,
   },
   budgets: {

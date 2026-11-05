@@ -110,6 +110,10 @@ export const api = createApiClient({
   perde a invalidação (e, nas transações, o rollback).
 - **Itens otimistas** têm id `optimistic-N` até a API responder; `isOptimisticId(id)` permite
   desabilitar editar/apagar nesse intervalo. Ao confirmar, o item é trocado pelo real.
+- **Lista infinita:** `useInfiniteQuery(queries.transactions.infinite({ month }))` (chave
+  `['transactions', 'infinite', params]`, página como `pageParam`). As mutações de transação já
+  atualizam essas páginas de forma otimista (criar entra na página certa pela data; editar e
+  apagar espelham; rollback em erro), então a tela não precisa de código próprio.
 - **Logout:** `mutations.auth.logout` apaga a sessão local mesmo sem rede e limpa o cache.
 - **Sessão no boot:** chame `queries.me()`. Se der `SESSION_EXPIRED` ou 401, mostre o login.
 - `@tanstack/query-core` precisa ser a mesma versão 5.x que o `@tanstack/react-query` do app
@@ -118,6 +122,6 @@ export const api = createApiClient({
 ## Testes
 
 `corepack pnpm --filter @financas/client test`: fetch falso, sem rede. Cobre token,
-single-flight, sessão expirada, contrato, erros pt-BR, chaves, invalidações e otimista com
+single-flight, sessão expirada, contrato, erros pt-BR, chaves, invalidações e otimista (listas e páginas infinitas) com
 rollback. O teste de integração com a API real fica em `apps/api/src/client.integration.test.ts`
 (a API usa este pacote como devDependency, então não há dependência circular).

@@ -15,6 +15,9 @@ export function TransactionList({ rows, onEdit, pendingIds }: Props) {
     <ul className={styles.list}>
       {rows.map((tx) => {
         const amount = amountOf(tx);
+        const meta = `${formatShortDate(tx.date)} · ${
+          tx.type === 'transfer' ? accountLabel(tx) : `${categoryLabel(tx)} · ${tx.account.name}`
+        }`;
         return (
           <li key={tx.id}>
             <button
@@ -29,12 +32,11 @@ export function TransactionList({ rows, onEdit, pendingIds }: Props) {
                 icon={tx.type === 'transfer' ? null : (tx.category?.icon ?? 'sparkles')}
               />
               <span className={styles.text}>
-                <span className={styles.title}>{tx.description}</span>
-                <span className={styles.meta}>
-                  {formatShortDate(tx.date)} ·{' '}
-                  {tx.type === 'transfer'
-                    ? accountLabel(tx)
-                    : `${categoryLabel(tx)} · ${tx.account.name}`}
+                <span className={styles.title} title={tx.description}>
+                  {tx.description}
+                </span>
+                <span className={styles.meta} title={meta}>
+                  {meta}
                 </span>
               </span>
               <span className={`${styles.amount} ${styles[amount.tone]} num`}>{amount.text}</span>

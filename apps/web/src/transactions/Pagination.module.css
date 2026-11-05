@@ -27,3 +27,9 @@
 .page {
   white-space: nowrap;
 }
+
+@media (pointer: coarse), (max-width: 767px) {
+  .size select {
+    min-height: var(--touch-min);
+  }
+}

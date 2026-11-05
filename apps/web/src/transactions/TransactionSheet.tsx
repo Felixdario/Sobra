@@ -1,12 +1,12 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import type { Account, Category, Transaction } from '@financas/shared';
+import { NOTES_MAX, type Account, type Category, type Transaction } from '@financas/shared';
 import { Trash } from 'lucide-react';
 import { useForm, useWatch } from 'react-hook-form';
 import { FormError } from '../auth/FormError';
 import { Button } from '../components/Button';
 import { SelectField } from '../components/SelectField';
 import { Sheet } from '../components/Sheet';
-import { TextField } from '../components/TextField';
+import { TextAreaField, TextField } from '../components/TextField';
 import styles from './TransactionSheet.module.css';
 import {
   emptyForm,
@@ -123,9 +123,10 @@ function TransactionForm({
           {...form.register('categoryId')}
         />
       )}
-      <TextField
+      <TextAreaField
         label="Observações (opcional)"
-        autoComplete="off"
+        rows={3}
+        maxLength={NOTES_MAX}
         error={errors.notes?.message}
         {...form.register('notes')}
       />

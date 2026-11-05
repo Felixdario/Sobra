@@ -56,8 +56,10 @@
   cursor: pointer;
 }
 
+/* Fixed columns: a long description or error wraps in its own column, never widens the table. */
 .table {
   width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
   font-size: var(--text-body-sm-size);
   line-height: var(--text-body-sm-line);
@@ -89,8 +91,33 @@
   white-space: nowrap;
 }
 
+.colInclude {
+  width: var(--space-8);
+}
+
+.colLine {
+  width: var(--space-12);
+}
+
+.colDate {
+  width: calc(var(--space-20) + var(--space-2));
+}
+
+.colAmount {
+  width: calc(var(--space-20) * 2);
+}
+
+.colCategory {
+  width: calc(var(--space-20) * 2 + var(--space-5));
+}
+
+.table td:nth-child(3) {
+  overflow-wrap: anywhere;
+}
+
 .description {
   display: block;
+  overflow-wrap: anywhere;
   font-weight: var(--font-weight-medium);
 }
 
@@ -117,8 +144,10 @@
 
 .error,
 .duplicate {
-  display: inline-flex;
-  align-items: center;
+  display: flex;
+  align-items: flex-start;
+  min-width: 0;
+  overflow-wrap: anywhere;
   gap: var(--space-1);
   font-size: var(--text-caption-size);
   line-height: var(--text-caption-line);
@@ -126,6 +155,12 @@
 
 .error {
   color: var(--color-status-danger);
+}
+
+.error svg,
+.duplicate svg {
+  flex: none;
+  margin-top: calc((var(--text-caption-line) - var(--space-4)) / 2);
 }
 
 .duplicate {
@@ -171,7 +206,6 @@
 
 .history li {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
@@ -184,7 +218,12 @@
 
 .batch {
   display: grid;
+  flex: 1;
   min-width: 0;
+}
+
+.history li > button {
+  flex: none;
 }
 
 .batchName {
@@ -192,7 +231,8 @@
   overflow-wrap: anywhere;
 }
 
-@media (pointer: coarse) {
+/* Touch: a coarse pointer, or the phone layout whatever the pointer reports. */
+@media (pointer: coarse), (max-width: 767px) {
   .categorySelect {
     min-height: var(--touch-min);
   }

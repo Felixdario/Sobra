@@ -1,4 +1,4 @@
-import { radii } from '@financas/tokens';
+import { radii, space } from '@financas/tokens';
 
 /**
  * A bar with 4px rounded data end and a square base (dataviz mark spec). Vertical bars grow up
@@ -40,4 +40,13 @@ export function rangeTicks(min: number, max: number, count = 4): number[] {
   for (let value = start; value <= max + step / 2; value += step) ticks.push(value);
   if ((ticks.at(-1) ?? 0) < max) ticks.push((ticks.at(-1) ?? 0) + step);
   return ticks;
+}
+
+/** Rough advance of a caption-size (12px) tabular character in Archivo, for SVG label room. */
+export const CAPTION_CHAR = 7;
+
+/** Left room for the y-axis labels: at least 40px, more when a label is long ("−999,9 mil"). */
+export function axisGutter(labels: string[], min: number = space[10]): number {
+  const longest = Math.max(0, ...labels.map((label) => label.length));
+  return Math.max(min, longest * CAPTION_CHAR + space[2]);
 }

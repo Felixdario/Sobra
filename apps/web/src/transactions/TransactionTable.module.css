@@ -1,5 +1,12 @@
+/*
+ * Fixed layout: the columns keep their widths whatever the data, so a 120-char description or
+ * account name truncates (with the full text in `title` and in the edit panel) instead of
+ * pushing the amount out of the card. Amounts are never truncated: their column fits
+ * "+R$ 1.000.000.000,00".
+ */
 .table {
   width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
   font-size: var(--text-body-sm-size);
   line-height: var(--text-body-sm-line);
@@ -37,12 +44,18 @@
 }
 
 .col-amount {
-  width: calc(var(--space-20) * 1.6);
+  width: calc(var(--space-20) * 2.25);
   text-align: right;
 }
 
+.table th.col-amount {
+  text-align: right;
+}
+
+/* The sort icon lines up with the last digit of the amounts below. */
 .table th.col-amount .sort {
-  margin-left: auto;
+  margin-right: calc(var(--space-2) * -1);
+  margin-left: 0;
 }
 
 .col-actions {
@@ -104,11 +117,19 @@
   font-weight: var(--font-weight-medium);
 }
 
+.meta,
+.account {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .meta {
   color: var(--color-text-tertiary);
 }
 
 .account {
+  display: block;
   color: var(--color-text-secondary);
 }
 

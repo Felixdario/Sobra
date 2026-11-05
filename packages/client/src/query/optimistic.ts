@@ -1,4 +1,4 @@
-import type { QueryClient, QueryKey } from '@tanstack/query-core';
+import type { InfiniteData, QueryClient, QueryKey } from '@tanstack/query-core';
 import {
   cents,
   mergeTransactionUpdate,
@@ -18,10 +18,14 @@ import type {
 import { queryKeys } from './keys';
 
 /*
- * Optimistic updates for transactions: the lists in cache, the detail and the account balances
- * change right away; `rollback()` restores exactly what was there. The server's answer still
- * wins: the mutations invalidate everything on settle (see mutations.ts).
+ * Optimistic updates for transactions: the lists in cache (single pages and infinite pages), the
+ * detail and the account balances change right away; `rollback()` restores exactly what was
+ * there. The server's answer still wins: the mutations invalidate everything on settle (see
+ * mutations.ts).
  */
+
+/** Data of `queries.transactions.infinite(...)`. */
+export type TransactionPages = InfiniteData<TransactionPage, number>;
 
 export type OptimisticSnapshot = { rollback(): void };
 
@@ -172,12 +176,88 @@ function insertIntoPage(page: TransactionPage, tx: Transaction, params: Transact
   return withTotal(page, items, page.total + 1);
 }
 
+type InfiniteEntry = [key: QueryKey, data: TransactionPages, params: TransactionListParams];
+
+function cachedInfinite(client: QueryClient): InfiniteEntry[] {
+  return client
+    .getQueriesData<TransactionPages>({ queryKey: queryKeys.transactions.infinites() })
+    .flatMap(([key, data]) =>
+      data ? [[key, data, (key[2] ?? {}) as TransactionListParams] as InfiniteEntry] : [],
+    );
+}
+
+/** Every page keeps the same `total`, so `getNextPageParam` stays right. */
+function withPages(
+  data: TransactionPages,
+  items: (page: TransactionPage, index: number) => Transaction[],
+  total: number,
+): TransactionPages {
+  return { ...data, pages: data.pages.map((page, i) => withTotal(page, items(page, i), total)) };
+}
+
+const totalOf = (data: TransactionPages) => data.pages[0]?.total ?? 0;
+
+/**
+ * Where a new item goes among the loaded pages. Default order: before the first item with the
+ * same date or older; if every loaded item is newer, at the end of the last page when there are
+ * no more pages, or nowhere when it belongs to a page not loaded yet (it comes with that page).
+ * Other orders: on top of the first page, like the single-page lists.
+ */
+function insertionPoint(data: TransactionPages, tx: Transaction, params: TransactionListParams) {
+  if (data.pages.length === 0) return null;
+  if (!isDefaultSort(params)) return { page: 0, index: 0 };
+  for (const [page, { items }] of data.pages.entries()) {
+    const index = items.findIndex((item) => item.date <= tx.date);
+    if (index !== -1) return { page, index };
+  }
+  const lastIndex = data.pages.length - 1;
+  const last = data.pages[lastIndex] as TransactionPage;
+  return last.page >= last.totalPages ? { page: lastIndex, index: last.items.length } : null;
+}
+
+function insertIntoPages(
+  data: TransactionPages,
+  tx: Transaction,
+  params: TransactionListParams,
+): TransactionPages {
+  const at = insertionPoint(data, tx, params);
+  return withPages(
+    data,
+    (page, i) =>
+      i === at?.page
+        ? [...page.items.slice(0, at.index), tx, ...page.items.slice(at.index)]
+        : page.items,
+    totalOf(data) + 1,
+  );
+}
+
+function removeFromPages(data: TransactionPages, id: string): TransactionPages | null {
+  if (!data.pages.some((page) => page.items.some((item) => item.id === id))) return null;
+  return withPages(data, (page) => page.items.filter((item) => item.id !== id), totalOf(data) - 1);
+}
+
+function replaceInPages(data: TransactionPages, id: string, tx: Transaction): TransactionPages {
+  return {
+    ...data,
+    pages: data.pages.map((page) => ({
+      ...page,
+      items: page.items.map((item) => (item.id === id ? tx : item)),
+    })),
+  };
+}
+
 function findCached(client: QueryClient, id: string): Transaction | undefined {
   const detail = client.getQueryData<Transaction>(queryKeys.transactions.detail(id));
   if (detail) return detail;
   for (const [, page] of cachedLists(client)) {
     const found = page.items.find((item) => item.id === id);
     if (found) return found;
+  }
+  for (const [, data] of cachedInfinite(client)) {
+    for (const page of data.pages) {
+      const found = page.items.find((item) => item.id === id);
+      if (found) return found;
+    }
   }
   return undefined;
 }
@@ -237,6 +317,10 @@ export async function optimisticCreateTransaction(
       onFirstPage ? insertIntoPage(page, tx, params) : withTotal(page, page.items, page.total + 1),
     );
   }
+  for (const [key, data, params] of cachedInfinite(client)) {
+    if (!matchesFilters(tx, params)) continue;
+    client.setQueryData<TransactionPages>(key, insertIntoPages(data, tx, params));
+  }
   applyBalances(client, balanceEffects(tx, 1));
   return { ...snapshot, tempId };
 }
@@ -249,6 +333,9 @@ export function confirmCreatedTransaction(client: QueryClient, tempId: string, t
       ...page,
       items: page.items.map((item) => (item.id === tempId ? tx : item)),
     });
+  }
+  for (const [key, data] of cachedInfinite(client)) {
+    client.setQueryData<TransactionPages>(key, replaceInPages(data, tempId, tx));
   }
   client.setQueryData(queryKeys.transactions.detail(tx.id), tx);
 }
@@ -284,6 +371,19 @@ export async function optimisticUpdateTransaction(
       client.setQueryData<TransactionPage>(key, withTotal(page, items, page.total - 1));
     }
   }
+  for (const [key, data, params] of cachedInfinite(client)) {
+    const without = removeFromPages(data, id);
+    if (!without) continue;
+    const moved = isDefaultSort(params) && next.date !== current.date;
+    client.setQueryData<TransactionPages>(
+      key,
+      !matchesFilters(next, params)
+        ? without
+        : moved
+          ? insertIntoPages(without, next, params)
+          : replaceInPages(data, id, next),
+    );
+  }
   if (client.getQueryData(queryKeys.transactions.detail(id))) {
     client.setQueryData(queryKeys.transactions.detail(id), next);
   }
@@ -303,6 +403,10 @@ export async function optimisticRemoveTransaction(
     const items = page.items.filter((item) => item.id !== id);
     if (items.length === page.items.length) continue;
     client.setQueryData<TransactionPage>(key, withTotal(page, items, page.total - 1));
+  }
+  for (const [key, data] of cachedInfinite(client)) {
+    const without = removeFromPages(data, id);
+    if (without) client.setQueryData<TransactionPages>(key, without);
   }
   client.removeQueries({ queryKey: queryKeys.transactions.detail(id), exact: true });
   if (current) applyBalances(client, balanceEffects(current, -1));

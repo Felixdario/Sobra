@@ -44,7 +44,8 @@ describe('resumo do mês', () => {
     expect(screen.getByTestId('headline-figure')).toHaveTextContent(/^R\$.2\.800,00$/);
     expect(screen.getByText(/taxa de poupança 40,0%/)).toBeTruthy();
     expect(screen.getByText('mês fechado')).toBeTruthy();
-    expect(await screen.findByText(/^Sobra R\$.2\.800,00$/)).toBeTruthy();
+    // The ruler is one image for screen readers; its label carries the sobra.
+    expect(await screen.findByLabelText(/^Régua do mês\..*Sobra R\$.2\.800,00\.$/)).toBeTruthy();
     expect(await screen.findByText(/^R\$.500,00 acima$/)).toBeTruthy();
     expect(screen.getByText(/^Restam R\$.800,00$/)).toBeTruthy();
     expect(calls.find((call) => call.path === '/summary/month')?.query.get('month')).toBe(closed);

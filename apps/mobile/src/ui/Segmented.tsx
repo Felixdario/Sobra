@@ -24,7 +24,7 @@ export function Segmented<T extends string>({ options, value, onChange, label }:
           <Pressable
             key={option.value}
             accessibilityRole="radio"
-            accessibilityState={{ selected }}
+            accessibilityState={{ checked: selected }}
             accessibilityLabel={option.label}
             onPress={() => {
               if (!selected) onChange(option.value);
@@ -53,7 +53,7 @@ const useStyles = makeStyles((t) => ({
   },
   segment: {
     flex: 1,
-    minHeight: t.touchTarget.ios - t.space[1],
+    minHeight: t.touchTarget.ios,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: t.radii.sm,

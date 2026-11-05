@@ -1,17 +1,24 @@
 import { Navigate, type RouteObject } from 'react-router';
-import { LoginPage } from '../auth/LoginPage';
 import { ProtectedRoute } from '../auth/ProtectedRoute';
-import { RegisterPage } from '../auth/RegisterPage';
 import { AppShell } from '../layout/AppShell';
 import { Root } from './Root';
 
-/** Screens load with their route: the login stays small, charts and tables come when needed. */
+/**
+ * Screens load with their route: charts and tables come when needed, and the sign-in forms
+ * (react-hook-form + resolvers) stay out of the entry chunk a signed-in visit downloads.
+ */
 export const routes: RouteObject[] = [
   {
     element: <Root />,
     children: [
-      { path: '/entrar', element: <LoginPage /> },
-      { path: '/criar-conta', element: <RegisterPage /> },
+      {
+        path: '/entrar',
+        lazy: () => import('../auth/LoginPage').then((m) => ({ Component: m.LoginPage })),
+      },
+      {
+        path: '/criar-conta',
+        lazy: () => import('../auth/RegisterPage').then((m) => ({ Component: m.RegisterPage })),
+      },
       {
         element: <ProtectedRoute />,
         children: [

@@ -35,8 +35,10 @@ export function DayHeader({ label, total }: { label: string; total: Cents }) {
 const useStyles = makeStyles((t) => ({
   header: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'center',
     justifyContent: 'space-between',
+    columnGap: t.space[3],
     minHeight: t.layout.rowCompact,
     paddingHorizontal: t.layout.phoneMargin,
     paddingTop: t.space[2],

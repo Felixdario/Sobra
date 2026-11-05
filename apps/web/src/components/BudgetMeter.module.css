@@ -5,6 +5,7 @@
 
 .budget {
   display: grid;
+  min-width: 0;
   gap: var(--space-2);
 }
 
@@ -18,14 +19,18 @@
   line-height: var(--text-body-sm-line);
 }
 
+/* The category name wraps (it identifies the row); an unbroken word breaks where it must. */
 .name {
   display: inline-flex;
-  align-items: center;
+  align-items: baseline;
+  min-width: 0;
+  overflow-wrap: anywhere;
   gap: var(--space-2);
   font-weight: var(--font-weight-medium);
 }
 
 .square {
+  flex: none;
   width: var(--space-2);
   height: var(--space-2);
   border-radius: var(--radius-xs);

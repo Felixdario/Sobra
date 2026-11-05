@@ -66,8 +66,16 @@
   font-size: var(--text-body-sm-size);
 }
 
-@media (pointer: coarse) {
+/* Touch: a coarse pointer, or the phone layout whatever the pointer reports. */
+@media (pointer: coarse), (max-width: 767px) {
   .compact {
     min-height: var(--touch-min);
   }
+}
+
+.textarea {
+  min-height: calc(var(--text-body-line) * 3 + var(--space-4));
+  padding: var(--space-2) var(--space-3);
+  line-height: var(--text-body-line);
+  resize: vertical;
 }

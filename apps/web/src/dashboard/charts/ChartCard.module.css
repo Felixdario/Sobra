@@ -64,6 +64,18 @@
   color: var(--color-text-secondary);
 }
 
+.more {
+  margin-top: var(--space-3);
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-line);
+}
+
+.more a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-min);
+}
+
 .tableToggle {
   display: flex;
   justify-content: flex-end;

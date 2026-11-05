@@ -17,7 +17,7 @@ describe('entrar', () => {
       { path: '/entrar' },
     );
     const ui = userEvent.setup();
-    await ui.type(screen.getByLabelText('E-mail'), '  Demo@Financas.dev ');
+    await ui.type(await screen.findByLabelText('E-mail'), '  Demo@Financas.dev ');
     await ui.type(screen.getByLabelText('Senha'), 'demo1234');
     await ui.click(screen.getByRole('button', { name: 'Entrar' }));
 
@@ -30,7 +30,7 @@ describe('entrar', () => {
   it('mostra o erro da API em português quando a senha está errada', async () => {
     renderApp({ 'POST /auth/login': () => invalidCredentials }, { path: '/entrar' });
     const ui = userEvent.setup();
-    await ui.type(screen.getByLabelText('E-mail'), 'demo@financas.dev');
+    await ui.type(await screen.findByLabelText('E-mail'), 'demo@financas.dev');
     await ui.type(screen.getByLabelText('Senha'), 'errada123');
     await ui.click(screen.getByRole('button', { name: 'Entrar' }));
 
@@ -41,7 +41,7 @@ describe('entrar', () => {
   it('valida os campos com os schemas do shared antes de chamar a API', async () => {
     const { requests } = renderApp({}, { path: '/entrar' });
     const ui = userEvent.setup();
-    await ui.type(screen.getByLabelText('E-mail'), 'nao-e-email');
+    await ui.type(await screen.findByLabelText('E-mail'), 'nao-e-email');
     await ui.click(screen.getByRole('button', { name: 'Entrar' }));
 
     expect(await screen.findByText('E-mail inválido')).toBeInTheDocument();
@@ -53,7 +53,7 @@ describe('entrar', () => {
     renderApp({}, { path: '/entrar' });
     await userEvent
       .setup()
-      .click(screen.getByRole('button', { name: 'Entrar com a conta de demonstração' }));
+      .click(await screen.findByRole('button', { name: 'Entrar com a conta de demonstração' }));
 
     expect(screen.getByLabelText('E-mail')).toHaveValue('demo@financas.dev');
     expect(screen.getByLabelText('Senha')).toHaveValue('demo1234');
@@ -64,7 +64,7 @@ describe('criar conta', () => {
   it('mostra as mensagens dos schemas do shared em português', async () => {
     renderApp({}, { path: '/criar-conta' });
     const ui = userEvent.setup();
-    await ui.type(screen.getByLabelText('Senha'), 'curta');
+    await ui.type(await screen.findByLabelText('Senha'), 'curta');
     await ui.click(screen.getByRole('button', { name: 'Criar conta' }));
 
     expect(await screen.findByText('A senha deve ter no mínimo 8 caracteres')).toBeInTheDocument();

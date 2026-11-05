@@ -1,7 +1,7 @@
 import { cubicBezierCss, durations, easings } from '@financas/tokens';
 import { useState, type ReactNode } from 'react';
 import { Pressable, type PressableProps, type StyleProp, type ViewStyle } from 'react-native';
-import Animated from 'react-native-reanimated';
+import Animated, { useReducedMotion } from 'react-native-reanimated';
 
 export type PressableScaleProps = Omit<PressableProps, 'children' | 'style'> & {
   children: ReactNode;
@@ -17,7 +17,8 @@ const PRESS_RETENTION = 16;
 /**
  * Feedback on press-in, commit on press-out (animate-expo "Press feedback"): 3% scale in the
  * fast duration with the tokens' ease-out, as a Reanimated CSS transition (UI thread, no shared
- * value for a two-state change). The system's reduce-motion setting turns the transition off.
+ * value for a two-state change). CSS transitions don't read Reduce Motion on their own, so with
+ * it on the scale is dropped and the pressed fill alone gives the feedback.
  */
 export function PressableScale({
   children,
@@ -30,6 +31,7 @@ export function PressableScale({
   ...rest
 }: PressableScaleProps) {
   const [pressed, setPressed] = useState(false);
+  const reduced = useReducedMotion();
   return (
     <Pressable
       {...rest}
@@ -46,7 +48,11 @@ export function PressableScale({
       }}
     >
       <Animated.View
-        style={[styles.base, style, pressed && !disabled && [styles.pressed, pressedStyle]]}
+        style={[
+          !reduced && styles.base,
+          style,
+          pressed && !disabled && [!reduced && styles.pressed, pressedStyle],
+        ]}
       >
         {children}
       </Animated.View>

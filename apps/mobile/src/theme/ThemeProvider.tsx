@@ -1,7 +1,22 @@
-import { concreto, createNativeTheme, type NativeTheme, type ThemeMode } from '@financas/tokens';
-import { createContext, use, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { useColorScheme } from 'react-native';
+import {
+  concreto,
+  createNativeTheme,
+  type NativeTheme,
+  type TextStyleName,
+  type ThemeMode,
+} from '@financas/tokens';
+import {
+  createContext,
+  use,
+  useEffect,
+  useMemo,
+  useState,
+  useSyncExternalStore,
+  type ReactNode,
+} from 'react';
+import { Platform, useColorScheme, useWindowDimensions } from 'react-native';
 import { storage } from '../lib/storage';
+import { MAX_FONT_SCALE, scaleTextStyle, simulatedFontScale } from './fontScale';
 
 export type ThemePreference = 'system' | ThemeMode;
 
@@ -24,8 +39,31 @@ const themes: Record<ThemeMode, AppTheme> = {
   dark: { ...createNativeTheme('dark'), ink: inkSteps.dark },
 };
 
+/** Web only: the theme's text grows with the simulated scale (native Text scales itself). */
+const scaledThemes = new Map<string, AppTheme>();
+function withTextScale(mode: ThemeMode, scale: number): AppTheme {
+  if (scale === 1) return themes[mode];
+  const key = `${mode}:${scale}`;
+  const cached = scaledThemes.get(key);
+  if (cached) return cached;
+  const base = themes[mode];
+  const text = Object.fromEntries(
+    Object.entries(base.text).map(([name, style]) => [
+      name,
+      scaleTextStyle(style, scale, MAX_FONT_SCALE[name as TextStyleName]),
+    ]),
+  ) as AppTheme['text'];
+  const theme = { ...base, text };
+  scaledThemes.set(key, theme);
+  return theme;
+}
+
 type ThemeContextValue = {
   theme: AppTheme;
+  /** The system text size multiplier (simulated on web in development). */
+  fontScale: number;
+  /** True when the theme's text was scaled here (web simulation), not by the system. */
+  simulatedScale: boolean;
   preference: ThemePreference;
   setPreference: (preference: ThemePreference) => void;
 };
@@ -39,11 +77,24 @@ function isPreference(value: string | null): value is ThemePreference {
 export function ThemeProvider({
   children,
   initialPreference = 'system',
+  fontScale: fontScaleOverride,
 }: {
   children: ReactNode;
   initialPreference?: ThemePreference;
+  /** Tests: render as if the system text size were this multiplier. */
+  fontScale?: number;
 }) {
   const system = useColorScheme();
+  const window = useWindowDimensions();
+  const simulated = useSyncExternalStore(
+    simulatedFontScale.subscribe,
+    simulatedFontScale.get,
+    simulatedFontScale.get,
+  );
+  const simulatedScale =
+    Platform.OS === 'web' && fontScaleOverride === undefined && simulated !== 1;
+  const fontScale =
+    fontScaleOverride ?? (Platform.OS === 'web' ? simulated : (window.fontScale ?? 1));
   const [preference, setPreferenceState] = useState<ThemePreference>(initialPreference);
 
   useEffect(() => {
@@ -63,14 +114,16 @@ export function ThemeProvider({
     const mode: ThemeMode =
       preference === 'system' ? (system === 'dark' ? 'dark' : 'light') : preference;
     return {
-      theme: themes[mode],
+      theme: simulatedScale ? withTextScale(mode, fontScale) : themes[mode],
+      fontScale,
+      simulatedScale,
       preference,
       setPreference: (next) => {
         setPreferenceState(next);
         storage.set(PREFERENCE_KEY, next).catch(() => {});
       },
     };
-  }, [preference, system]);
+  }, [preference, system, fontScale, simulatedScale]);
 
   return <ThemeContext value={value}>{children}</ThemeContext>;
 }
@@ -83,4 +136,8 @@ export function useThemeContext(): ThemeContextValue {
 
 export function useTheme(): AppTheme {
   return useThemeContext().theme;
+}
+
+export function useFontScale(): number {
+  return useThemeContext().fontScale;
 }

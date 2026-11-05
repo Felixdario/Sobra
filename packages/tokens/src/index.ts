@@ -11,6 +11,12 @@ export {
   type Rgb,
 } from './color';
 export { shadowToCss, toCssStylesheet, toCssVariables } from './css';
+export {
+  identityColors,
+  identityHex,
+  type IdentityColor,
+  type IdentityColorName,
+} from './identity';
 export { elevation, type ElevationLevel, type ShadowToken } from './elevation';
 export {
   breakpoints,

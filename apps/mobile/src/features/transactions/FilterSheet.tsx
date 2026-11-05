@@ -1,5 +1,5 @@
 import { lastNMonths, type Account, type Category, type MonthKey } from '@financas/shared';
-import { ScrollView, View } from 'react-native';
+import { View } from 'react-native';
 import { monthTitle } from '../../lib/month';
 import { makeStyles } from '../../theme/makeStyles';
 import { AppText } from '../../ui/AppText';
@@ -34,16 +34,35 @@ export function FilterSheet({ open, onClose, filters, onChange, accounts, catego
           Filtros
         </AppText>
       }
+      footer={
+        <View style={styles.footer}>
+          <Button
+            variant="secondary"
+            label="Limpar filtros"
+            disabled={!hasFilters(filters)}
+            onPress={() => onChange({ search: filters.search })}
+            containerStyle={styles.flex}
+          />
+          <Button
+            testID="filters-done"
+            label="Ver transações"
+            onPress={onClose}
+            containerStyle={styles.flex}
+          />
+        </View>
+      }
     >
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
+      <View style={styles.content}>
         <Group label="Mês">
           <Chip
+            accessibilityRole="radio"
             label="Todos"
             selected={!filters.month}
             onPress={() => onChange({ ...filters, month: undefined })}
           />
           {months.map((month: MonthKey) => (
             <Chip
+              accessibilityRole="radio"
               key={month}
               testID={`filter-month-${month}`}
               label={monthTitle(month)}
@@ -54,12 +73,14 @@ export function FilterSheet({ open, onClose, filters, onChange, accounts, catego
         </Group>
         <Group label="Conta">
           <Chip
+            accessibilityRole="radio"
             label="Todas"
             selected={!filters.accountId}
             onPress={() => onChange({ ...filters, accountId: undefined })}
           />
           {accounts.map((account) => (
             <Chip
+              accessibilityRole="radio"
               key={account.id}
               testID={`filter-account-${account.name}`}
               label={account.name}
@@ -70,12 +91,14 @@ export function FilterSheet({ open, onClose, filters, onChange, accounts, catego
         </Group>
         <Group label="Categoria">
           <Chip
+            accessibilityRole="radio"
             label="Todas"
             selected={!filters.categoryId}
             onPress={() => onChange({ ...filters, categoryId: undefined })}
           />
           {sortedCategories.map((category) => (
             <Chip
+              accessibilityRole="radio"
               key={category.id}
               testID={`filter-category-${category.name}`}
               label={category.name}
@@ -84,21 +107,6 @@ export function FilterSheet({ open, onClose, filters, onChange, accounts, catego
             />
           ))}
         </Group>
-      </ScrollView>
-      <View style={styles.footer}>
-        <Button
-          variant="secondary"
-          label="Limpar filtros"
-          disabled={!hasFilters(filters)}
-          onPress={() => onChange({ search: filters.search })}
-          containerStyle={styles.flex}
-        />
-        <Button
-          testID="filters-done"
-          label="Ver transações"
-          onPress={onClose}
-          containerStyle={styles.flex}
-        />
       </View>
     </BottomSheet>
   );
@@ -118,10 +126,9 @@ function Group({ label, children }: { label: string; children: React.ReactNode }
 
 const useStyles = makeStyles((t) => ({
   title: { paddingBottom: t.space[2] },
-  scroll: { maxHeight: t.layout.rowTall * 8 },
   content: { gap: t.space[4], paddingBottom: t.space[4] },
   group: { gap: t.space[2] },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: t.space[2] },
-  footer: { flexDirection: 'row', gap: t.space[2], paddingTop: t.space[2] },
-  flex: { flex: 1 },
+  footer: { flexDirection: 'row', flexWrap: 'wrap', gap: t.space[2] },
+  flex: { flexGrow: 1, flexBasis: '40%' },
 }));

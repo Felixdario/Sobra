@@ -1,4 +1,5 @@
 import type { MonthSummary } from '@financas/shared';
+import { fitChars } from '../lib/fit';
 import { money, percent, percentagePoints, signedMoney } from '../lib/format';
 import { monthName, type MonthProgress } from '../lib/month';
 import { Delta } from './Delta';
@@ -58,7 +59,10 @@ function MoneyCell({ label, value, change, upIsGood, base, debt = false, note }:
   return (
     <div className={styles.cell}>
       <dt className={styles.label}>{label}</dt>
-      <dd className={`${styles.value} ${debt && value < 0 ? styles.debt : ''} num`}>
+      <dd
+        className={`${styles.value} ${debt && value < 0 ? styles.debt : value === 0 ? styles.zero : ''} num`}
+        style={fitChars(money(value))}
+      >
         {money(value)}
       </dd>
       <dd>
