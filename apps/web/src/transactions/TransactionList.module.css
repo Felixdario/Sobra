@@ -1,0 +1,62 @@
+.list li + li {
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: var(--layout-row-tall);
+  padding: var(--space-2) 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.row:disabled {
+  opacity: 0.55;
+}
+
+.text {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+
+.title,
+.meta {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.title {
+  font-weight: var(--font-weight-medium);
+}
+
+.meta {
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-line);
+  color: var(--color-text-tertiary);
+}
+
+.amount {
+  flex: none;
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+}
+
+.income {
+  color: var(--color-money-income);
+}
+
+.expense {
+  color: var(--color-money-expense);
+}
+
+.transfer {
+  color: var(--color-money-transfer);
+  font-weight: var(--font-weight-medium);
+}

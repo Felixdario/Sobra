@@ -1,0 +1,103 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--layout-control-height-touch);
+  padding: 0 var(--space-4);
+  border: 0;
+  border-radius: var(--radius-md);
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-line);
+  font-weight: var(--font-weight-medium);
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+  /* Press feedback (tens of times a day): fast, strong ease-out; color on hover only. */
+  transition:
+    background-color var(--duration-fast) var(--ease-standard),
+    transform var(--duration-fast) var(--ease-enter);
+}
+
+.button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.button:disabled {
+  cursor: not-allowed;
+}
+
+.primary {
+  background: var(--color-action-primary);
+  color: var(--color-action-on-primary);
+}
+
+.primary:active:not(:disabled) {
+  background: var(--color-action-primary-pressed);
+}
+
+.secondary {
+  background: var(--color-action-secondary);
+  color: var(--color-action-on-secondary);
+}
+
+.ghost {
+  background: transparent;
+  color: var(--color-text-secondary);
+}
+
+.primary:disabled,
+.secondary:disabled,
+.ghost:disabled {
+  color: var(--color-text-disabled);
+}
+
+.primary:disabled {
+  background: var(--color-action-secondary);
+}
+
+.block {
+  width: 100%;
+}
+
+.iconOnly {
+  width: var(--layout-control-height-touch);
+  padding: 0;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .primary:hover:not(:disabled) {
+    background: var(--color-action-primary-hover);
+  }
+
+  .secondary:hover:not(:disabled),
+  .ghost:hover:not(:disabled) {
+    background: var(--color-action-secondary-hover);
+    color: var(--color-action-on-secondary);
+  }
+}
+
+.spinner {
+  width: var(--space-4);
+  height: var(--space-4);
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: var(--radius-full);
+  animation: spin calc(var(--duration-slow) * 2) linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button:active:not(:disabled) {
+    transform: none;
+  }
+
+  .spinner {
+    animation-duration: calc(var(--duration-slow) * 5);
+  }
+}

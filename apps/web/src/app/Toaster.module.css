@@ -1,0 +1,16 @@
+/* Sonner reads these variables: mapped to the tokens, toasts follow both themes. */
+.toast {
+  --normal-bg: var(--color-bg-raised);
+  --normal-text: var(--color-text-primary);
+  --normal-border: var(--color-border-subtle);
+  --error-bg: var(--color-bg-raised);
+  --error-text: var(--color-status-danger);
+  --error-border: var(--color-border-subtle);
+  --success-bg: var(--color-bg-raised);
+  --success-text: var(--color-text-primary);
+  --success-border: var(--color-border-subtle);
+  font-family: var(--font-sans);
+  font-size: var(--text-body-sm-size);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-raised);
+}

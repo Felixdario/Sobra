@@ -1,0 +1,91 @@
+.list li + li {
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.loading {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--layout-row-tall);
+  padding: var(--space-1) 0;
+}
+
+.row[data-archived] .main {
+  opacity: 0.7;
+}
+
+.main {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.text {
+  display: grid;
+  min-width: 0;
+}
+
+.name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: var(--font-weight-medium);
+}
+
+.meta,
+.note {
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-line);
+  color: var(--color-text-tertiary);
+}
+
+.balanceCell {
+  display: grid;
+  justify-items: end;
+  flex: none;
+}
+
+.balance {
+  font-size: var(--text-title-sm-size);
+  line-height: var(--text-title-sm-line);
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+}
+
+.debt {
+  color: var(--color-money-debt);
+}
+
+.zero {
+  color: var(--color-money-zero);
+}
+
+.total {
+  font-size: var(--text-body-sm-size);
+  color: var(--color-text-secondary);
+}
+
+.total strong {
+  margin-left: var(--space-1);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .main:hover .name {
+    text-decoration: underline;
+    text-underline-offset: var(--space-0_5);
+  }
+}

@@ -1,0 +1,31 @@
+.columns {
+  display: grid;
+  gap: var(--layout-gutter);
+  align-items: start;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: var(--layout-row);
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .row:hover span:last-child {
+    text-decoration: underline;
+    text-underline-offset: var(--space-0_5);
+  }
+}
+
+@media (min-width: 1024px) {
+  .columns {
+    grid-template-columns: 3fr 2fr;
+  }
+}

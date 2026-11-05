@@ -1,0 +1,117 @@
+.wrap {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.bar {
+  position: relative;
+  height: var(--space-8);
+  overflow: hidden;
+  background: var(--color-bg-sunken);
+  border-radius: var(--radius-xs);
+}
+
+/* Flat planes with a 2px breath in the surface color between them: the shape is the concretism. */
+.plane {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-right: var(--space-0_5) solid var(--color-bg-surface);
+}
+
+.sobra {
+  background: var(--color-chart-main);
+  border-right: 0;
+}
+
+.over {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    135deg,
+    var(--color-budget-over) 0 var(--space-0_5),
+    transparent var(--space-0_5) var(--space-2)
+  );
+  opacity: 0.9;
+}
+
+.overPartial {
+  background: repeating-linear-gradient(
+    135deg,
+    var(--color-chart-comparison) 0 var(--space-0_5),
+    transparent var(--space-0_5) var(--space-2)
+  );
+}
+
+.mark {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: var(--space-0_5);
+  margin-left: calc(var(--space-0_5) / -2);
+  background: var(--color-text-primary);
+}
+
+.scale {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  font-size: var(--text-caption-size);
+  line-height: var(--text-caption-line);
+  color: var(--color-text-tertiary);
+}
+
+.result {
+  margin-left: auto;
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-line);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-link);
+}
+
+.resultOver {
+  color: var(--color-money-debt);
+}
+
+.resultPartial {
+  color: var(--color-text-secondary);
+}
+
+.legend {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(min(100%, calc(var(--space-20) * 2 + var(--space-5))), 1fr)
+  );
+  gap: var(--space-1) var(--space-6);
+  margin-top: var(--space-3);
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-line);
+}
+
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.chip {
+  flex: none;
+  width: var(--space-2);
+  height: var(--space-2);
+  border-radius: var(--radius-xs);
+}
+
+.legendName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.legendValue {
+  margin-left: auto;
+  color: var(--color-text-secondary);
+}

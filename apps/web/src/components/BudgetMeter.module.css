@@ -1,0 +1,126 @@
+.list {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.budget {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-3);
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-line);
+}
+
+.name {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: var(--font-weight-medium);
+}
+
+.square {
+  width: var(--space-2);
+  height: var(--space-2);
+  border-radius: var(--radius-xs);
+}
+
+.values {
+  color: var(--color-text-secondary);
+}
+
+.values strong {
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.track {
+  position: relative;
+  height: calc(var(--space-2) + var(--space-0_5));
+  overflow: hidden;
+  background: var(--color-budget-track);
+  border-radius: var(--radius-sm);
+}
+
+.fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  background: var(--color-budget-ok);
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+}
+
+.near .fill {
+  background: var(--color-budget-near);
+}
+
+/* The part past the budget: hatched debt red after a mark at the limit. */
+.excess {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    135deg,
+    var(--color-budget-over) 0 var(--space-1),
+    var(--color-bg-surface) var(--space-1) calc(var(--space-1) + var(--space-0_5))
+  );
+  border-left: var(--space-0_5) solid var(--color-bg-surface);
+}
+
+.mark {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: var(--space-0_5);
+  margin-left: calc(var(--space-0_5) / -2);
+  background: var(--color-text-primary);
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-line);
+  color: var(--color-text-secondary);
+}
+
+.status svg {
+  flex: none;
+}
+
+.warning {
+  color: var(--color-status-warning);
+  font-weight: var(--font-weight-medium);
+}
+
+.danger {
+  color: var(--color-status-danger);
+  font-weight: var(--font-weight-semibold);
+}
+
+.totals {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-3);
+}
+
+.foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-3);
+}
+
+.foot .status {
+  margin: 0;
+}

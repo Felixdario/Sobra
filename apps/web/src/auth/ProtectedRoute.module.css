@@ -1,0 +1,6 @@
+.blocked {
+  display: grid;
+  min-height: 100dvh;
+  padding: var(--layout-gutter);
+  place-items: center;
+}

@@ -1,0 +1,15 @@
+.body {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+  transition: opacity var(--duration-base) var(--ease-standard);
+}
+
+.body[data-stale='true'] {
+  opacity: 0.55;
+}
+
+.loading {
+  display: grid;
+  gap: var(--space-1);
+}

@@ -1,0 +1,134 @@
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-line);
+}
+
+.table th {
+  height: var(--layout-row-compact);
+  padding: 0 var(--space-3) 0 0;
+  border-bottom: 1px solid var(--color-border-default);
+  text-align: left;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.table td {
+  height: var(--layout-row-tall);
+  padding: var(--space-1) var(--space-3) var(--space-1) 0;
+  border-bottom: 1px solid var(--color-border-subtle);
+  vertical-align: middle;
+}
+
+.table tr[data-pending] {
+  opacity: 0.55;
+}
+
+.col-date {
+  width: calc(var(--space-16) + var(--space-2));
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.col-account {
+  width: 26%;
+}
+
+.col-amount {
+  width: calc(var(--space-20) * 1.6);
+  text-align: right;
+}
+
+.table th.col-amount .sort {
+  margin-left: auto;
+}
+
+.col-actions {
+  width: var(--touch-min);
+  padding-right: 0;
+}
+
+.sort {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: var(--layout-control-height);
+  margin-left: calc(var(--space-2) * -1);
+  padding: 0 var(--space-2);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: inherit;
+  font-weight: inherit;
+  cursor: pointer;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .sort:hover {
+    background: var(--color-bg-sunken);
+    color: var(--color-text-primary);
+  }
+
+  .describe:hover .title {
+    text-decoration: underline;
+    text-underline-offset: var(--space-0_5);
+  }
+}
+
+.describe {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.text {
+  display: grid;
+  min-width: 0;
+}
+
+.title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-body-size);
+  line-height: var(--text-body-line);
+  font-weight: var(--font-weight-medium);
+}
+
+.meta {
+  color: var(--color-text-tertiary);
+}
+
+.account {
+  color: var(--color-text-secondary);
+}
+
+.amount {
+  display: block;
+  text-align: right;
+  font-size: var(--text-body-size);
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+}
+
+.income {
+  color: var(--color-money-income);
+}
+
+.expense {
+  color: var(--color-money-expense);
+}
+
+.transfer {
+  color: var(--color-money-transfer);
+  font-weight: var(--font-weight-medium);
+}

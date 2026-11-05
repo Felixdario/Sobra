@@ -1,0 +1,199 @@
+.muted {
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-line);
+  color: var(--color-text-tertiary);
+}
+
+.pick {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.pickActions,
+.confirm {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+/* The whole box is the file input's label: click, keyboard (focus the input) or drop. */
+.drop {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: var(--space-1);
+  padding: var(--space-8) var(--space-4);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-sunken);
+  color: var(--color-text-secondary);
+  text-align: center;
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-standard);
+}
+
+.drop[data-dragging] {
+  border-color: var(--color-border-focus);
+  background: var(--color-bg-selection);
+}
+
+.drop:has(.file:focus-visible) {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+.dropTitle {
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+  overflow-wrap: anywhere;
+}
+
+.file {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-line);
+}
+
+.table th {
+  height: var(--layout-row-compact);
+  padding: 0 var(--space-3) 0 0;
+  border-bottom: 1px solid var(--color-border-default);
+  text-align: left;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+}
+
+.table td {
+  padding: var(--space-2) var(--space-3) var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border-subtle);
+  vertical-align: middle;
+}
+
+.table tr[data-invalid] td,
+.card[data-invalid] {
+  background: var(--color-status-danger-surface);
+}
+
+.right,
+.table th.right {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.description {
+  display: block;
+  font-weight: var(--font-weight-medium);
+}
+
+.income {
+  color: var(--color-money-income);
+}
+
+.check {
+  width: var(--space-5);
+  height: var(--space-5);
+  accent-color: var(--color-action-primary);
+}
+
+.categorySelect {
+  width: 100%;
+  min-height: var(--layout-control-height);
+  padding: 0 var(--space-2);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-surface);
+  color: var(--color-text-primary);
+  font: inherit;
+}
+
+.error,
+.duplicate {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-caption-size);
+  line-height: var(--text-caption-line);
+}
+
+.error {
+  color: var(--color-status-danger);
+}
+
+.duplicate {
+  color: var(--color-status-warning);
+  font-weight: var(--font-weight-medium);
+}
+
+.cards {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.card {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.cardTitle {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-weight: var(--font-weight-medium);
+}
+
+.cardAmount {
+  flex: none;
+  font-weight: var(--font-weight-semibold);
+}
+
+.cardMeta {
+  font-size: var(--text-caption-size);
+  color: var(--color-text-tertiary);
+}
+
+.history li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-height: var(--layout-row-tall);
+}
+
+.history li + li {
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.batch {
+  display: grid;
+  min-width: 0;
+}
+
+.batchName {
+  font-weight: var(--font-weight-medium);
+  overflow-wrap: anywhere;
+}
+
+@media (pointer: coarse) {
+  .categorySelect {
+    min-height: var(--touch-min);
+  }
+}

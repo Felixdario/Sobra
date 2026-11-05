@@ -161,7 +161,7 @@ describe('/summary', () => {
       expect.objectContaining({
         categoryId: mercado,
         name: 'Mercado',
-        color: '#F97316',
+        color: '#D06A1F',
         icon: 'cart',
         amount: 30_000,
         percent: 60,
@@ -229,7 +229,7 @@ describe('/summary', () => {
         {
           categoryId: mercado,
           name: 'Mercado',
-          color: '#F97316',
+          color: '#D06A1F',
           budgeted: 40_000,
           actual: 30_000,
           remaining: 10_000,

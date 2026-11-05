@@ -1,0 +1,29 @@
+.filters {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.search {
+  grid-column: 1 / -1;
+}
+
+.select select {
+  min-height: var(--layout-control-height-touch);
+  font-size: var(--text-body-sm-size);
+}
+
+@media (min-width: 1024px) {
+  .fields {
+    grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr));
+  }
+
+  .search {
+    grid-column: auto;
+  }
+}

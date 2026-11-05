@@ -1,0 +1,13 @@
+.skeleton {
+  display: block;
+  background: var(--color-bg-sunken);
+  border-radius: var(--radius-sm);
+  /* Loading is a state, not decoration: a slow opacity breath, gone with reduced motion. */
+  animation: skeleton-breathe calc(var(--duration-slow) * 3) var(--ease-standard) infinite alternate;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}

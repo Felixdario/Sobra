@@ -1,0 +1,37 @@
+.delta {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-line);
+  color: var(--color-text-secondary);
+}
+
+.small {
+  font-size: var(--text-caption-size);
+  line-height: var(--text-caption-line);
+}
+
+.value {
+  font-weight: var(--font-weight-semibold);
+}
+
+.good .value {
+  color: var(--color-money-income);
+}
+
+.good .tri {
+  fill: var(--color-money-income);
+}
+
+.tri {
+  flex: none;
+  width: calc(var(--space-2) + var(--space-0_5));
+  height: calc(var(--space-2) + var(--space-0_5));
+  fill: var(--color-text-secondary);
+}
+
+.down .tri {
+  transform: rotate(180deg);
+}

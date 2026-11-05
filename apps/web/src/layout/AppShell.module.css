@@ -1,0 +1,178 @@
+.shell {
+  min-height: 100dvh;
+}
+
+.content {
+  min-width: 0;
+  padding: var(--layout-gutter);
+}
+
+/* Sidebar: on the canvas itself, no color, separated by one hairline (DESIGN.md, Layout). */
+.sidebar {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  height: 100dvh;
+  padding: var(--space-6) var(--space-4);
+  border-right: 1px solid var(--color-border-subtle);
+  overflow-y: auto;
+}
+
+.nav {
+  display: grid;
+  gap: var(--space-0_5);
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--layout-row);
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-line);
+  font-weight: var(--font-weight-medium);
+  text-decoration: none;
+  transition: background-color var(--duration-fast) var(--ease-standard);
+}
+
+.link svg {
+  flex: none;
+}
+
+.active {
+  background: var(--color-bg-selection);
+  color: var(--color-text-primary);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .link:not(.active):hover {
+    background: var(--color-bg-sunken);
+    color: var(--color-text-primary);
+  }
+}
+
+.footer {
+  display: grid;
+  gap: var(--space-4);
+  margin-top: auto;
+}
+
+.user {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.userText {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+
+.userName,
+.userEmail {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.userName {
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-line);
+  font-weight: var(--font-weight-medium);
+}
+
+.userEmail {
+  font-size: var(--text-caption-size);
+  line-height: var(--text-caption-line);
+  color: var(--color-text-tertiary);
+}
+
+/* Below 768px: a 48px top bar with a menu (DESIGN.md, Layout). */
+.compact {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--color-bg-canvas);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.compactBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: var(--space-12);
+  padding: 0 var(--space-1) 0 var(--layout-gutter);
+}
+
+.compactBar > a {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+/*
+ * The menu opens a few times a session: it arrives from the bar it belongs to (4px down + fade,
+ * 180ms strong ease-out) and leaves faster (120ms ease-in-type exit). Reduced motion: fade only.
+ */
+.panel {
+  position: absolute;
+  inset: 100% 0 auto;
+  display: grid;
+  gap: var(--space-6);
+  max-height: calc(100dvh - var(--space-12));
+  padding: var(--space-4) var(--layout-gutter) var(--space-6);
+  overflow-y: auto;
+  background: var(--color-bg-raised);
+  border-bottom: 1px solid var(--color-border-subtle);
+  box-shadow: var(--shadow-raised);
+  transform-origin: top center;
+  opacity: 0;
+  transform: translateY(calc(var(--space-1) * -1));
+  visibility: hidden;
+  transition:
+    opacity var(--duration-fast) var(--ease-exit),
+    transform var(--duration-fast) var(--ease-exit),
+    visibility 0s linear var(--duration-fast);
+}
+
+.panel[data-open='true'] {
+  opacity: 1;
+  transform: none;
+  visibility: visible;
+  transition:
+    opacity var(--duration-base) var(--ease-enter),
+    transform var(--duration-base) var(--ease-enter),
+    visibility 0s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel,
+  .panel[data-open='true'] {
+    transform: none;
+  }
+}
+
+@media (min-width: 768px) {
+  .shell {
+    display: grid;
+    grid-template-columns: var(--layout-sidebar) minmax(0, 1fr);
+  }
+
+  .content {
+    padding: var(--space-6) var(--layout-gutter) var(--space-12);
+  }
+}
+
+@media (min-width: 1024px) {
+  .content {
+    padding-inline: var(--space-8);
+  }
+}

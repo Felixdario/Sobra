@@ -1,0 +1,29 @@
+.mark {
+  position: relative;
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: var(--space-10);
+  height: var(--space-10);
+  color: var(--color-text-secondary);
+}
+
+.inline {
+  width: var(--space-6);
+  height: var(--space-6);
+}
+
+.square {
+  position: absolute;
+  top: var(--space-0_5);
+  left: var(--space-0_5);
+  width: var(--space-2);
+  height: var(--space-2);
+  border-radius: var(--radius-xs);
+  background: var(--color-money-transfer);
+}
+
+.inline .square {
+  top: 0;
+  left: 0;
+}
