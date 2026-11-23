@@ -309,7 +309,7 @@ Relatórios em [`docs/polimento-web.md`](docs/polimento-web.md) e
 
 ## Qualidade
 
-`corepack pnpm test` na raiz roda **1087 testes**, todos passando:
+`corepack pnpm test` na raiz roda **1091 testes**, todos passando:
 
 | Pacote          | Testes | O que cobre                                                                    |
 | --------------- | -----: | ------------------------------------------------------------------------------ |
@@ -317,9 +317,9 @@ Relatórios em [`docs/polimento-web.md`](docs/polimento-web.md) e
 | `@sobra/tokens` |    225 | contraste WCAG dos dois temas, ΔE da paleta para daltonismo, CSS gerado        |
 | `@sobra/i18n`   |     41 | paridade pt-BR/en-US, plural, erros e validação traduzidos sem fallback        |
 | `@sobra/client` |     63 | single-flight, sessão expirada, erros pt-BR, invalidações, otimista e rollback |
-| `apps/api`      |    165 | rotas pela API real (SQLite por arquivo), isolamento entre usuários, seed      |
+| `apps/api`      |    167 | rotas pela API real (SQLite por arquivo), isolamento entre usuários, seed      |
 | `apps/web`      |    100 | telas com API falsa, pior caso, axe-core, en-US/USD e textos fora do catálogo  |
-| `apps/mobile`   |    162 | lançar, lista, folha, acessibilidade, contraste, en-US/USD e textos fixos      |
+| `apps/mobile`   |    164 | lançar, lista, folha, acessibilidade, contraste, en-US/USD e textos fixos      |
 
 - **Typecheck estrito** em todos os pacotes (`corepack pnpm typecheck`), ESLint e Prettier na raiz.
 - **Acessibilidade:** axe-core roda nos testes do web; numa passada no Chrome real com
