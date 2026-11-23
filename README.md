@@ -6,6 +6,8 @@ mês.
 
 Projeto de portfólio (1 de 4). Os dados das capturas são do usuário demo, sintéticos.
 
+**No ar:** [sobra-chi.vercel.app](https://sobra-chi.vercel.app) (planos grátis: a primeira visita pode levar até um minuto).
+
 <img src="docs/screenshots/web/painel-outubro-claro-desktop.png" alt="Painel web no tema claro: sobra de outubro de R$ 769,90, régua do mês, saldo, receitas, despesas, taxa de poupança, gráficos de receitas × despesas, evolução do saldo, gastos por categoria e orçado × realizado" width="100%">
 
 <table>
