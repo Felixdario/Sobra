@@ -19,7 +19,12 @@ export const REFRESH_COOKIE_PATH = '/auth';
 const CSRF_REJECTED =
   'Requisição recusada: o token de segurança (CSRF) está ausente ou não confere. Recarregue a página e tente de novo';
 
-export type SessionCookieConfig = { secure: boolean; maxAgeSeconds: number };
+export type SessionCookieConfig = {
+  secure: boolean;
+  maxAgeSeconds: number;
+  /** Path of the refresh cookie; defaults to REFRESH_COOKIE_PATH. */
+  refreshPath?: string;
+};
 
 export const isCookieClient = (request: FastifyRequest): boolean =>
   request.headers[CLIENT_HEADER] === WEB_CLIENT;
@@ -27,7 +32,7 @@ export const isCookieClient = (request: FastifyRequest): boolean =>
 function cookieOptions(config: SessionCookieConfig) {
   const base = { secure: config.secure, sameSite: 'strict' } as const;
   return {
-    refresh: { ...base, httpOnly: true, path: REFRESH_COOKIE_PATH },
+    refresh: { ...base, httpOnly: true, path: config.refreshPath ?? REFRESH_COOKIE_PATH },
     // Readable by the page on purpose (double submit): JS copies it into X-CSRF-Token.
     csrf: { ...base, httpOnly: false, path: '/' },
   } satisfies Record<string, CookieSerializeOptions>;

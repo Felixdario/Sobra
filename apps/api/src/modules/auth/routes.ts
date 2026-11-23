@@ -21,6 +21,7 @@ import {
   CSRF_HEADER,
   deliverTokens,
   readRefreshToken,
+  REFRESH_COOKIE_PATH,
   type SessionCookieConfig,
   WEB_CLIENT,
 } from './session';
@@ -84,6 +85,7 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
   const cookies: SessionCookieConfig = {
     secure: config.AUTH_COOKIE_SECURE,
     maxAgeSeconds: config.REFRESH_TOKEN_TTL_DAYS * 24 * 60 * 60,
+    refreshPath: `${config.AUTH_COOKIE_PATH_PREFIX}${REFRESH_COOKIE_PATH}`,
   };
   const rateLimit = { max: config.AUTH_RATE_LIMIT_MAX, timeWindow: config.AUTH_RATE_LIMIT_WINDOW };
 

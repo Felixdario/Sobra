@@ -45,6 +45,15 @@ const envSchema = z
     AUTH_COOKIE_SECURE: z.enum(['true', 'false']).optional(),
     AUTH_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(10),
     AUTH_RATE_LIMIT_WINDOW: z.string().min(1).default('1 minute'),
+    /**
+     * Prefix for the refresh cookie path when the web reaches the API through a proxy that adds
+     * one (Vercel rewrite /api/* → API): "/api" makes the cookie Path=/api/auth. Empty in dev,
+     * where the Vite proxy rewrites the cookie path itself (ADR-034).
+     */
+    AUTH_COOKIE_PATH_PREFIX: z
+      .string()
+      .regex(/^(\/[a-z0-9-]+)*$/, { error: 'AUTH_COOKIE_PATH_PREFIX deve ser vazio ou como /api' })
+      .default(''),
     /** Argon2 cost (see ARGON2_PROFILES); `test` only for the test suite. */
     ARGON2_PROFILE: z.enum(['production', 'test']).default('production'),
   })

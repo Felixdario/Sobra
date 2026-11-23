@@ -275,3 +275,27 @@ describe('atributo Secure dos cookies de sessão', () => {
     expect(() => loadEnv({ CORS_ORIGINS: 'http://localhost:5173,*' })).toThrow(/não aceita "\*"/);
   });
 });
+
+describe('cookie de refresh atrás de um proxy com prefixo (AUTH_COOKIE_PATH_PREFIX)', () => {
+  it('com /api, o cookie vai para Path=/api/auth; o CSRF continua em /', async () => {
+    const app = await createTestApp({ AUTH_COOKIE_PATH_PREFIX: '/api' });
+    try {
+      const user = await registerUser(app);
+      const response = await app.inject({
+        method: 'POST',
+        url: '/auth/login',
+        headers: WEB,
+        payload: { email: user.user.email, password: user.password },
+      });
+      expect(response.statusCode).toBe(200);
+      expect(cookie(response, 'sobra_refresh')).toMatchObject({ httpOnly: true, path: '/api/auth' });
+      expect(cookie(response, 'sobra_csrf')).toMatchObject({ path: '/' });
+    } finally {
+      await app.close();
+    }
+  });
+
+  it('recusa um prefixo que não é um caminho', () => {
+    expect(() => loadEnv({ AUTH_COOKIE_PATH_PREFIX: 'api' })).toThrow(/AUTH_COOKIE_PATH_PREFIX/);
+  });
+});
